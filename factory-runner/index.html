@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factory Runner — 智慧工廠生產線遊戲</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f0f23);
+            color: #ffffff;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 標題欄 */
+        .header {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #00d4ff;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .score-display {
+            display: flex;
+            gap: 30px;
+        }
+
+        .score-item {
+            text-align: center;
+        }
+
+        .score-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        .score-label {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        /* 生產線區域 */
+        .factory-area {
+            flex: 1;
+            position: relative;
+            background: #2a2a3e;
+            overflow: hidden;
+        }
+
+        .conveyor-belt {
+            position: absolute;
+            bottom: 200px;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            background: linear-gradient(90deg, #444 0%, #666 50%, #444 100%);
+            border-top: 3px solid #888;
+            border-bottom: 3px solid #888;
+        }
+
+        .belt-pattern {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 200%;
+            height: 4px;
+            background: repeating-linear-gradient(
+                90deg,
+                #ffff00 0px,
+                #ffff00 20px,
+                transparent 20px,
+                transparent 40px
+            );
+            transform: translateY(-50%);
+            animation: belt-move 1s linear infinite;
+        }
+
+        @keyframes belt-move {
+            0% { transform: translateX(0) translateY(-50%); }
+            100% { transform: translateX(-40px) translateY(-50%); }
+        }
+
+        .product {
+            position: absolute;
+            bottom: 215px;
+            width: 40px;
+            height: 50px;
+            background: linear-gradient(45deg, #00ff88, #00aa55);
+            border: 2px solid #ffffff;
+            border-radius: 4px;
+            transition: all 0.1s ease;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+
+        .product.defect {
+            background: linear-gradient(45deg, #ff4444, #aa2222);
+            box-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+        }
+
+        /* 控制面板 */
+        .control-panel {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 2px solid #00d4ff;
+        }
+
+        .control-group {
+            text-align: center;
+        }
+
+        .control-button {
+            background: linear-gradient(145deg, #4a4a6a, #2a2a4a);
+            border: 2px solid #00d4ff;
+            color: #ffffff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+            font-weight: bold;
+        }
+
+        .control-button:hover {
+            background: linear-gradient(145deg, #5a5a7a, #3a3a5a);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .control-button.active {
+            background: linear-gradient(145deg, #00d4ff, #0099cc);
+            color: #000;
+        }
+
+        .speed-display {
+            font-size: 18px;
+            color: #00ff88;
+            margin: 10px 0;
+        }
+
+        .indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin: 0 5px;
+        }
+
+        .indicator.green { background: #00ff88; }
+        .indicator.red { background: #ff4444; }
+        .indicator.yellow { background: #ffaa00; }
+
+        /* 遊戲開始/結束畫面 */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .overlay-content {
+            background: linear-gradient(145deg, #2a2a4a, #1a1a3a);
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid #00d4ff;
+        }
+
+        .start-button {
+            background: linear-gradient(145deg, #00ff88, #00aa55);
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .instructions {
+            text-align: left;
+            margin: 20px 0;
+            color: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- 標題欄 -->
+        <div class="header">
+            <div class="title">🏭 Factory Runner</div>
+            <div class="score-display">
+                <div class="score-item">
+                    <div class="score-value" id="production">0</div>
+                    <div class="score-label">產量</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value" id="quality">100%</div>
+                    <div class="score-label">良率</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value" id="score">0</div>
+                    <div class="score-label">分數</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value" id="timer">60</div>
+                    <div class="score-label">時間</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 生產線區域 -->
+        <div class="factory-area">
+            <div class="conveyor-belt">
+                <div class="belt-pattern"></div>
+            </div>
+        </div>
+
+        <!-- 控制面板 -->
+        <div class="control-panel">
+            <div class="control-group">
+                <div>傳送帶速度</div>
+                <button class="control-button" onclick="changeSpeed(-1)">減速</button>
+                <div class="speed-display" id="speed-display">中速</div>
+                <button class="control-button" onclick="changeSpeed(1)">加速</button>
+            </div>
+
+            <div class="control-group">
+                <div>品質檢測</div>
+                <button class="control-button" id="quality-btn" onclick="toggleQuality()">開啟檢測</button>
+                <div>
+                    <span class="indicator green"></span>
+                    <span class="indicator" id="quality-indicator"></span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div>設備維修</div>
+                <button class="control-button" id="repair-btn" onclick="repairMachine()">維修設備</button>
+                <div>
+                    <span class="indicator" id="machine-indicator"></span>
+                    機器狀態
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 遊戲開始畫面 -->
+    <div class="overlay" id="start-overlay">
+        <div class="overlay-content">
+            <h1>🏭 Factory Runner</h1>
+            <h3>智慧工廠生產線管理遊戲</h3>
+            
+            <div class="instructions">
+                <p><strong>遊戲目標：</strong> 在60秒內獲得最高分數</p>
+                <br>
+                <p><strong>操作說明：</strong></p>
+                <p>• <strong>傳送帶速度</strong>：影響產量，速度越快產量越高</p>
+                <p>• <strong>品質檢測</strong>：開啟後提升良率，但降低產量</p>
+                <p>• <strong>設備維修</strong>：機器故障時需要維修</p>
+                <br>
+                <p><strong>計分公式：</strong> 產量 × 良率 × 速度加成</p>
+            </div>
+
+            <button class="start-button" onclick="startGame()">開始遊戲</button>
+        </div>
+    </div>
+
+    <!-- 遊戲結束畫面 -->
+    <div class="overlay" id="end-overlay" style="display: none;">
+        <div class="overlay-content">
+            <h1>🎯 遊戲結束</h1>
+            <h2 id="final-score">最終分數：0</h2>
+            <div id="performance-analysis"></div>
+            <button class="start-button" onclick="restartGame()">再來一局</button>
+        </div>
+    </div>
+
+    <script>
+        // 遊戲狀態
+        let gameState = {
+            isRunning: false,
+            timeLeft: 60,
+            production: 0,
+            defectCount: 0,
+            score: 0,
+            beltSpeed: 1, // 0: 慢, 1: 中, 2: 快
+            qualityControl: false,
+            machineHealth: 100,
+            products: []
+        };
+
+        const speedSettings = [
+            { name: '慢速', multiplier: 0.5, production: 1 },
+            { name: '中速', multiplier: 1, production: 2 },
+            { name: '快速', multiplier: 1.5, production: 3 }
+        ];
+
+        let gameInterval, productInterval;
+
+        // 開始遊戲
+        function startGame() {
+            document.getElementById('start-overlay').style.display = 'none';
+            resetGame();
+            gameState.isRunning = true;
+            
+            // 主要遊戲循環
+            gameInterval = setInterval(() => {
+                updateTimer();
+                updateMachine();
+                updateUI();
+                calculateScore();
+                
+                if (gameState.timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+
+            // 產品生產循環
+            productInterval = setInterval(() => {
+                if (gameState.machineHealth > 0) {
+                    createProduct();
+                }
+            }, 2000 / speedSettings[gameState.beltSpeed].production);
+        }
+
+        // 重置遊戲
+        function resetGame() {
+            gameState.timeLeft = 60;
+            gameState.production = 0;
+            gameState.defectCount = 0;
+            gameState.score = 0;
+            gameState.machineHealth = 100;
+            gameState.products = [];
+            
+            // 清除所有產品
+            document.querySelectorAll('.product').forEach(p => p.remove());
+        }
+
+        // 創建產品
+        function createProduct() {
+            const product = document.createElement('div');
+            product.className = 'product';
+            
+            // 判斷是否為不良品
+            let defectChance = 0.2; // 基礎不良率20%
+            if (gameState.beltSpeed === 2) defectChance += 0.15; // 快速增加15%
+            if (gameState.qualityControl) defectChance *= 0.3; // 品檢降低70%
+            if (gameState.machineHealth < 50) defectChance += 0.2; // 機器故障增加20%
+            
+            const isDefect = Math.random() < defectChance;
+            if (isDefect) {
+                product.classList.add('defect');
+            }
+            
+            product.style.left = '-50px';
+            document.querySelector('.factory-area').appendChild(product);
+            
+            gameState.products.push({
+                element: product,
+                isDefect: isDefect,
+                processed: false
+            });
+            
+            // 移動產品
+            moveProduct(product, isDefect);
+        }
+
+        // 移動產品
+        function moveProduct(product, isDefect) {
+            let position = -50;
+            const speed = 2 * speedSettings[gameState.beltSpeed].multiplier;
+            
+            const moveInterval = setInterval(() => {
+                position += speed;
+                product.style.left = position + 'px';
+                
+                // 產品到達終點
+                if (position > window.innerWidth) {
+                    clearInterval(moveInterval);
+                    product.remove();
+                    
+                    // 計算產量
+                    gameState.production++;
+                    if (isDefect) {
+                        gameState.defectCount++;
+                    }
+                }
+            }, 50);
+        }
+
+        // 更新計時器
+        function updateTimer() {
+            gameState.timeLeft--;
+        }
+
+        // 更新機器狀態
+        function updateMachine() {
+            // 機器隨機故障
+            if (Math.random() < 0.05) {
+                gameState.machineHealth = Math.max(0, gameState.machineHealth - 10);
+            }
+        }
+
+        // 計算分數
+        function calculateScore() {
+            const qualityRate = gameState.production > 0 ? 
+                ((gameState.production - gameState.defectCount) / gameState.production) : 1;
+            
+            const speedBonus = speedSettings[gameState.beltSpeed].multiplier;
+            const qualityBonus = gameState.qualityControl ? 1.2 : 1;
+            
+            gameState.score = Math.floor(gameState.production * qualityRate * 100 * speedBonus * qualityBonus);
+        }
+
+        // 更新UI
+        function updateUI() {
+            document.getElementById('production').textContent = gameState.production;
+            
+            const qualityRate = gameState.production > 0 ? 
+                ((gameState.production - gameState.defectCount) / gameState.production * 100) : 100;
+            document.getElementById('quality').textContent = qualityRate.toFixed(1) + '%';
+            
+            document.getElementById('score').textContent = gameState.score;
+            document.getElementById('timer').textContent = gameState.timeLeft;
+            
+            // 更新速度顯示
+            document.getElementById('speed-display').textContent = speedSettings[gameState.beltSpeed].name;
+            
+            // 更新指示燈
+            const qualityIndicator = document.getElementById('quality-indicator');
+            qualityIndicator.className = 'indicator ' + (gameState.qualityControl ? 'green' : 'red');
+            
+            const machineIndicator = document.getElementById('machine-indicator');
+            if (gameState.machineHealth > 70) {
+                machineIndicator.className = 'indicator green';
+            } else if (gameState.machineHealth > 30) {
+                machineIndicator.className = 'indicator yellow';
+            } else {
+                machineIndicator.className = 'indicator red';
+            }
+            
+            // 更新傳送帶動畫速度
+            const beltPattern = document.querySelector('.belt-pattern');
+            const animationDuration = 1 / speedSettings[gameState.beltSpeed].multiplier;
+            beltPattern.style.animationDuration = animationDuration + 's';
+        }
+
+        // 改變速度
+        function changeSpeed(direction) {
+            gameState.beltSpeed = Math.max(0, Math.min(2, gameState.beltSpeed + direction));
+            
+            // 更新產品生產間隔
+            clearInterval(productInterval);
+            productInterval = setInterval(() => {
+                if (gameState.machineHealth > 0) {
+                    createProduct();
+                }
+            }, 2000 / speedSettings[gameState.beltSpeed].production);
+        }
+
+        // 切換品質檢測
+        function toggleQuality() {
+            gameState.qualityControl = !gameState.qualityControl;
+            const btn = document.getElementById('quality-btn');
+            btn.textContent = gameState.qualityControl ? '關閉檢測' : '開啟檢測';
+            btn.classList.toggle('active', gameState.qualityControl);
+        }
+
+        // 修理機器
+        function repairMachine() {
+            if (gameState.machineHealth < 100) {
+                gameState.machineHealth = Math.min(100, gameState.machineHealth + 30);
+                
+                // 維修動畫效果
+                const btn = document.getElementById('repair-btn');
+                btn.textContent = '維修中...';
+                btn.disabled = true;
+                
+                setTimeout(() => {
+                    btn.textContent = '維修設備';
+                    btn.disabled = false;
+                }, 1000);
+            }
+        }
+
+        // 結束遊戲
+        function endGame() {
+            gameState.isRunning = false;
+            clearInterval(gameInterval);
+            clearInterval(productInterval);
+            
+            // 顯示結果
+            const finalScoreEl = document.getElementById('final-score');
+            finalScoreEl.textContent = `最終分數：${gameState.score}`;
+            
+            // 分析表現
+            const analysisEl = document.getElementById('performance-analysis');
+            const qualityRate = gameState.production > 0 ? 
+                ((gameState.production - gameState.defectCount) / gameState.production * 100) : 100;
+            
+            let performance = '';
+            if (gameState.score > 5000) performance = '🏆 工廠經理級別！';
+            else if (gameState.score > 3000) performance = '🎯 優秀的生產管理！';
+            else if (gameState.score > 1500) performance = '👍 不錯的表現！';
+            else performance = '💪 還有改進空間！';
+            
+            analysisEl.innerHTML = `
+                <p><strong>表現評價：</strong> ${performance}</p>
+                <p>總產量：${gameState.production} 件</p>
+                <p>良品率：${qualityRate.toFixed(1)}%</p>
+                <p>平均速度：${speedSettings[gameState.beltSpeed].name}</p>
+            `;
+            
+            document.getElementById('end-overlay').style.display = 'flex';
+        }
+
+        // 重新開始
+        function restartGame() {
+            document.getElementById('end-overlay').style.display = 'none';
+            startGame();
+        }
+
+        // 初始化UI
+        updateUI();
+    </script>
+</body>
+</html>
