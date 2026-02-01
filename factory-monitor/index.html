@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智慧工廠人員監控系統 — A棟 2F</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+TC:wght@300;400;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0e1a;
+    color: #e0e6f0;
+    font-family: 'Noto Sans TC', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Header ── */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 32px;
+    background: linear-gradient(135deg, #0d1224 0%, #131a2e 100%);
+    border-bottom: 1px solid rgba(0, 200, 255, 0.15);
+  }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .header-left .logo {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, #00c8ff, #0066ff);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+  .header-left h1 {
+    font-family: 'Orbitron', monospace;
+    font-size: 18px;
+    letter-spacing: 2px;
+    background: linear-gradient(90deg, #00c8ff, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .header-left .subtitle { font-size: 12px; color: #6b7a99; margin-top: 2px; }
+  .header-right { display: flex; align-items: center; gap: 20px; }
+  .status-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #00ff88; box-shadow: 0 0 8px #00ff88;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .clock {
+    font-family: 'Orbitron', monospace;
+    font-size: 14px; color: #7b8db5;
+  }
+
+  /* ── Main Layout ── */
+  .main { display: flex; gap: 20px; padding: 20px 32px; height: calc(100vh - 72px); }
+
+  /* ── Stats Panel ── */
+  .stats-panel {
+    width: 260px; flex-shrink: 0;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .stat-card {
+    background: linear-gradient(145deg, #131a2e, #0f1525);
+    border: 1px solid rgba(0, 200, 255, 0.1);
+    border-radius: 16px;
+    padding: 20px;
+    position: relative; overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent, #00c8ff), transparent);
+  }
+  .stat-card .label { font-size: 12px; color: #6b7a99; margin-bottom: 8px; letter-spacing: 1px; }
+  .stat-card .value {
+    font-family: 'Orbitron', monospace;
+    font-size: 42px; font-weight: 900;
+    background: linear-gradient(180deg, #ffffff, var(--accent, #00c8ff));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .stat-card .unit { font-size: 14px; color: #6b7a99; margin-top: 4px; }
+  .stat-card.total { --accent: #00c8ff; }
+  .stat-card.enter { --accent: #00ff88; }
+  .stat-card.exit { --accent: #ff6b6b; }
+  .stat-card.alert { --accent: #ffaa00; }
+
+  .door-list {
+    flex: 1;
+    background: linear-gradient(145deg, #131a2e, #0f1525);
+    border: 1px solid rgba(0, 200, 255, 0.1);
+    border-radius: 16px;
+    padding: 16px;
+    overflow-y: auto;
+  }
+  .door-list h3 {
+    font-size: 12px; color: #6b7a99; letter-spacing: 1px;
+    margin-bottom: 12px; padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .door-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 12px; border-radius: 10px; margin-bottom: 6px;
+    background: rgba(255,255,255,0.02);
+    transition: background 0.3s;
+  }
+  .door-item:hover { background: rgba(0, 200, 255, 0.05); }
+  .door-item .name { font-size: 13px; font-weight: 700; }
+  .door-item .cam { font-size: 11px; color: #6b7a99; }
+  .door-item .count {
+    font-family: 'Orbitron', monospace;
+    display: flex; gap: 8px; font-size: 13px;
+  }
+  .door-item .in { color: #00ff88; }
+  .door-item .out { color: #ff6b6b; }
+
+  /* ── Floor Plan ── */
+  .floor-plan-container {
+    flex: 1;
+    background: linear-gradient(145deg, #131a2e, #0f1525);
+    border: 1px solid rgba(0, 200, 255, 0.1);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex; flex-direction: column;
+    position: relative;
+  }
+  .floor-plan-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 16px;
+  }
+  .floor-plan-header h2 {
+    font-size: 14px; color: #7b8db5; letter-spacing: 1px;
+  }
+  .floor-plan-header .floor-tag {
+    background: rgba(0, 200, 255, 0.1);
+    border: 1px solid rgba(0, 200, 255, 0.3);
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 11px; color: #00c8ff;
+    font-family: 'Orbitron', monospace;
+  }
+
+  .floor-plan {
+    flex: 1;
+    position: relative;
+    border: 2px solid rgba(0, 200, 255, 0.2);
+    border-radius: 8px;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(0, 200, 255, 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(167, 139, 250, 0.03) 0%, transparent 50%),
+      linear-gradient(rgba(0, 200, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 200, 255, 0.02) 1px, transparent 1px);
+    background-size: 100%, 100%, 40px 40px, 40px 40px;
+    overflow: hidden;
+  }
+
+  /* ── Zones ── */
+  .zone {
+    position: absolute;
+    border: 1px dashed rgba(0, 200, 255, 0.15);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: rgba(0, 200, 255, 0.3);
+    letter-spacing: 1px;
+  }
+  .zone-prod { left: 5%; top: 5%; width: 55%; height: 55%; background: rgba(0, 200, 255, 0.02); }
+  .zone-store { left: 65%; top: 5%; width: 30%; height: 40%; background: rgba(167, 139, 250, 0.02); border-color: rgba(167, 139, 250, 0.15); color: rgba(167, 139, 250, 0.3); }
+  .zone-office { left: 5%; top: 65%; width: 35%; height: 30%; background: rgba(0, 255, 136, 0.02); border-color: rgba(0, 255, 136, 0.15); color: rgba(0, 255, 136, 0.3); }
+  .zone-rest { left: 65%; top: 52%; width: 30%; height: 43%; background: rgba(255, 170, 0, 0.02); border-color: rgba(255, 170, 0, 0.15); color: rgba(255, 170, 0, 0.3); }
+
+  /* ── Doors ── */
+  .door {
+    position: absolute;
+    display: flex; flex-direction: column; align-items: center;
+    cursor: pointer; z-index: 10;
+    transition: transform 0.2s;
+  }
+  .door:hover { transform: scale(1.15); }
+  .door-icon {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    position: relative;
+    border: 2px solid;
+  }
+  .door-icon::after {
+    content: '';
+    position: absolute;
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    border: 2px solid;
+    animation: door-ping 2s infinite;
+    opacity: 0;
+  }
+  @keyframes door-ping {
+    0% { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(1.8); opacity: 0; }
+  }
+  .door.active .door-icon { background: rgba(0, 255, 136, 0.15); border-color: #00ff88; }
+  .door.active .door-icon::after { border-color: #00ff88; }
+  .door.idle .door-icon { background: rgba(0, 200, 255, 0.1); border-color: #0088cc; }
+  .door.idle .door-icon::after { animation: none; }
+
+  .door-label {
+    margin-top: 4px;
+    font-size: 10px; font-weight: 700;
+    padding: 2px 8px;
+    background: rgba(0,0,0,0.6);
+    border-radius: 10px;
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── Camera indicators ── */
+  .cam-dots {
+    display: flex; gap: 3px; margin-top: 2px;
+  }
+  .cam-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #00ff88;
+    box-shadow: 0 0 4px #00ff88;
+  }
+  .cam-dot.offline { background: #ff4444; box-shadow: 0 0 4px #ff4444; }
+
+  /* ── People dots ── */
+  .person {
+    position: absolute;
+    width: 10px; height: 10px;
+    background: #00c8ff;
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(0, 200, 255, 0.6);
+    transition: all 2s ease;
+    z-index: 5;
+  }
+  .person::after {
+    content: '';
+    position: absolute;
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    background: #00c8ff;
+    animation: person-pulse 2s infinite;
+  }
+  @keyframes person-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.6; }
+    50% { transform: scale(2); opacity: 0; }
+  }
+
+  /* ── Activity Log ── */
+  .activity-log {
+    width: 280px; flex-shrink: 0;
+    background: linear-gradient(145deg, #131a2e, #0f1525);
+    border: 1px solid rgba(0, 200, 255, 0.1);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex; flex-direction: column;
+  }
+  .activity-log h3 {
+    font-size: 12px; color: #6b7a99; letter-spacing: 1px;
+    margin-bottom: 12px; padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .log-entries { flex: 1; overflow-y: auto; }
+  .log-entry {
+    padding: 8px 10px; margin-bottom: 4px;
+    border-radius: 8px; font-size: 12px;
+    background: rgba(255,255,255,0.02);
+    display: flex; gap: 8px; align-items: flex-start;
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .log-entry .time { color: #4a5a78; font-family: 'Orbitron', monospace; font-size: 10px; white-space: nowrap; margin-top: 1px; }
+  .log-entry .icon { font-size: 14px; }
+  .log-entry .text { color: #8b9bc0; }
+  .log-entry .text strong { color: #e0e6f0; }
+
+  /* ── Capacity Bar ── */
+  .capacity-section { margin-top: auto; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); }
+  .capacity-label { display: flex; justify-content: space-between; font-size: 11px; color: #6b7a99; margin-bottom: 6px; }
+  .capacity-bar { height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; }
+  .capacity-fill {
+    height: 100%; border-radius: 3px;
+    background: linear-gradient(90deg, #00ff88, #00c8ff);
+    transition: width 0.8s ease;
+  }
+  .capacity-fill.warning { background: linear-gradient(90deg, #ffaa00, #ff6b6b); }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(0,200,255,0.2); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-left">
+    <div class="logo">🏭</div>
+    <div>
+      <h1>SMART FACTORY</h1>
+      <div class="subtitle">智慧工廠人員監控系統 v1.0</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div class="status-dot"></div>
+      <span style="font-size:12px;color:#00ff88;">系統正常</span>
+    </div>
+    <div class="clock" id="clock">--:--:--</div>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- Left: Stats -->
+  <div class="stats-panel">
+    <div class="stat-card total">
+      <div class="label">📡 廠區即時人數</div>
+      <div class="value" id="total-count">0</div>
+      <div class="unit">人在廠區內</div>
+    </div>
+    <div class="stat-card enter">
+      <div class="label">🟢 今日累計進入</div>
+      <div class="value" id="enter-count" style="font-size:32px;">0</div>
+    </div>
+    <div class="stat-card exit">
+      <div class="label">🔴 今日累計離開</div>
+      <div class="value" id="exit-count" style="font-size:32px;">0</div>
+    </div>
+    <div class="stat-card alert">
+      <div class="label">⚠️ 人數上限</div>
+      <div class="value" id="max-cap" style="font-size:32px;">50</div>
+    </div>
+    <div class="door-list">
+      <h3>🚪 各門即時狀態</h3>
+      <div id="door-list-items"></div>
+    </div>
+  </div>
+
+  <!-- Center: Floor Plan -->
+  <div class="floor-plan-container">
+    <div class="floor-plan-header">
+      <h2>📐 A棟 2F — 作業區平面圖</h2>
+      <div class="floor-tag">BUILDING A · 2F</div>
+    </div>
+    <div class="floor-plan" id="floor-plan">
+      <!-- Zones -->
+      <div class="zone zone-prod">生產區 PRODUCTION</div>
+      <div class="zone zone-store">倉儲區 STORAGE</div>
+      <div class="zone zone-office">辦公區 OFFICE</div>
+      <div class="zone zone-rest">休息區 REST AREA</div>
+      <!-- Doors & People injected by JS -->
+    </div>
+  </div>
+
+  <!-- Right: Activity Log -->
+  <div class="activity-log">
+    <h3>📋 即時進出紀錄</h3>
+    <div class="log-entries" id="log-entries"></div>
+    <div class="capacity-section">
+      <div class="capacity-label">
+        <span>廠區容量</span>
+        <span id="capacity-pct">0%</span>
+      </div>
+      <div class="capacity-bar">
+        <div class="capacity-fill" id="capacity-fill" style="width:0%"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── Config ──
+const DOORS = [
+  { id: 'D1', name: '北門 N-Gate', x: 30, y: 0,  camCount: 2 },
+  { id: 'D2', name: '東門 E-Gate', x: 97, y: 25, camCount: 2 },
+  { id: 'D3', name: '南門 S-Gate', x: 50, y: 97, camCount: 2 },
+  { id: 'D4', name: '西門 W-Gate', x: 0,  y: 60, camCount: 2 },
+  { id: 'D5', name: '貨梯 Freight',x: 97, y: 75, camCount: 2 },
+];
+const MAX_CAPACITY = 50;
+const NAMES = ['王大明','李小華','張美玲','陳志強','林雅婷','黃建國','吳淑芬','劉德華','蔡依林','周杰倫','趙小敏','孫國強','鄭秀文','謝安真','何志偉','方大同'];
+
+let state = { total: 0, entered: 0, exited: 0, people: [], logs: [] };
+
+// ── Init Doors on Map ──
+function initDoors() {
+  const plan = document.getElementById('floor-plan');
+  const listEl = document.getElementById('door-list-items');
+
+  DOORS.forEach(d => {
+    // Map door
+    const el = document.createElement('div');
+    el.className = 'door idle';
+    el.id = `door-${d.id}`;
+    el.style.cssText = `left:${d.x}%;top:${d.y}%;transform:translate(-50%,-50%);`;
+    el.innerHTML = `
+      <div class="door-icon">🚪</div>
+      <div class="door-label">${d.id}</div>
+      <div class="cam-dots">${Array(d.camCount).fill('<div class="cam-dot"></div>').join('')}</div>
+    `;
+    plan.appendChild(el);
+
+    // List item
+    const li = document.createElement('div');
+    li.className = 'door-item';
+    li.id = `list-${d.id}`;
+    li.innerHTML = `
+      <div><div class="name">${d.id} ${d.name.split(' ')[0]}</div><div class="cam">📹 ${d.camCount} cams</div></div>
+      <div class="count"><span class="in" id="in-${d.id}">↑0</span><span class="out" id="out-${d.id}">↓0</span></div>
+    `;
+    listEl.appendChild(li);
+  });
+}
+
+// ── Add Person ──
+function addPerson() {
+  const plan = document.getElementById('floor-plan');
+  const door = DOORS[Math.floor(Math.random() * DOORS.length)];
+  const name = NAMES[Math.floor(Math.random() * NAMES.length)];
+  const id = `p-${Date.now()}-${Math.random().toString(36).substr(2,4)}`;
+
+  const el = document.createElement('div');
+  el.className = 'person';
+  el.id = id;
+  el.style.left = door.x + '%';
+  el.style.top = door.y + '%';
+  plan.appendChild(el);
+
+  // Move to random zone position
+  setTimeout(() => {
+    el.style.left = (10 + Math.random() * 80) + '%';
+    el.style.top = (10 + Math.random() * 80) + '%';
+  }, 100);
+
+  state.people.push({ id, name, door: door.id, time: Date.now() });
+  state.total++;
+  state.entered++;
+
+  // Activate door
+  const doorEl = document.getElementById(`door-${door.id}`);
+  doorEl.className = 'door active';
+  setTimeout(() => doorEl.className = 'door idle', 2000);
+
+  addLog('enter', name, door);
+  updateUI();
+}
+
+// ── Remove Person ──
+function removePerson() {
+  if (state.people.length === 0) return;
+  const idx = Math.floor(Math.random() * state.people.length);
+  const p = state.people[idx];
+  const door = DOORS[Math.floor(Math.random() * DOORS.length)];
+
+  const el = document.getElementById(p.id);
+  if (el) {
+    el.style.left = door.x + '%';
+    el.style.top = door.y + '%';
+    el.style.background = '#ff6b6b';
+    el.style.boxShadow = '0 0 8px rgba(255,107,107,0.6)';
+    setTimeout(() => el.remove(), 1500);
+  }
+
+  state.people.splice(idx, 1);
+  state.total--;
+  state.exited++;
+
+  const doorEl = document.getElementById(`door-${door.id}`);
+  doorEl.className = 'door active';
+  setTimeout(() => doorEl.className = 'door idle', 2000);
+
+  addLog('exit', p.name, door);
+  updateUI();
+}
+
+// ── Log ──
+function addLog(type, name, door) {
+  const now = new Date();
+  const time = now.toTimeString().substr(0, 8);
+  const icon = type === 'enter' ? '🟢' : '🔴';
+  const action = type === 'enter' ? '進入' : '離開';
+
+  const el = document.getElementById('log-entries');
+  const entry = document.createElement('div');
+  entry.className = 'log-entry';
+  entry.innerHTML = `<span class="time">${time}</span><span class="icon">${icon}</span><span class="text"><strong>${name}</strong> 由 ${door.id} ${action}</span>`;
+  el.insertBefore(entry, el.firstChild);
+
+  if (el.children.length > 50) el.lastChild.remove();
+}
+
+// ── Update UI ──
+function updateUI() {
+  document.getElementById('total-count').textContent = state.total;
+  document.getElementById('enter-count').textContent = state.entered;
+  document.getElementById('exit-count').textContent = state.exited;
+
+  const pct = Math.min(100, Math.round((state.total / MAX_CAPACITY) * 100));
+  document.getElementById('capacity-pct').textContent = pct + '%';
+  const fill = document.getElementById('capacity-fill');
+  fill.style.width = pct + '%';
+  fill.className = pct > 80 ? 'capacity-fill warning' : 'capacity-fill';
+
+  // Update door counts
+  DOORS.forEach(d => {
+    const inCount = state.people.filter(p => p.door === d.id).length;
+    document.getElementById(`in-${d.id}`).textContent = `↑${inCount}`;
+  });
+}
+
+// ── Clock ──
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent = now.toTimeString().substr(0, 8);
+}
+
+// ── Simulation ──
+function simulate() {
+  const action = Math.random();
+  if (state.total < 5 || (action < 0.6 && state.total < MAX_CAPACITY)) {
+    addPerson();
+  } else if (state.total > 0) {
+    removePerson();
+  }
+}
+
+// ── Init ──
+initDoors();
+updateClock();
+setInterval(updateClock, 1000);
+
+// Initial population
+for (let i = 0; i < 12; i++) setTimeout(() => addPerson(), i * 300);
+
+// Ongoing simulation
+setInterval(simulate, 2500 + Math.random() * 2000);
+
+// Random movement of existing people
+setInterval(() => {
+  state.people.forEach(p => {
+    if (Math.random() > 0.7) {
+      const el = document.getElementById(p.id);
+      if (el) {
+        el.style.left = (10 + Math.random() * 80) + '%';
+        el.style.top = (10 + Math.random() * 80) + '%';
+      }
+    }
+  });
+}, 3000);
+</script>
+</body>
+</html>

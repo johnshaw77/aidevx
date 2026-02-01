@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>John Hsiao — Projects</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Noto+Sans+TC:wght@300;400;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0b0f19;
+    color: #c8cdd8;
+    font-family: 'Inter', 'Noto Sans TC', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+  }
+
+  .container {
+    max-width: 480px;
+    width: 100%;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .header h1 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #f0f2f6;
+    letter-spacing: 0.02em;
+  }
+
+  .header p {
+    margin-top: 8px;
+    font-size: 0.9rem;
+    color: #6b7280;
+    font-weight: 300;
+  }
+
+  .projects {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .project-link {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    text-decoration: none;
+    color: #c8cdd8;
+    transition: all 0.2s ease;
+  }
+
+  .project-link:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.12);
+    transform: translateY(-1px);
+  }
+
+  .project-icon {
+    font-size: 1.4rem;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 10px;
+    flex-shrink: 0;
+  }
+
+  .project-info {
+    flex: 1;
+  }
+
+  .project-name {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #e8ecf2;
+  }
+
+  .project-desc {
+    font-size: 0.78rem;
+    color: #6b7280;
+    margin-top: 2px;
+  }
+
+  .project-arrow {
+    color: #3b3f4a;
+    font-size: 1.1rem;
+    transition: color 0.2s;
+  }
+
+  .project-link:hover .project-arrow {
+    color: #6b7280;
+  }
+
+  .footer {
+    text-align: center;
+    margin-top: 48px;
+    font-size: 0.75rem;
+    color: #3b3f4a;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>John Hsiao</h1>
+      <p>Projects & Experiments</p>
+    </div>
+
+    <div class="projects">
+      <a href="/factory-monitor/" class="project-link">
+        <div class="project-icon">🏭</div>
+        <div class="project-info">
+          <div class="project-name">智慧工廠監控系統</div>
+          <div class="project-desc">Factory floor personnel monitoring dashboard</div>
+        </div>
+        <div class="project-arrow">→</div>
+      </a>
+
+      <!-- 未來新增更多專案，複製下方模板即可
+      <a href="/new-project/" class="project-link">
+        <div class="project-icon">🚀</div>
+        <div class="project-info">
+          <div class="project-name">新專案名稱</div>
+          <div class="project-desc">Short description here</div>
+        </div>
+        <div class="project-arrow">→</div>
+      </a>
+      -->
+    </div>
+
+    <div class="footer">built with curiosity</div>
+  </div>
+</body>
+</html>

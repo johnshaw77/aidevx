@@ -1,0 +1,983 @@
+/* 客製化樣式 */
+:root {
+  --tblr-primary: #206bc4;
+  --tblr-primary-rgb: 32, 107, 196;
+
+  /* 科技風格色彩 */
+  --tech-blue-1: #0062ff;
+  --tech-blue-2: #00c6ff;
+  --tech-purple: #7c4dff;
+  --tech-cyan: #00e5ff;
+  --tech-glow: rgba(0, 198, 255, 0.5);
+}
+
+.timeline-item {
+  position: relative;
+  padding-left: 2.5rem;
+  padding-bottom: 2rem;
+}
+
+.timeline-item:before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--tblr-border-color);
+}
+
+.timeline-item:after {
+  content: "";
+  position: absolute;
+  left: -4px;
+  top: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--tblr-primary);
+  border: 2px solid var(--tblr-body-bg);
+}
+
+.hero-section {
+  position: relative;
+  background-image: linear-gradient(
+      135deg,
+      rgba(32, 107, 196, 0.8),
+      rgba(76, 82, 175, 0.9),
+      rgba(37, 99, 235, 0.85)
+    ),
+    url("https://source.unsplash.com/random/1600x900/?technology");
+  background-size: cover;
+  background-position: center;
+  color: white;
+  padding: 8rem 0;
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* 網格紋理層 */
+.hero-section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: linear-gradient(
+      rgba(255, 255, 255, 0.05) 1px,
+      transparent 1px
+    ),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  z-index: -1;
+}
+
+/* 浮動粒子效果 */
+.hero-section::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: radial-gradient(
+      circle at 30% 40%,
+      rgba(255, 255, 255, 0.3) 1px,
+      transparent 1px
+    ),
+    radial-gradient(
+      circle at 70% 60%,
+      rgba(255, 255, 255, 0.3) 1px,
+      transparent 1px
+    ),
+    radial-gradient(
+      circle at 40% 80%,
+      rgba(255, 255, 255, 0.3) 1px,
+      transparent 1px
+    ),
+    radial-gradient(
+      circle at 80% 10%,
+      rgba(255, 255, 255, 0.3) 1px,
+      transparent 1px
+    );
+  background-size: 100px 100px, 150px 150px, 80px 80px, 120px 120px;
+  background-position: 0 0, 0 0, 0 0, 0 0;
+  animation: heroParticlesFloat 15s infinite linear;
+  opacity: 0.5;
+  z-index: -1;
+}
+
+@keyframes heroParticlesFloat {
+  0% {
+    background-position: 0 0, 0 0, 0 0, 0 0;
+  }
+  100% {
+    background-position: 100px 100px, -150px 150px, 80px -80px, -120px 120px;
+  }
+}
+
+.portfolio-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(var(--tblr-primary-rgb), 0.1);
+}
+
+.portfolio-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--tech-blue-1),
+    var(--tech-blue-2),
+    var(--tech-purple)
+  );
+  opacity: 0.8;
+  transition: height 0.3s ease;
+}
+
+.portfolio-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(32, 107, 196, 0.15);
+}
+
+.portfolio-card:hover::before {
+  height: 5px;
+}
+
+.nav-item {
+  position: relative;
+}
+
+.nav-link.active:after {
+  content: "";
+  position: absolute;
+  left: 0.5rem;
+  right: 0.5rem;
+  bottom: -3px;
+  height: 2px;
+  background: var(--tblr-primary);
+}
+
+/* 暗黑模式樣式 */
+:root.theme-dark,
+.theme-dark {
+  --tblr-primary: #3b82f6;
+  --tblr-primary-rgb: 59, 130, 246;
+  --tblr-body-bg: #111827;
+  --tblr-body-color: #f3f4f6;
+  --tblr-card-bg: #1f2937;
+  --tblr-border-color: #374151;
+  --tblr-muted: #9ca3af;
+  --tblr-card-border-color: #374151;
+  --tblr-link-color: #60a5fa;
+  --tblr-heading-color: #f9fafb;
+  --tblr-bg-surface: #1f2937;
+  --tblr-bg-surface-secondary: #111827;
+  --tblr-bg-surface-dark: #111827;
+  --tblr-bg-surface-darker: #0f172a;
+  color-scheme: dark;
+}
+
+.theme-dark .bg-white,
+.theme-dark .bg-body-tertiary,
+.theme-dark .bg-body-secondary,
+.theme-dark .bg-body {
+  background-color: var(--tblr-card-bg) !important;
+}
+
+.theme-dark .text-dark {
+  color: var(--tblr-body-color) !important;
+}
+
+.theme-dark .bg-transparent {
+  background-color: transparent !important;
+}
+
+.theme-dark .card-borderless {
+  border: none !important;
+}
+
+.theme-dark .navbar-light {
+  background-color: rgba(17, 24, 39, 0.95) !important;
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--tblr-border-color);
+}
+
+.theme-dark .navbar-light .navbar-brand,
+.theme-dark .navbar-light .nav-link {
+  color: var(--tblr-body-color) !important;
+}
+
+.theme-dark .navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 255, 255, 0.8)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+.theme-dark .hero-section {
+  background-image: linear-gradient(
+      135deg,
+      rgba(30, 64, 175, 0.9),
+      rgba(79, 70, 229, 0.9),
+      rgba(17, 24, 39, 0.85)
+    ),
+    url("https://source.unsplash.com/random/1600x900/?technology,dark");
+  position: relative;
+}
+
+/* 暗黑模式下網格效果增強 */
+.theme-dark .hero-section::before {
+  background-image: linear-gradient(
+      rgba(255, 255, 255, 0.07) 1px,
+      transparent 1px
+    ),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+  background-size: 30px 30px;
+  opacity: 0.7;
+}
+
+/* 暗黑模式下粒子效果增強 */
+.theme-dark .hero-section::after {
+  background-image: radial-gradient(
+      circle at 30% 40%,
+      rgba(66, 153, 225, 0.5) 1px,
+      transparent 2px
+    ),
+    radial-gradient(
+      circle at 70% 60%,
+      rgba(129, 140, 248, 0.5) 1px,
+      transparent 2px
+    ),
+    radial-gradient(
+      circle at 40% 80%,
+      rgba(99, 179, 237, 0.5) 1px,
+      transparent 1px
+    ),
+    radial-gradient(
+      circle at 80% 10%,
+      rgba(147, 197, 253, 0.5) 1px,
+      transparent 2px
+    );
+  opacity: 0.7;
+}
+
+/* 確保所有卡片都能在黑暗模式下正常顯示 */
+.theme-dark .card,
+.theme-dark .timeline-item {
+  background-color: var(--tblr-card-bg);
+  border-color: var(--tblr-card-border-color);
+  color: var(--tblr-body-color);
+  background-image: linear-gradient(
+    to bottom,
+    rgba(31, 41, 55, 0.8),
+    rgba(17, 24, 39, 0.9)
+  );
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(5px);
+}
+
+.theme-dark .portfolio-card::before {
+  opacity: 1;
+  box-shadow: 0 0 10px var(--tech-glow);
+}
+
+.theme-dark .portfolio-card:hover {
+  box-shadow: 0 10px 25px rgba(var(--tblr-primary-rgb), 0.3),
+    0 0 5px var(--tech-glow);
+}
+
+.theme-dark .timeline-item::before {
+  background-color: var(--tblr-border-color);
+}
+
+.theme-dark .timeline-item::after {
+  border-color: var(--tblr-card-bg);
+  box-shadow: 0 0 10px var(--tech-glow);
+}
+
+.theme-dark .text-muted {
+  color: var(--tblr-muted) !important;
+}
+
+.theme-dark .footer-transparent {
+  background-color: transparent;
+  border-top: 1px solid var(--tblr-border-color);
+}
+
+.theme-dark .link-secondary {
+  color: #d1d5db !important;
+}
+
+.theme-dark .link-secondary:hover {
+  color: #f3f4f6 !important;
+}
+
+.theme-dark .form-control,
+.theme-dark .form-select {
+  background-color: rgba(17, 24, 39, 0.8);
+  border-color: #4b5563;
+  color: var(--tblr-body-color);
+}
+
+.theme-dark .form-control::placeholder {
+  color: #9ca3af;
+}
+
+.theme-dark .form-control:focus {
+  background-color: rgba(17, 24, 39, 0.9);
+  border-color: var(--tblr-primary);
+}
+
+.theme-dark .badge.bg-primary-lt,
+.theme-dark span.badge.bg-primary-lt {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+  border: 1px solid #333333 !important;
+  transition: all 0.3s ease;
+}
+
+.theme-dark .badge.bg-primary-lt:hover,
+.theme-dark span.badge.bg-primary-lt:hover {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+.theme-dark .page-wrapper {
+  background-color: var(--tblr-body-bg);
+}
+
+/* 解決職業經歷區塊在暗黑模式下的顯示問題 */
+.theme-dark #experience .card {
+  background-color: var(--tblr-card-bg);
+}
+
+/* 科技感 Avatar 樣式 */
+.avatar.bg-primary-lt,
+.avatar.bg-primary {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    var(--tech-blue-1),
+    var(--tech-blue-2)
+  ) !important;
+  box-shadow: 0 0 15px var(--tech-glow);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+/* 科技感紋理和光澤效果 */
+.avatar.bg-primary-lt::before,
+.avatar.bg-primary::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+      45deg,
+      transparent 48%,
+      rgba(255, 255, 255, 0.1) 50%,
+      transparent 52%
+    ),
+    linear-gradient(
+      -45deg,
+      transparent 48%,
+      rgba(255, 255, 255, 0.1) 50%,
+      transparent 52%
+    );
+  background-size: 10px 10px;
+  opacity: 0.3;
+}
+
+/* 霓虹邊緣效果 */
+.avatar.bg-primary-lt::after,
+.avatar.bg-primary::after {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(
+    45deg,
+    var(--tech-blue-1),
+    var(--tech-purple),
+    var(--tech-cyan),
+    var(--tech-blue-2)
+  );
+  background-size: 400% 400%;
+  z-index: -1;
+  filter: blur(5px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  animation: gradientBG 10s ease infinite;
+}
+
+/* 懸停效果 */
+.avatar.bg-primary-lt:hover,
+.avatar.bg-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px var(--tech-glow);
+}
+
+.avatar.bg-primary-lt:hover::after,
+.avatar.bg-primary:hover::after {
+  opacity: 0.7;
+}
+
+/* 動畫效果 */
+@keyframes gradientBG {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* 卡片內的 icon 樣式調整 */
+.avatar.bg-primary-lt i,
+.avatar.bg-primary i {
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
+}
+
+/* 暗黑模式下特定調整 */
+.theme-dark .avatar.bg-primary-lt,
+.theme-dark .avatar.bg-primary {
+  box-shadow: 0 0 20px rgba(var(--tblr-primary-rgb), 0.4);
+}
+
+.theme-dark .avatar.bg-primary-lt:hover,
+.theme-dark .avatar.bg-primary:hover {
+  box-shadow: 0 0 30px rgba(var(--tblr-primary-rgb), 0.6);
+}
+
+/* 調整其他顏色的 avatar */
+.avatar.bg-green-lt {
+  background: linear-gradient(135deg, #099268, #10b981) !important;
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.avatar.bg-purple-lt {
+  background: linear-gradient(135deg, #7928ca, #9333ea) !important;
+  box-shadow: 0 0 15px rgba(147, 51, 234, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+/* 為其他顏色添加同樣的懸停和紋理效果 */
+.avatar.bg-green-lt::before,
+.avatar.bg-purple-lt::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+      45deg,
+      transparent 48%,
+      rgba(255, 255, 255, 0.1) 50%,
+      transparent 52%
+    ),
+    linear-gradient(
+      -45deg,
+      transparent 48%,
+      rgba(255, 255, 255, 0.1) 50%,
+      transparent 52%
+    );
+  background-size: 10px 10px;
+  opacity: 0.3;
+}
+
+.avatar.bg-green-lt:hover,
+.avatar.bg-purple-lt:hover {
+  transform: translateY(-2px);
+}
+
+/* 主題切換按鈕樣式 */
+.theme-light .hide-theme-light {
+  display: none;
+}
+
+.theme-dark .hide-theme-dark {
+  display: none;
+}
+
+#theme-toggle-light,
+#theme-toggle-dark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+#theme-toggle-light:hover,
+#theme-toggle-dark:hover {
+  background-color: rgba(var(--tblr-primary-rgb), 0.1);
+  color: var(--tblr-primary) !important;
+  transform: rotate(15deg);
+}
+
+.theme-dark #theme-toggle-light {
+  color: #fff !important;
+}
+
+.theme-light #theme-toggle-dark {
+  color: #1f2937 !important;
+}
+
+/* 科技風格輔助類別 */
+.tech-glow {
+  position: relative;
+}
+
+.tech-glow::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    circle at center,
+    var(--tech-glow),
+    transparent 70%
+  );
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+.tech-glow:hover::after {
+  opacity: 0.7;
+}
+
+/* 科技線條背景 */
+.tech-grid-bg {
+  position: relative;
+  overflow: hidden;
+}
+
+.tech-grid-bg::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: linear-gradient(
+      rgba(var(--tblr-primary-rgb), 0.1) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(var(--tblr-primary-rgb), 0.1) 1px,
+      transparent 1px
+    );
+  background-size: 20px 20px;
+  pointer-events: none;
+  opacity: 0.3;
+  z-index: 0;
+}
+
+/* 脈衝動畫 */
+.pulse-animation {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 var(--tech-glow);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(var(--tblr-primary-rgb), 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(var(--tblr-primary-rgb), 0);
+  }
+}
+
+/* 數據流動畫 */
+.data-flow {
+  position: relative;
+  overflow: hidden;
+}
+
+.data-flow::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  right: -50%;
+  bottom: -50%;
+  background: linear-gradient(
+    to bottom,
+    transparent 20%,
+    var(--tech-blue-2) 40%,
+    var(--tech-blue-2) 50%,
+    transparent 70%
+  );
+  opacity: 0.05;
+  transform: rotate(45deg) translateY(-100%);
+  animation: dataFlow 3s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes dataFlow {
+  0% {
+    transform: rotate(45deg) translateY(-100%);
+  }
+  100% {
+    transform: rotate(45deg) translateY(100%);
+  }
+}
+
+/* 顯示卡片輪廓 */
+.theme-dark .border-glow {
+  border-color: rgba(var(--tblr-primary-rgb), 0.2) !important;
+  box-shadow: 0 0 15px rgba(var(--tblr-primary-rgb), 0.1);
+  transition: all 0.3s ease;
+}
+
+.theme-dark .border-glow:hover {
+  border-color: rgba(var(--tblr-primary-rgb), 0.5) !important;
+  box-shadow: 0 0 20px rgba(var(--tblr-primary-rgb), 0.3);
+}
+
+/* 為 avatar 添加微粒子效果 */
+.avatar.particle-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.avatar.particle-effect::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  background-image: radial-gradient(circle, #fff 1px, transparent 1px);
+  background-size: 10px 10px;
+  opacity: 0.1;
+  animation: particleFloat 20s infinite linear;
+}
+
+@keyframes particleFloat {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 100px 100px;
+  }
+}
+
+/* Hero Section 裝飾元素和動態效果 */
+.hero-decorations {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* 幾何形狀元素 */
+.hero-shape {
+  position: absolute;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  opacity: 0.3;
+  transform-origin: center;
+}
+
+.hero-shape-1 {
+  top: 20%;
+  left: 10%;
+  width: 300px;
+  height: 300px;
+  animation: rotateShape 25s infinite linear;
+}
+
+.hero-shape-2 {
+  top: 40%;
+  right: 8%;
+  width: 200px;
+  height: 200px;
+  animation: pulseShape 15s infinite ease-in-out;
+}
+
+.hero-shape-3 {
+  bottom: 15%;
+  left: 15%;
+  width: 150px;
+  height: 150px;
+  border-radius: 4px;
+  transform: rotate(45deg);
+  animation: floatShape 20s infinite alternate ease-in-out;
+}
+
+.hero-shape-4 {
+  top: 10%;
+  right: 25%;
+  width: 100px;
+  height: 100px;
+  border-radius: 8px;
+  animation: rotateFloatShape 30s infinite linear;
+}
+
+/* 光線束效果 */
+.hero-light-beams {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.light-beam {
+  position: absolute;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transform: rotate(45deg);
+}
+
+.light-beam-1 {
+  top: -100px;
+  left: -100px;
+  width: 200%;
+  height: 200px;
+  animation: moveBeam1 15s infinite alternate ease-in-out;
+}
+
+.light-beam-2 {
+  bottom: -100px;
+  right: -100px;
+  width: 200%;
+  height: 200px;
+  transform: rotate(-45deg);
+  animation: moveBeam2 20s infinite alternate ease-in-out;
+}
+
+/* 標題動畫效果 */
+.hero-title {
+  position: relative;
+  z-index: 2;
+  text-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+  letter-spacing: 1px;
+  display: inline-block;
+}
+
+.hero-title::after {
+  content: "";
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 3px;
+  background: linear-gradient(to right, transparent, #fff, transparent);
+  animation: titleUnderline 3s ease-in-out infinite;
+}
+
+.hero-subtitle {
+  position: relative;
+  z-index: 2;
+  opacity: 0.9;
+  letter-spacing: 0.5px;
+}
+
+@keyframes titleUnderline {
+  0%,
+  100% {
+    width: 0;
+    opacity: 0;
+  }
+  50% {
+    width: 50%;
+    opacity: 1;
+  }
+}
+
+/* 暗黑模式下的標題效果 */
+.theme-dark .hero-title::after {
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--tech-blue-2),
+    transparent
+  );
+  box-shadow: 0 0 10px var(--tech-glow);
+}
+
+.theme-dark .hero-title {
+  text-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+  background: linear-gradient(to right, #ffffff, #93c5fd);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* 滑鼠懸停效果 */
+.hero-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* 暗黑模式下的 Hero Section 效果增強 */
+.theme-dark .hero-shape {
+  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+}
+
+.theme-dark .hero-shape-1 {
+  background: radial-gradient(
+    circle at center,
+    rgba(59, 130, 246, 0.1) 0%,
+    transparent 70%
+  );
+}
+
+.theme-dark .hero-shape-2 {
+  background: radial-gradient(
+    circle at center,
+    rgba(99, 102, 241, 0.1) 0%,
+    transparent 70%
+  );
+}
+
+.theme-dark .hero-shape-3 {
+  background: radial-gradient(
+    circle at center,
+    rgba(79, 70, 229, 0.1) 0%,
+    transparent 70%
+  );
+}
+
+.theme-dark .light-beam-1 {
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(59, 130, 246, 0.1),
+    transparent
+  );
+}
+
+.theme-dark .light-beam-2 {
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(99, 102, 241, 0.1),
+    transparent
+  );
+}
+
+.theme-dark .hero-title {
+  text-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+/* 霓虹效果 */
+.theme-dark .hero-btn:hover {
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+}
+
+/* 暗黑模式下的數字雨效果 */
+.theme-dark .hero-section {
+  position: relative;
+}
+
+.theme-dark .hero-section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: linear-gradient(
+      rgba(59, 130, 246, 0.05) 1px,
+      transparent 1px
+    ),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+  z-index: -1;
+}
+
+/* 頭像照片樣式 */
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 4px solid var(--tblr-primary);
+  box-shadow: 0 0 15px rgba(var(--tblr-primary-rgb), 0.3);
+  transition: all 0.3s ease;
+}
+
+.avatar-img:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(var(--tblr-primary-rgb), 0.5);
+}
+
+/* 暗黑模式頭像特效 */
+.theme-dark .avatar-img {
+  border-color: var(--tech-blue-1);
+  box-shadow: 0 0 15px var(--tech-glow);
+}
+
+.theme-dark .avatar-img:hover {
+  box-shadow: 0 0 25px var(--tech-glow), 0 0 5px var(--tech-cyan);
+}
+
+/* 主題切換按鈕樣式 */
+
+/* 打字機效果的光標樣式 */
+.cursor-blink {
+  display: inline-block;
+  opacity: 1;
+  margin-left: 2px;
+  font-weight: 400;
+  animation: cursor-blink 1s infinite;
+}
+
+.subtitle-cursor {
+  font-size: 0.9em;
+}
+
+@keyframes cursor-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* 確保暗黑模式下的光標顏色 */
+.theme-dark .cursor-blink {
+  color: #ffffff;
+}
