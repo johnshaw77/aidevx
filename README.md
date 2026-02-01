@@ -6,13 +6,13 @@ John Hsiao 的專案入口站 — 快速原型、idea 發想、實驗性作品�
 
 ## 專案列表
 
-| 專案 | 路徑 | 說明 |
-|------|------|------|
-| 🏭 智慧工廠監控系統 | `/factory-monitor/` | Factory floor personnel monitoring dashboard |
-| 🥠 線上擲筊 | `/bwa-bwei/` | Virtual moon blocks divination |
-| ⌨️ 打字速度測試 | `/typing-test/` | Typing speed test (EN / 中文 / Code) |
-| 📊 OEE 設備綜合效率儀表板 | `/oee-dashboard/` | Overall Equipment Effectiveness monitoring |
-| 🌌 極光模擬器 | `/aurora-borealis/` | Interactive aurora borealis — move, click, breathe |
+| 專案 | 路徑 | 說明 | 日期 |
+|------|------|------|------|
+| 🏭 智慧工廠監控系統 | `/factory-monitor/` | Factory floor personnel monitoring dashboard | 2026-01-31 |
+| 🥠 線上擲筊 | `/bwa-bwei/` | Virtual moon blocks divination | 2026-02-01 |
+| 🌌 極光模擬器 | `/aurora-borealis/` | Interactive aurora borealis — move, click, breathe | 2026-02-01 |
+| ⌨️ 打字速度測試 | `/typing-test/` | Typing speed test (EN / 中文 / Code) | 2026-02-01 |
+| 📊 OEE 設備綜合效率儀表板 | `/oee-dashboard/` | Overall Equipment Effectiveness monitoring | 2026-02-01 |
 
 ## 架構
 
