@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>線上擲筊 — 問問神明</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0b0f19;
+    color: #e0e0e0;
+    font-family: 'Noto Sans TC', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow: hidden;
+  }
+
+  .title {
+    font-size: 1.2rem;
+    color: #6b7280;
+    margin-bottom: 8px;
+    font-weight: 300;
+  }
+
+  .result-text {
+    font-size: 3rem;
+    font-weight: 900;
+    margin-bottom: 8px;
+    min-height: 4rem;
+    transition: all 0.3s;
+  }
+
+  .result-desc {
+    font-size: 1rem;
+    color: #6b7280;
+    margin-bottom: 40px;
+    min-height: 1.5rem;
+    font-weight: 300;
+  }
+
+  .blocks {
+    display: flex;
+    gap: 40px;
+    margin-bottom: 48px;
+    height: 120px;
+    align-items: center;
+  }
+
+  .block {
+    width: 80px;
+    height: 110px;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    transition: transform 0.3s ease;
+    position: relative;
+  }
+
+  .block.flat {
+    background: linear-gradient(180deg, #c4956a 0%, #a67744 100%);
+    box-shadow: 0 4px 20px rgba(196, 149, 106, 0.3);
+    transform: rotateX(0deg);
+  }
+
+  .block.round {
+    background: linear-gradient(180deg, #8b5e3c 0%, #6b4226 100%);
+    box-shadow: 0 4px 20px rgba(107, 66, 38, 0.3);
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+  }
+
+  @keyframes toss {
+    0% { transform: translateY(0) rotateX(0deg) rotateY(0deg); }
+    25% { transform: translateY(-120px) rotateX(180deg) rotateY(90deg); }
+    50% { transform: translateY(-80px) rotateX(360deg) rotateY(180deg); }
+    75% { transform: translateY(-30px) rotateX(540deg) rotateY(270deg); }
+    100% { transform: translateY(0) rotateX(720deg) rotateY(360deg); }
+  }
+
+  .block.tossing {
+    animation: toss 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .throw-btn {
+    padding: 16px 48px;
+    font-size: 1.2rem;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-weight: 700;
+    background: linear-gradient(135deg, #c4956a 0%, #a67744 100%);
+    color: #0b0f19;
+    border: none;
+    border-radius: 60px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.1em;
+  }
+
+  .throw-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(196, 149, 106, 0.4);
+  }
+
+  .throw-btn:active {
+    transform: translateY(0);
+  }
+
+  .throw-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .stats {
+    margin-top: 40px;
+    display: flex;
+    gap: 32px;
+    font-size: 0.85rem;
+    color: #4b5563;
+  }
+
+  .stat-item span {
+    color: #9ca3af;
+    font-weight: 700;
+  }
+
+  .sheng { color: #f59e0b; }
+  .xiao { color: #6ee7b7; }
+  .yin { color: #93a3b8; }
+
+  .particles {
+    position: fixed;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  @keyframes sparkle {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-60px) scale(0); }
+  }
+
+  .spark {
+    position: fixed;
+    font-size: 1.5rem;
+    animation: sparkle 1s ease-out forwards;
+    pointer-events: none;
+  }
+
+  .home-link {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    color: #4b5563;
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: color 0.2s;
+  }
+
+  .home-link:hover { color: #9ca3af; }
+</style>
+</head>
+<body>
+
+<a href="/" class="home-link">← 返回首頁</a>
+
+<div class="title">心誠則靈</div>
+
+<div class="result-text" id="result">🥠</div>
+<div class="result-desc" id="desc">擲筊問問神明吧</div>
+
+<div class="blocks">
+  <div class="block flat" id="block1">⚊</div>
+  <div class="block flat" id="block2">⚊</div>
+</div>
+
+<button class="throw-btn" id="throwBtn" onclick="throwBlocks()">擲 筊</button>
+
+<div class="stats">
+  <div class="stat-item">聖筊 <span id="shengCount">0</span></div>
+  <div class="stat-item">笑筊 <span id="xiaoCount">0</span></div>
+  <div class="stat-item">陰筊 <span id="yinCount">0</span></div>
+</div>
+
+<script>
+  let stats = { sheng: 0, xiao: 0, yin: 0 };
+
+  const results = {
+    sheng: {
+      text: '聖 筊',
+      desc: '神明同意了！✨',
+      class: 'sheng',
+      blocks: ['flat', 'round'],
+      emojis: ['✨', '🙏', '🌟', '💫']
+    },
+    xiao: {
+      text: '笑 筊',
+      desc: '神明笑而不答，再問一次吧',
+      class: 'xiao',
+      blocks: ['flat', 'flat'],
+      emojis: ['😄', '😊', '🤭']
+    },
+    yin: {
+      text: '陰 筊',
+      desc: '神明說不行喔',
+      class: 'yin',
+      blocks: ['round', 'round'],
+      emojis: ['🤔', '💭', '😶']
+    }
+  };
+
+  function throwBlocks() {
+    const btn = document.getElementById('throwBtn');
+    const b1 = document.getElementById('block1');
+    const b2 = document.getElementById('block2');
+    const resultEl = document.getElementById('result');
+    const descEl = document.getElementById('desc');
+
+    btn.disabled = true;
+    resultEl.textContent = '';
+    descEl.textContent = '';
+
+    b1.className = 'block tossing';
+    b2.className = 'block tossing';
+
+    setTimeout(() => {
+      // 聖筊40%, 笑筊30%, 陰筊30%
+      const rand = Math.random();
+      const type = rand < 0.4 ? 'sheng' : rand < 0.7 ? 'xiao' : 'yin';
+      const r = results[type];
+
+      stats[type]++;
+
+      b1.className = `block ${r.blocks[0]}`;
+      b2.className = `block ${r.blocks[1]}`;
+
+      resultEl.textContent = r.text;
+      resultEl.className = `result-text ${r.class}`;
+      descEl.textContent = r.desc;
+
+      document.getElementById('shengCount').textContent = stats.sheng;
+      document.getElementById('xiaoCount').textContent = stats.xiao;
+      document.getElementById('yinCount').textContent = stats.yin;
+
+      if (type === 'sheng') spawnParticles(r.emojis);
+
+      btn.disabled = false;
+    }, 900);
+  }
+
+  function spawnParticles(emojis) {
+    for (let i = 0; i < 8; i++) {
+      const el = document.createElement('div');
+      el.className = 'spark';
+      el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      el.style.left = (30 + Math.random() * 40) + 'vw';
+      el.style.top = (30 + Math.random() * 30) + 'vh';
+      el.style.animationDelay = (Math.random() * 0.3) + 's';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 1500);
+    }
+  }
+</script>
+
+</body>
+</html>
