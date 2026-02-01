@@ -73,12 +73,15 @@
     width: 44px;
     height: 44px;
     border-radius: 12px;
-    background: linear-gradient(135deg, #6366f1, #10b981);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.3rem;
+    overflow: hidden;
     flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   .header-text h1 {
@@ -291,7 +294,7 @@
 <div class="page">
   <div class="header">
     <div class="header-top">
-      <div class="avatar">JH</div>
+      <div class="avatar"><img src="/assets/images/avatar.jpg" alt="John Hsiao"></div>
       <div class="header-text">
         <h1>John Hsiao</h1>
         <div class="tagline">Smart Factory · Data Analytics · FPC Manufacturing</div>
