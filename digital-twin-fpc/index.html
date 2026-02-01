@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FPC 數位孿生 - 台郡科技 Smart Factory POC</title>
+<style>
+  :root {
+    --bg: #0a0e17;
+    --card: #131a2b;
+    --border: #1e2d4a;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --green: #22c55e;
+    --yellow: #eab308;
+    --red: #ef4444;
+    --text: #e2e8f0;
+    --dim: #64748b;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #0f1729 0%, #1a1040 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .header h1 {
+    font-size: 20px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .header .subtitle { font-size: 12px; color: var(--dim); margin-top: 2px; }
+  .header-right { display: flex; align-items: center; gap: 16px; }
+  .clock { font-size: 14px; color: var(--accent); font-family: monospace; }
+  .status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    animation: pulse 2s infinite;
+  }
+  .status-running { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+  @keyframes pulse { 0%,100%{ opacity:1; } 50%{ opacity:0.7; } }
+
+  /* Main layout */
+  .main { padding: 16px 24px; display: flex; flex-direction: column; gap: 16px; }
+
+  /* KPI row */
+  .kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+  .kpi-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 12px 12px 0 0;
+  }
+  .kpi-card:nth-child(1)::before { background: var(--accent); }
+  .kpi-card:nth-child(2)::before { background: var(--green); }
+  .kpi-card:nth-child(3)::before { background: var(--accent2); }
+  .kpi-card:nth-child(4)::before { background: var(--yellow); }
+  .kpi-card:nth-child(5)::before { background: var(--red); }
+  .kpi-label { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; }
+  .kpi-value { font-size: 28px; font-weight: 700; margin: 4px 0; font-family: monospace; }
+  .kpi-change { font-size: 11px; }
+  .kpi-up { color: var(--green); }
+  .kpi-down { color: var(--red); }
+
+  /* Production line */
+  .line-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .section-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 2s infinite;
+  }
+  .pipeline {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    overflow-x: auto;
+    padding: 8px 0;
+  }
+  .station {
+    flex: 1;
+    min-width: 120px;
+    background: rgba(0,212,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+    transition: all 0.3s;
+    cursor: pointer;
+    position: relative;
+  }
+  .station:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .station.warning { border-color: var(--yellow); background: rgba(234,179,8,0.05); }
+  .station.error { border-color: var(--red); background: rgba(239,68,68,0.05); animation: shake 0.5s; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-3px)} 75%{transform:translateX(3px)} }
+  .station-icon { font-size: 24px; margin-bottom: 6px; }
+  .station-name { font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+  .station-status { font-size: 10px; color: var(--dim); }
+  .station-temp { font-size: 11px; color: var(--yellow); margin-top: 4px; font-family: monospace; }
+  .station-bar {
+    height: 3px;
+    background: #1e2d4a;
+    border-radius: 2px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+  .station-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 1s ease;
+  }
+  .arrow { color: var(--dim); font-size: 18px; flex-shrink: 0; }
+  .flow-dot {
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    position: absolute;
+    bottom: -3px;
+    animation: flowMove 2s linear infinite;
+    opacity: 0.7;
+  }
+  @keyframes flowMove { 0%{left:10%} 100%{left:90%} }
+
+  /* Bottom grid */
+  .bottom-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  
+  /* Charts area */
+  .chart-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .mini-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 100px;
+    margin-top: 12px;
+  }
+  .mini-bar {
+    flex: 1;
+    border-radius: 3px 3px 0 0;
+    transition: height 0.5s ease;
+    min-width: 4px;
+    position: relative;
+  }
+  .mini-bar:hover { opacity: 0.8; }
+  .mini-bar .tooltip {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e2d4a;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    white-space: nowrap;
+  }
+  .mini-bar:hover .tooltip { display: block; }
+
+  /* Sensor panel */
+  .sensor-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .sensor-item {
+    background: rgba(0,212,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+  }
+  .sensor-label { font-size: 10px; color: var(--dim); }
+  .sensor-value { font-size: 18px; font-weight: 700; font-family: monospace; margin: 2px 0; }
+  .sensor-range { font-size: 9px; color: var(--dim); }
+
+  /* Alert log */
+  .alert-log { margin-top: 12px; max-height: 160px; overflow-y: auto; }
+  .alert-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border-radius: 6px;
+    margin-bottom: 4px;
+    font-size: 12px;
+    animation: slideIn 0.3s ease;
+  }
+  @keyframes slideIn { from{opacity:0;transform:translateX(-10px)} to{opacity:1;transform:translateX(0)} }
+  .alert-info { background: rgba(0,212,255,0.05); border-left: 3px solid var(--accent); }
+  .alert-warn { background: rgba(234,179,8,0.05); border-left: 3px solid var(--yellow); }
+  .alert-error { background: rgba(239,68,68,0.05); border-left: 3px solid var(--red); }
+  .alert-time { color: var(--dim); font-family: monospace; font-size: 10px; flex-shrink: 0; }
+
+  /* Control panel */
+  .control-panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 12px;
+  }
+  .slider-group { margin-top: 12px; }
+  .slider-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    margin-bottom: 4px;
+  }
+  .slider-label span:last-child { color: var(--accent); font-family: monospace; }
+  input[type="range"] {
+    width: 100%;
+    -webkit-appearance: none;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+  }
+  .btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: rgba(0,212,255,0.1);
+    color: var(--accent);
+    font-size: 12px;
+    cursor: pointer;
+    margin-top: 12px;
+    transition: all 0.2s;
+  }
+  .btn:hover { background: rgba(0,212,255,0.2); }
+  .btn-danger { background: rgba(239,68,68,0.1); color: var(--red); border-color: rgba(239,68,68,0.3); }
+  .btn-danger:hover { background: rgba(239,68,68,0.2); }
+  .btn-row { display: flex; gap: 8px; margin-top: 12px; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .kpi-row { grid-template-columns: repeat(3, 1fr); }
+    .bottom-grid { grid-template-columns: 1fr; }
+    .pipeline { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>🏭 FPC Digital Twin — 軟板產線數位孿生</h1>
+    <div class="subtitle">台郡科技 智慧工廠 ｜ 數據分析部 POC Demo</div>
+  </div>
+  <div class="header-right">
+    <div class="clock" id="clock"></div>
+    <div class="status-badge status-running">● LIVE 模擬中</div>
+  </div>
+</div>
+
+<div class="main">
+  <!-- KPI Row -->
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-label">日產量 Daily Output</div>
+      <div class="kpi-value" id="kpi-output">0</div>
+      <div class="kpi-change kpi-up" id="kpi-output-change">▲ +3.2% vs 昨日</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">綜合良率 Yield</div>
+      <div class="kpi-value" id="kpi-yield">0%</div>
+      <div class="kpi-change kpi-up" id="kpi-yield-change">▲ +0.5%</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">設備稼動率 OEE</div>
+      <div class="kpi-value" id="kpi-oee">0%</div>
+      <div class="kpi-change" id="kpi-oee-change">— 持平</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">即時告警 Alerts</div>
+      <div class="kpi-value" id="kpi-alerts" style="color:var(--yellow)">0</div>
+      <div class="kpi-change" id="kpi-alerts-change">最近 1 小時</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">停機時間 Downtime</div>
+      <div class="kpi-value" id="kpi-downtime">0m</div>
+      <div class="kpi-change kpi-down" id="kpi-downtime-change">本班次</div>
+    </div>
+  </div>
+
+  <!-- Production Line -->
+  <div class="line-section">
+    <div class="section-title"><span class="dot"></span> FPC 產線即時狀態 — Line A</div>
+    <div class="pipeline" id="pipeline"></div>
+  </div>
+
+  <!-- Bottom Grid -->
+  <div class="bottom-grid">
+    <!-- Yield Chart -->
+    <div class="chart-card">
+      <div class="section-title"><span class="dot" style="background:var(--green)"></span> 各站良率趨勢 (24h)</div>
+      <div class="mini-chart" id="yield-chart"></div>
+    </div>
+
+    <!-- Sensor Panel -->
+    <div class="chart-card">
+      <div class="section-title"><span class="dot" style="background:var(--yellow)"></span> 即時感測器數據</div>
+      <div class="sensor-grid" id="sensor-grid"></div>
+    </div>
+
+    <!-- Alert Log -->
+    <div class="chart-card">
+      <div class="section-title"><span class="dot" style="background:var(--red)"></span> 告警紀錄</div>
+      <div class="alert-log" id="alert-log"></div>
+    </div>
+  </div>
+
+  <!-- Control Panel -->
+  <div class="control-panel">
+    <div class="section-title"><span class="dot" style="background:var(--accent2)"></span> 模擬控制面板 — What-If 情境分析</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
+      <div class="slider-group">
+        <div class="slider-label"><span>蝕刻溫度 Etch Temp</span><span id="val-etch-temp">50°C</span></div>
+        <input type="range" id="ctrl-etch-temp" min="35" max="70" value="50" oninput="updateControl(this)">
+      </div>
+      <div class="slider-group">
+        <div class="slider-label"><span>曝光能量 Exposure</span><span id="val-exposure">120 mJ</span></div>
+        <input type="range" id="ctrl-exposure" min="80" max="180" value="120" oninput="updateControl(this)">
+      </div>
+      <div class="slider-group">
+        <div class="slider-label"><span>壓合壓力 Lamination</span><span id="val-lamination">25 kg/cm²</span></div>
+        <input type="range" id="ctrl-lamination" min="15" max="40" value="25" oninput="updateControl(this)">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" onclick="simulateScenario('optimal')">🎯 最佳化參數</button>
+      <button class="btn" onclick="simulateScenario('stress')">⚡ 壓力測試</button>
+      <button class="btn btn-danger" onclick="simulateScenario('fault')">⚠️ 模擬故障</button>
+      <button class="btn" onclick="simulateScenario('reset')">🔄 重置</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// === FPC Production Stations ===
+const stations = [
+  { id: 'cutting',   name: '裁切', icon: '✂️', process: 'Cutting',    baseYield: 99.5, temp: 25, critical: false },
+  { id: 'drilling',  name: '鑽孔', icon: '🔩', process: 'Drilling',   baseYield: 98.8, temp: 28, critical: false },
+  { id: 'plating',   name: '電鍍', icon: '⚡', process: 'Plating',    baseYield: 97.5, temp: 45, critical: true },
+  { id: 'laminate',  name: '壓膜', icon: '📋', process: 'Lamination', baseYield: 98.2, temp: 160, critical: true },
+  { id: 'exposure',  name: '曝光', icon: '💡', process: 'Exposure',   baseYield: 98.5, temp: 23, critical: true },
+  { id: 'etching',   name: '蝕刻', icon: '🧪', process: 'Etching',    baseYield: 97.0, temp: 50, critical: true },
+  { id: 'aoi',       name: 'AOI檢測', icon: '👁️', process: 'Inspection', baseYield: 99.8, temp: 24, critical: false },
+  { id: 'forming',   name: '成型', icon: '📐', process: 'Forming',    baseYield: 99.2, temp: 25, critical: false },
+];
+
+// Simulation state
+let simState = {
+  output: 12480,
+  yield: 96.8,
+  oee: 87.3,
+  alerts: 2,
+  downtime: 18,
+  stationYields: stations.map(s => s.baseYield),
+  stationStatus: stations.map(() => 'normal'), // normal, warning, error
+  yieldHistory: Array.from({length: 24}, () => 95 + Math.random() * 4),
+  alertLog: [],
+  etchTemp: 50,
+  exposure: 120,
+  lamination: 25,
+  faultMode: false,
+};
+
+// Initialize sensors
+const sensors = [
+  { id: 'temp-etch',    label: '蝕刻槽溫度',    value: 50.2,  unit: '°C',   min: 45, max: 55, warn: 58 },
+  { id: 'ph-plating',   label: '電鍍液 pH',     value: 4.5,   unit: '',     min: 4.0, max: 5.0, warn: 5.2 },
+  { id: 'humidity',     label: '曝光室濕度',    value: 45.0,  unit: '%RH',  min: 40, max: 55, warn: 58 },
+  { id: 'pressure',     label: '壓合壓力',      value: 25.0,  unit: 'kg/cm²', min: 20, max: 30, warn: 33 },
+  { id: 'vibration',    label: '鑽孔機振動',    value: 0.8,   unit: 'mm/s', min: 0, max: 2.0, warn: 1.8 },
+  { id: 'current',      label: '電鍍電流密度',   value: 3.2,   unit: 'A/dm²', min: 2.5, max: 4.0, warn: 4.2 },
+];
+
+// Build pipeline
+function buildPipeline() {
+  const el = document.getElementById('pipeline');
+  el.innerHTML = '';
+  stations.forEach((s, i) => {
+    const div = document.createElement('div');
+    div.className = 'station';
+    div.id = `station-${s.id}`;
+    div.innerHTML = `
+      <div class="station-icon">${s.icon}</div>
+      <div class="station-name">${s.name}</div>
+      <div class="station-status">${s.process}</div>
+      <div class="station-temp">${s.temp}°C</div>
+      <div class="station-bar"><div class="station-bar-fill" style="width:${s.baseYield}%;background:var(--green)"></div></div>
+      <div class="flow-dot"></div>
+    `;
+    div.onclick = () => showStationDetail(s, i);
+    el.appendChild(div);
+    if (i < stations.length - 1) {
+      const arrow = document.createElement('span');
+      arrow.className = 'arrow';
+      arrow.textContent = '→';
+      el.appendChild(arrow);
+    }
+  });
+}
+
+// Build sensor grid
+function buildSensors() {
+  const el = document.getElementById('sensor-grid');
+  el.innerHTML = sensors.map(s => `
+    <div class="sensor-item" id="sensor-${s.id}">
+      <div class="sensor-label">${s.label}</div>
+      <div class="sensor-value">${s.value.toFixed(1)}<small style="font-size:11px;color:var(--dim)"> ${s.unit}</small></div>
+      <div class="sensor-range">${s.min} ~ ${s.max} ${s.unit}</div>
+    </div>
+  `).join('');
+}
+
+// Build yield chart
+function buildYieldChart() {
+  const el = document.getElementById('yield-chart');
+  el.innerHTML = simState.yieldHistory.map((v, i) => {
+    const h = ((v - 90) / 10) * 100;
+    const color = v > 97 ? 'var(--green)' : v > 95 ? 'var(--yellow)' : 'var(--red)';
+    return `<div class="mini-bar" style="height:${h}%;background:${color}"><div class="tooltip">${i}:00 — ${v.toFixed(1)}%</div></div>`;
+  }).join('');
+}
+
+// Update KPIs
+function updateKPIs() {
+  document.getElementById('kpi-output').textContent = simState.output.toLocaleString();
+  document.getElementById('kpi-yield').textContent = simState.yield.toFixed(1) + '%';
+  document.getElementById('kpi-oee').textContent = simState.oee.toFixed(1) + '%';
+  document.getElementById('kpi-alerts').textContent = simState.alerts;
+  document.getElementById('kpi-downtime').textContent = simState.downtime + 'm';
+  
+  // Color code yield
+  const yieldEl = document.getElementById('kpi-yield');
+  yieldEl.style.color = simState.yield > 97 ? 'var(--green)' : simState.yield > 95 ? 'var(--yellow)' : 'var(--red)';
+}
+
+// Add alert
+function addAlert(type, msg) {
+  const now = new Date();
+  const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0') + ':' + now.getSeconds().toString().padStart(2,'0');
+  simState.alertLog.unshift({ type, msg, time });
+  if (simState.alertLog.length > 20) simState.alertLog.pop();
+  simState.alerts = simState.alertLog.filter(a => a.type !== 'info').length;
+  renderAlerts();
+}
+
+function renderAlerts() {
+  const el = document.getElementById('alert-log');
+  el.innerHTML = simState.alertLog.map(a => `
+    <div class="alert-item alert-${a.type}">
+      <span class="alert-time">${a.time}</span>
+      <span>${a.type === 'error' ? '🔴' : a.type === 'warn' ? '🟡' : '🔵'} ${a.msg}</span>
+    </div>
+  `).join('');
+}
+
+// Simulate
+function tick() {
+  // Random fluctuations
+  sensors.forEach(s => {
+    let delta = (Math.random() - 0.5) * 0.4;
+    if (simState.faultMode && s.id === 'temp-etch') delta += 0.3;
+    s.value = Math.max(s.min - 2, Math.min(s.warn + 3, s.value + delta));
+    
+    const sensorEl = document.getElementById(`sensor-${s.id}`);
+    if (sensorEl) {
+      const valEl = sensorEl.querySelector('.sensor-value');
+      valEl.innerHTML = `${s.value.toFixed(1)}<small style="font-size:11px;color:var(--dim)"> ${s.unit}</small>`;
+      if (s.value > s.warn) {
+        valEl.style.color = 'var(--red)';
+        if (Math.random() < 0.1) addAlert('warn', `${s.label} 超出警戒值: ${s.value.toFixed(1)} ${s.unit}`);
+      } else if (s.value > s.max) {
+        valEl.style.color = 'var(--yellow)';
+      } else {
+        valEl.style.color = 'var(--text)';
+      }
+    }
+  });
+
+  // Update station yields based on controls
+  const etchEffect = Math.abs(simState.etchTemp - 50) * 0.15;
+  const expEffect = Math.abs(simState.exposure - 120) * 0.05;
+  const lamEffect = Math.abs(simState.lamination - 25) * 0.1;
+
+  stations.forEach((s, i) => {
+    let y = s.baseYield;
+    if (s.id === 'etching') y -= etchEffect;
+    if (s.id === 'exposure') y -= expEffect;
+    if (s.id === 'laminate') y -= lamEffect;
+    if (simState.faultMode && s.id === 'etching') y -= 5;
+    y += (Math.random() - 0.5) * 0.3;
+    y = Math.max(85, Math.min(100, y));
+    simState.stationYields[i] = y;
+
+    const stEl = document.getElementById(`station-${s.id}`);
+    if (!stEl) return;
+    const bar = stEl.querySelector('.station-bar-fill');
+    bar.style.width = y + '%';
+    bar.style.background = y > 97 ? 'var(--green)' : y > 95 ? 'var(--yellow)' : 'var(--red)';
+    
+    stEl.className = 'station' + (y < 93 ? ' error' : y < 96 ? ' warning' : '');
+    
+    // Update temp display
+    let displayTemp = s.temp;
+    if (s.id === 'etching') displayTemp = simState.etchTemp + (Math.random()-0.5)*2;
+    if (s.id === 'laminate') displayTemp = 135 + simState.lamination * 1.0 + (Math.random()-0.5)*3;
+    stEl.querySelector('.station-temp').textContent = displayTemp.toFixed(1) + '°C';
+  });
+
+  // Composite yield
+  simState.yield = simState.stationYields.reduce((a, b) => a * b / 100, 100);
+  simState.output = Math.round(12000 + simState.yield * 20 + (Math.random()-0.5)*50);
+  simState.oee = 82 + simState.yield * 0.1 + (Math.random()-0.5)*2;
+  if (simState.faultMode) { simState.oee -= 10; simState.downtime += 1; }
+
+  updateKPIs();
+
+  // Yield history shift
+  if (Math.random() < 0.05) {
+    simState.yieldHistory.shift();
+    simState.yieldHistory.push(simState.yield);
+    buildYieldChart();
+  }
+}
+
+// Control handlers
+function updateControl(el) {
+  const id = el.id;
+  const val = parseFloat(el.value);
+  if (id === 'ctrl-etch-temp') {
+    simState.etchTemp = val;
+    document.getElementById('val-etch-temp').textContent = val + '°C';
+    if (val > 60) addAlert('warn', `⚠️ 蝕刻溫度調高至 ${val}°C，良率可能下降`);
+  } else if (id === 'ctrl-exposure') {
+    simState.exposure = val;
+    document.getElementById('val-exposure').textContent = val + ' mJ';
+  } else if (id === 'ctrl-lamination') {
+    simState.lamination = val;
+    document.getElementById('val-lamination').textContent = val + ' kg/cm²';
+    if (val > 35) addAlert('warn', `⚠️ 壓合壓力 ${val} kg/cm²，注意板材變形風險`);
+  }
+}
+
+function simulateScenario(type) {
+  if (type === 'optimal') {
+    simState.etchTemp = 50; simState.exposure = 120; simState.lamination = 25;
+    simState.faultMode = false;
+    document.getElementById('ctrl-etch-temp').value = 50;
+    document.getElementById('ctrl-exposure').value = 120;
+    document.getElementById('ctrl-lamination').value = 25;
+    document.getElementById('val-etch-temp').textContent = '50°C';
+    document.getElementById('val-exposure').textContent = '120 mJ';
+    document.getElementById('val-lamination').textContent = '25 kg/cm²';
+    addAlert('info', '🎯 已套用最佳化參數組合');
+  } else if (type === 'stress') {
+    simState.etchTemp = 63; simState.exposure = 155; simState.lamination = 36;
+    simState.faultMode = false;
+    document.getElementById('ctrl-etch-temp').value = 63;
+    document.getElementById('ctrl-exposure').value = 155;
+    document.getElementById('ctrl-lamination').value = 36;
+    document.getElementById('val-etch-temp').textContent = '63°C';
+    document.getElementById('val-exposure').textContent = '155 mJ';
+    document.getElementById('val-lamination').textContent = '36 kg/cm²';
+    addAlert('warn', '⚡ 壓力測試模式 — 所有參數推至極端值');
+  } else if (type === 'fault') {
+    simState.faultMode = true;
+    addAlert('error', '🔴 蝕刻站異常！溫度失控 — 啟動緊急降溫程序');
+    addAlert('error', '🔴 AOI 偵測到批次不良率飆升');
+  } else if (type === 'reset') {
+    simState.faultMode = false;
+    simState.downtime = 18;
+    simState.etchTemp = 50; simState.exposure = 120; simState.lamination = 25;
+    document.getElementById('ctrl-etch-temp').value = 50;
+    document.getElementById('ctrl-exposure').value = 120;
+    document.getElementById('ctrl-lamination').value = 25;
+    document.getElementById('val-etch-temp').textContent = '50°C';
+    document.getElementById('val-exposure').textContent = '120 mJ';
+    document.getElementById('val-lamination').textContent = '25 kg/cm²';
+    simState.alertLog = [];
+    renderAlerts();
+    addAlert('info', '🔄 系統重置完成');
+  }
+}
+
+function showStationDetail(s, i) {
+  const y = simState.stationYields[i].toFixed(1);
+  addAlert('info', `📍 ${s.name} (${s.process}) — 即時良率 ${y}% | 溫度 ${s.temp}°C`);
+}
+
+// Clock
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent = now.toLocaleTimeString('zh-TW', { hour12: false });
+}
+
+// Init
+buildPipeline();
+buildSensors();
+buildYieldChart();
+addAlert('info', '🏭 數位孿生系統啟動 — Line A 已連線');
+addAlert('info', '📡 8 個工站感測器同步中...');
+updateKPIs();
+updateClock();
+
+setInterval(tick, 1000);
+setInterval(updateClock, 1000);
+</script>
+</body>
+</html>

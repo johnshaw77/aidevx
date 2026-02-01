@@ -8,11 +8,12 @@ John Hsiao 的專案入口站 — 快速原型、idea 發想、實驗性作品�
 
 | 專案 | 路徑 | 說明 | 日期 |
 |------|------|------|------|
-| 🏭 智慧工廠監控系統 | `/factory-monitor/` | Factory floor personnel monitoring dashboard | 2026-01-31 |
-| 🥠 線上擲筊 | `/bwa-bwei/` | Virtual moon blocks divination | 2026-02-01 |
-| 🌌 極光模擬器 | `/aurora-borealis/` | Interactive aurora borealis — move, click, breathe | 2026-02-01 |
-| ⌨️ 打字速度測試 | `/typing-test/` | Typing speed test (EN / 中文 / Code) | 2026-02-01 |
-| 📊 OEE 設備綜合效率儀表板 | `/oee-dashboard/` | Overall Equipment Effectiveness monitoring | 2026-02-01 |
+| 🏭 智慧工廠監控系統 | `/factory-monitor/` | 工廠人員即時監控儀表板 | 2026-01-31 |
+| 🥠 線上擲筊 | `/bwa-bwei/` | 線上虛擬擲筊求神問卜 | 2026-02-01 |
+| 🌌 極光模擬器 | `/aurora-borealis/` | 互動式極光模擬 — 可移動、點擊、呼吸燈效果 | 2026-02-01 |
+| ⌨️ 打字速度測試 | `/typing-test/` | 打字速度測試（支援英文／中文／程式碼） | 2026-02-01 |
+| 📊 OEE 設備綜合效率儀表板 | `/oee-dashboard/` | 設備綜合效率即時監控儀表板 | 2026-02-01 |
+| 🔮 FPC 數位孿生 | `/digital-twin-fpc/` | 軟板產線數位孿生 — 8 站製程模擬、感測器監控、What-If 情境分析 | 2026-02-01 |
 
 ## 架構
 
