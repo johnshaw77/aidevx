@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐱 招財貓運勢占卜 | Lucky Cat Fortune</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🐱 招財貓運勢占卜</h1>
+            <p>每日為您帶來好運與財富指引</p>
+        </header>
+
+        <main>
+            <div class="cat-container">
+                <div class="lucky-cat" id="luckyCat">
+                    <div class="cat-body">
+                        <div class="cat-face">
+                            <div class="cat-ears">
+                                <div class="ear left"></div>
+                                <div class="ear right"></div>
+                            </div>
+                            <div class="cat-eyes">
+                                <div class="eye left"></div>
+                                <div class="eye right"></div>
+                            </div>
+                            <div class="cat-nose"></div>
+                            <div class="cat-mouth"></div>
+                        </div>
+                        <div class="cat-paws">
+                            <div class="paw left" id="leftPaw">🐾</div>
+                            <div class="paw right">🐾</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fortune-section">
+                <button id="fortuneBtn" class="fortune-btn">
+                    點擊招財貓，獲取今日運勢 ✨
+                </button>
+                
+                <div id="fortuneResult" class="fortune-result hidden">
+                    <div class="fortune-card">
+                        <h3>🌟 今日運勢</h3>
+                        <div class="fortune-content">
+                            <div class="fortune-rating">
+                                <span id="fortuneStars"></span>
+                                <span id="fortuneLevel"></span>
+                            </div>
+                            <p id="fortuneText"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="lucky-numbers">
+                        <h4>🎯 幸運數字</h4>
+                        <div id="luckyNumbers"></div>
+                    </div>
+                    
+                    <div class="advice">
+                        <h4>💡 開運建議</h4>
+                        <p id="adviceText"></p>
+                    </div>
+                    
+                    <div class="share-section">
+                        <button id="shareBtn" class="share-btn">分享好運 📤</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>💰 願招財貓為您帶來無盡好運 💰</p>
+            <p>Made with ❤️ by 招財貓精靈</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
