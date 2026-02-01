@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OEE 設備綜合效率儀表板</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+TC:wght@300;400;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #060a14;
+    color: #c8cdd8;
+    font-family: 'Noto Sans TC', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 28px;
+    background: linear-gradient(135deg, #0a0f1e 0%, #0f1528 100%);
+    border-bottom: 1px solid rgba(0,200,255,0.1);
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .header-left .logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #00c8ff;
+    letter-spacing: 0.05em;
+  }
+
+  .header-left .sep {
+    color: #1e2a3a;
+    font-size: 1.2rem;
+  }
+
+  .header-left .page-title {
+    font-size: 0.85rem;
+    color: #6b7a8d;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 0.8rem;
+    color: #4a5568;
+  }
+
+  .live-dot {
+    width: 8px;
+    height: 8px;
+    background: #00e676;
+    border-radius: 50%;
+    animation: pulse-dot 2s infinite;
+    display: inline-block;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; box-shadow: 0 0 4px #00e676; }
+    50% { opacity: 0.5; box-shadow: 0 0 12px #00e676; }
+  }
+
+  .home-link {
+    color: #4a5568;
+    text-decoration: none;
+    font-size: 0.8rem;
+    transition: color 0.2s;
+  }
+  .home-link:hover { color: #00c8ff; }
+
+  .main {
+    padding: 20px 28px;
+  }
+
+  /* Summary Cards */
+  .summary-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .summary-card {
+    background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .summary-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+  }
+
+  .summary-card.oee::before { background: linear-gradient(90deg, #6366f1, #818cf8); }
+  .summary-card.avail::before { background: linear-gradient(90deg, #0ea5e9, #38bdf8); }
+  .summary-card.perf::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+  .summary-card.qual::before { background: linear-gradient(90deg, #10b981, #34d399); }
+
+  .summary-label {
+    font-size: 0.75rem;
+    color: #6b7a8d;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+
+  .summary-value {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 900;
+  }
+
+  .summary-card.oee .summary-value { color: #a5b4fc; }
+  .summary-card.avail .summary-value { color: #38bdf8; }
+  .summary-card.perf .summary-value { color: #fbbf24; }
+  .summary-card.qual .summary-value { color: #34d399; }
+
+  .summary-sub {
+    font-size: 0.7rem;
+    color: #4a5568;
+    margin-top: 4px;
+  }
+
+  /* Line Section */
+  .section-title {
+    font-size: 0.85rem;
+    color: #6b7a8d;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.06);
+  }
+
+  .lines-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .line-card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 18px;
+    transition: border-color 0.3s;
+  }
+
+  .line-card:hover {
+    border-color: rgba(255,255,255,0.12);
+  }
+
+  .line-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+
+  .line-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #e0e6f0;
+  }
+
+  .line-status {
+    font-size: 0.65rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+
+  .line-status.running {
+    background: rgba(16,185,129,0.15);
+    color: #34d399;
+  }
+
+  .line-status.down {
+    background: rgba(239,68,68,0.15);
+    color: #f87171;
+  }
+
+  .line-status.changeover {
+    background: rgba(245,158,11,0.15);
+    color: #fbbf24;
+  }
+
+  .line-oee-ring {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 14px;
+  }
+
+  .ring-container {
+    position: relative;
+    width: 100px;
+    height: 100px;
+  }
+
+  .ring-container svg {
+    transform: rotate(-90deg);
+  }
+
+  .ring-bg {
+    fill: none;
+    stroke: rgba(255,255,255,0.05);
+    stroke-width: 6;
+  }
+
+  .ring-fill {
+    fill: none;
+    stroke-width: 6;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s ease;
+  }
+
+  .ring-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+
+  .line-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    text-align: center;
+  }
+
+  .line-metric-label {
+    font-size: 0.6rem;
+    color: #4a5568;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .line-metric-value {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-top: 2px;
+  }
+
+  .line-metric-value.a { color: #38bdf8; }
+  .line-metric-value.p { color: #fbbf24; }
+  .line-metric-value.q { color: #34d399; }
+
+  /* Bottom Section */
+  .bottom-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+  }
+
+  .chart-card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 18px;
+  }
+
+  .chart-title {
+    font-size: 0.8rem;
+    color: #6b7a8d;
+    margin-bottom: 14px;
+  }
+
+  .bar-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    height: 140px;
+    padding-top: 10px;
+  }
+
+  .bar-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    justify-content: flex-end;
+  }
+
+  .bar {
+    width: 100%;
+    max-width: 32px;
+    border-radius: 4px 4px 0 0;
+    transition: height 1s ease;
+    position: relative;
+  }
+
+  .bar-label {
+    font-size: 0.6rem;
+    color: #4a5568;
+    margin-top: 6px;
+  }
+
+  .loss-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .loss-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .loss-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+  }
+
+  .loss-info {
+    flex: 1;
+  }
+
+  .loss-name {
+    font-size: 0.8rem;
+    color: #c8cdd8;
+  }
+
+  .loss-bar-bg {
+    height: 4px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 2px;
+    margin-top: 4px;
+    overflow: hidden;
+  }
+
+  .loss-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 1s ease;
+  }
+
+  .loss-time {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.75rem;
+    color: #6b7a8d;
+    min-width: 48px;
+    text-align: right;
+  }
+
+  @media (max-width: 768px) {
+    .summary-row { grid-template-columns: repeat(2, 1fr); }
+    .lines-grid { grid-template-columns: 1fr; }
+    .bottom-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo">OEE MONITOR</div>
+    <span class="sep">|</span>
+    <span class="page-title">設備綜合效率儀表板</span>
+  </div>
+  <div class="header-right">
+    <a href="/" class="home-link">← 首頁</a>
+    <span class="sep" style="color:#1e2a3a">|</span>
+    <span><span class="live-dot"></span> LIVE</span>
+    <span id="clock"></span>
+  </div>
+</div>
+
+<div class="main">
+  <!-- Summary -->
+  <div class="summary-row">
+    <div class="summary-card oee">
+      <div class="summary-label">Overall OEE</div>
+      <div class="summary-value" id="totalOee">—</div>
+      <div class="summary-sub">目標 ≥ 85%</div>
+    </div>
+    <div class="summary-card avail">
+      <div class="summary-label">稼動率 Availability</div>
+      <div class="summary-value" id="totalAvail">—</div>
+      <div class="summary-sub">計畫運轉時間比</div>
+    </div>
+    <div class="summary-card perf">
+      <div class="summary-label">性能率 Performance</div>
+      <div class="summary-value" id="totalPerf">—</div>
+      <div class="summary-sub">標準產能達成率</div>
+    </div>
+    <div class="summary-card qual">
+      <div class="summary-label">良率 Quality</div>
+      <div class="summary-value" id="totalQual">—</div>
+      <div class="summary-sub">一次良率 FPY</div>
+    </div>
+  </div>
+
+  <!-- Lines -->
+  <div class="section-title">產線即時 OEE</div>
+  <div class="lines-grid" id="linesGrid"></div>
+
+  <!-- Bottom -->
+  <div class="bottom-row">
+    <div class="chart-card">
+      <div class="chart-title">📊 近 8 小時 OEE 趨勢</div>
+      <div class="bar-chart" id="barChart"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">⚠️ 六大損失 Top 5</div>
+      <div class="loss-list" id="lossList"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const lines = [
+  { id: 'A1', name: 'A棟 1F — 鑽孔線', status: 'running' },
+  { id: 'A2', name: 'A棟 2F — 壓合線', status: 'running' },
+  { id: 'B1', name: 'B棟 1F — 蝕刻線', status: 'running' },
+  { id: 'B2', name: 'B棟 2F — 電鍍線', status: 'changeover' },
+  { id: 'C1', name: 'C棟 1F — 防焊線', status: 'running' },
+  { id: 'C2', name: 'C棟 2F — 成型線', status: 'down' },
+];
+
+const losses = [
+  { name: '設備故障停機', icon: '🔧', color: '#f87171', max: 100 },
+  { name: '換線換模', icon: '🔄', color: '#fbbf24', max: 100 },
+  { name: '短暫停機', icon: '⏸️', color: '#fb923c', max: 100 },
+  { name: '速度降低', icon: '🐢', color: '#a78bfa', max: 100 },
+  { name: '製程不良', icon: '❌', color: '#f472b6', max: 100 },
+];
+
+function rand(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
+function getOeeColor(val) {
+  if (val >= 85) return '#34d399';
+  if (val >= 65) return '#fbbf24';
+  return '#f87171';
+}
+
+function createRingSvg(pct, color) {
+  const r = 42;
+  const circ = 2 * Math.PI * r;
+  const offset = circ * (1 - pct / 100);
+  return `
+    <svg width="100" height="100" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="${r}" class="ring-bg"/>
+      <circle cx="50" cy="50" r="${r}" class="ring-fill"
+        stroke="${color}"
+        stroke-dasharray="${circ}"
+        stroke-dashoffset="${offset}"/>
+    </svg>
+  `;
+}
+
+function renderLines() {
+  const grid = document.getElementById('linesGrid');
+  grid.innerHTML = '';
+
+  lines.forEach(line => {
+    const a = Math.round(line.status === 'down' ? rand(30, 55) : line.status === 'changeover' ? rand(60, 75) : rand(82, 97));
+    const p = Math.round(line.status === 'down' ? rand(40, 60) : rand(78, 98));
+    const q = Math.round(rand(92, 99.5) * 10) / 10;
+    const oee = Math.round(a * p * q / 10000);
+    const color = getOeeColor(oee);
+
+    line._oee = oee;
+    line._a = a;
+    line._p = p;
+    line._q = q;
+
+    const statusLabels = { running: 'RUN', down: 'DOWN', changeover: '換線中' };
+
+    const card = document.createElement('div');
+    card.className = 'line-card';
+    card.innerHTML = `
+      <div class="line-header">
+        <span class="line-name">${line.name}</span>
+        <span class="line-status ${line.status}">${statusLabels[line.status]}</span>
+      </div>
+      <div class="line-oee-ring">
+        <div class="ring-container">
+          ${createRingSvg(oee, color)}
+          <div class="ring-text" style="color:${color}">${oee}%</div>
+        </div>
+      </div>
+      <div class="line-metrics">
+        <div>
+          <div class="line-metric-label">稼動</div>
+          <div class="line-metric-value a">${a}%</div>
+        </div>
+        <div>
+          <div class="line-metric-label">性能</div>
+          <div class="line-metric-value p">${p}%</div>
+        </div>
+        <div>
+          <div class="line-metric-label">良率</div>
+          <div class="line-metric-value q">${q}%</div>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  // Update summary
+  const runningLines = lines.filter(l => l._oee);
+  const avgOee = Math.round(runningLines.reduce((s, l) => s + l._oee, 0) / runningLines.length);
+  const avgA = Math.round(runningLines.reduce((s, l) => s + l._a, 0) / runningLines.length);
+  const avgP = Math.round(runningLines.reduce((s, l) => s + l._p, 0) / runningLines.length);
+  const avgQ = (runningLines.reduce((s, l) => s + l._q, 0) / runningLines.length).toFixed(1);
+
+  document.getElementById('totalOee').textContent = avgOee + '%';
+  document.getElementById('totalAvail').textContent = avgA + '%';
+  document.getElementById('totalPerf').textContent = avgP + '%';
+  document.getElementById('totalQual').textContent = avgQ + '%';
+}
+
+function renderBarChart() {
+  const chart = document.getElementById('barChart');
+  chart.innerHTML = '';
+  const now = new Date();
+
+  for (let i = 7; i >= 0; i--) {
+    const h = new Date(now - i * 3600000);
+    const label = h.getHours().toString().padStart(2, '0') + ':00';
+    const val = Math.round(rand(62, 92));
+    const color = getOeeColor(val);
+
+    const group = document.createElement('div');
+    group.className = 'bar-group';
+    group.innerHTML = `
+      <div class="bar" style="height:${val}%;background:${color};opacity:0.7"></div>
+      <div class="bar-label">${label}</div>
+    `;
+    chart.appendChild(group);
+  }
+}
+
+function renderLosses() {
+  const list = document.getElementById('lossList');
+  list.innerHTML = '';
+
+  const lossData = losses.map(l => ({
+    ...l,
+    minutes: Math.round(rand(8, 85))
+  })).sort((a, b) => b.minutes - a.minutes);
+
+  const maxMin = lossData[0].minutes;
+
+  lossData.forEach(l => {
+    const pct = (l.minutes / maxMin * 100).toFixed(0);
+    const item = document.createElement('div');
+    item.className = 'loss-item';
+    item.innerHTML = `
+      <div class="loss-icon" style="background:${l.color}22">${l.icon}</div>
+      <div class="loss-info">
+        <div class="loss-name">${l.name}</div>
+        <div class="loss-bar-bg">
+          <div class="loss-bar-fill" style="width:${pct}%;background:${l.color}"></div>
+        </div>
+      </div>
+      <div class="loss-time">${l.minutes}m</div>
+    `;
+    list.appendChild(item);
+  });
+}
+
+function updateClock() {
+  const now = new Date();
+  const str = now.toLocaleString('zh-TW', {
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    hour12: false
+  });
+  document.getElementById('clock').textContent = str;
+}
+
+function refresh() {
+  // Randomly change line status occasionally
+  lines.forEach(l => {
+    const r = Math.random();
+    if (r < 0.05) l.status = 'down';
+    else if (r < 0.12) l.status = 'changeover';
+    else l.status = 'running';
+  });
+
+  renderLines();
+  renderBarChart();
+  renderLosses();
+}
+
+updateClock();
+setInterval(updateClock, 1000);
+refresh();
+setInterval(refresh, 8000);
+</script>
+
+</body>
+</html>
