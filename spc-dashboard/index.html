@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPC 統計製程管制儀表板 — FPC 智慧工廠</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a1a;
+            color: #e0e0e0;
+            font-family: system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 {
+            font-size: 1.8em;
+            background: linear-gradient(135deg, #00d4ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+        .header p { color: #667788; font-size: 0.95em; }
+        .controls {
+            display: flex; justify-content: center; gap: 12px;
+            margin-bottom: 24px; flex-wrap: wrap;
+        }
+        .controls button {
+            padding: 10px 24px; border: 1px solid #2a3a4a; border-radius: 8px;
+            background: #111828; color: #9aa; cursor: pointer;
+            font-size: 0.95em; transition: all 0.3s;
+        }
+        .controls button:hover { border-color: #00d4ff; color: #00d4ff; }
+        .controls button.active {
+            background: linear-gradient(135deg, #00284a, #002a3a);
+            border-color: #00d4ff; color: #00d4ff;
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.15);
+        }
+        .kpi-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px; margin-bottom: 28px;
+            max-width: 1200px; margin-left: auto; margin-right: auto;
+        }
+        .kpi-card {
+            background: #111828; border: 1px solid #1e2d3d;
+            border-radius: 12px; padding: 20px; text-align: center;
+            transition: all 0.3s;
+        }
+        .kpi-card:hover {
+            border-color: #00d4ff44;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.08);
+        }
+        .kpi-card .label { color: #667; font-size: 0.85em; margin-bottom: 6px; }
+        .kpi-card .value { font-size: 1.8em; font-weight: 700; }
+        .kpi-card .unit { color: #556; font-size: 0.75em; margin-top: 4px; }
+        .good { color: #00ff88; }
+        .warn { color: #ffaa00; }
+        .bad { color: #ff4466; }
+        .charts-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+            max-width: 1200px; margin: 0 auto 28px;
+        }
+        @media (max-width: 800px) { .charts-grid { grid-template-columns: 1fr; } }
+        .chart-card {
+            background: #111828; border: 1px solid #1e2d3d;
+            border-radius: 12px; padding: 20px;
+        }
+        .chart-card h3 { color: #8899aa; font-size: 0.95em; margin-bottom: 12px; }
+        .chart-card canvas { width: 100% !important; }
+        .data-table {
+            max-width: 1200px; margin: 0 auto;
+            background: #111828; border: 1px solid #1e2d3d;
+            border-radius: 12px; padding: 20px; overflow-x: auto;
+        }
+        .data-table h3 { color: #8899aa; margin-bottom: 12px; font-size: 0.95em; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85em; }
+        th { color: #667; text-align: center; padding: 8px 6px; border-bottom: 1px solid #1e2d3d; }
+        td { text-align: center; padding: 6px; color: #aab; }
+        tr:nth-child(even) { background: #0d1117; }
+        td.alert { color: #ff4466; font-weight: 700; }
+        .footer { text-align: center; margin-top: 30px; color: #445; font-size: 0.8em; }
+        .footer a { color: #00d4ff88; text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>📊 SPC 統計製程管制儀表板</h1>
+    <p>FPC 軟性印刷電路板 — 智慧工廠品質監控系統</p>
+</div>
+<div class="controls" id="controls"></div>
+<div class="kpi-grid" id="kpiGrid"></div>
+<div class="charts-grid">
+    <div class="chart-card">
+        <h3 id="xbarTitle">X̄ 管制圖</h3>
+        <canvas id="xbarChart"></canvas>
+    </div>
+    <div class="chart-card">
+        <h3 id="rTitle">R 管制圖 (全距)</h3>
+        <canvas id="rChart"></canvas>
+    </div>
+</div>
+<div class="data-table">
+    <h3>📋 抽樣數據明細</h3>
+    <div id="tableContainer"></div>
+</div>
+<div class="footer">
+    <p>SPC Dashboard — Built with local AI (Qwen2.5-Coder) + Claude | <a href="/">← 返回首頁</a></p>
+</div>
+
+<script>
+const SPC_CONST = { A2: 0.577, D3: 0, D4: 2.114, d2: 2.326 };
+const SAMPLE_SIZE = 5;
+
+const measurements = {
+    lineWidth: {
+        name: '線寬', unit: 'mm', target: 0.100, usl: 0.105, lsl: 0.095,
+        decimals: 4, data: generateData(0.100, 0.002, 25, [8, 15, 22]),
+    },
+    lineSpacing: {
+        name: '線距', unit: 'mm', target: 0.080, usl: 0.086, lsl: 0.074,
+        decimals: 4, data: generateData(0.080, 0.0018, 25, [5, 19]),
+    },
+    aperture: {
+        name: '孔徑', unit: 'mm', target: 0.250, usl: 0.260, lsl: 0.240,
+        decimals: 3, data: generateData(0.250, 0.004, 25, [3, 12, 20]),
+    },
+};
+
+function generateData(target, sigma, groups, anomalyGroups) {
+    const data = [];
+    for (let g = 0; g < groups; g++) {
+        const samples = [];
+        const isAnomaly = anomalyGroups.includes(g);
+        for (let s = 0; s < SAMPLE_SIZE; s++) {
+            let val = target + gaussRandom() * sigma;
+            if (isAnomaly) val += (Math.random() > 0.5 ? 1 : -1) * sigma * 2.5;
+            samples.push(val);
+        }
+        data.push(samples);
+    }
+    return data;
+}
+
+function gaussRandom() {
+    let u = 0, v = 0;
+    while (u === 0) u = Math.random();
+    while (v === 0) v = Math.random();
+    return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+}
+
+function calcSPC(meas) {
+    const { data, target, usl, lsl } = meas;
+    const n = data.length;
+    const xbars = data.map(g => g.reduce((a, b) => a + b, 0) / g.length);
+    const ranges = data.map(g => Math.max(...g) - Math.min(...g));
+    const xbarBar = xbars.reduce((a, b) => a + b, 0) / n;
+    const rBar = ranges.reduce((a, b) => a + b, 0) / n;
+    const xbar_UCL = xbarBar + SPC_CONST.A2 * rBar;
+    const xbar_LCL = xbarBar - SPC_CONST.A2 * rBar;
+    const r_UCL = SPC_CONST.D4 * rBar;
+    const r_LCL = SPC_CONST.D3 * rBar;
+    const sigmaEst = rBar / SPC_CONST.d2;
+    const Cp = (usl - lsl) / (6 * sigmaEst);
+    const Cpu = (usl - xbarBar) / (3 * sigmaEst);
+    const Cpl = (xbarBar - lsl) / (3 * sigmaEst);
+    const Cpk = Math.min(Cpu, Cpl);
+    const xbar_ooc = xbars.map((v, i) => v > xbar_UCL || v < xbar_LCL ? i : -1).filter(i => i >= 0);
+    const r_ooc = ranges.map((v, i) => v > r_UCL ? i : -1).filter(i => i >= 0);
+    const zU = (usl - xbarBar) / sigmaEst;
+    const zL = (xbarBar - lsl) / sigmaEst;
+    const defectRate = (1 - normCDF(zU) + normCDF(-zL)) * 100;
+    return { xbars, ranges, xbarBar, rBar, xbar_UCL, xbar_LCL, r_UCL, r_LCL, Cp, Cpk, sigmaEst, defectRate, xbar_ooc, r_ooc, totalSamples: n * SAMPLE_SIZE };
+}
+
+function normCDF(x) {
+    const t = 1 / (1 + 0.2316419 * Math.abs(x));
+    const d = 0.3989422804 * Math.exp(-x * x / 2);
+    const p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+    return x > 0 ? 1 - p : p;
+}
+
+let currentKey = 'lineWidth';
+let xbarChartInstance = null, rChartInstance = null;
+
+function renderControls() {
+    const el = document.getElementById('controls');
+    el.innerHTML = '';
+    for (const [key, m] of Object.entries(measurements)) {
+        const btn = document.createElement('button');
+        btn.textContent = `${m.name} (${m.target}${m.unit})`;
+        btn.className = key === currentKey ? 'active' : '';
+        btn.onclick = () => { currentKey = key; renderAll(); };
+        el.appendChild(btn);
+    }
+}
+
+function renderKPI(spc) {
+    const cpC = spc.Cp >= 1.33 ? 'good' : spc.Cp >= 1.0 ? 'warn' : 'bad';
+    const cpkC = spc.Cpk >= 1.33 ? 'good' : spc.Cpk >= 1.0 ? 'warn' : 'bad';
+    const drC = spc.defectRate < 0.1 ? 'good' : spc.defectRate < 1 ? 'warn' : 'bad';
+    const ooc = spc.xbar_ooc.length + spc.r_ooc.length;
+    const oocC = ooc === 0 ? 'good' : 'bad';
+    document.getElementById('kpiGrid').innerHTML = `
+        <div class="kpi-card"><div class="label">Cp 製程能力</div><div class="value ${cpC}">${spc.Cp.toFixed(2)}</div><div class="unit">${spc.Cp >= 1.33 ? '✅ 優良' : spc.Cp >= 1.0 ? '⚠️ 勉強' : '❌ 不足'}</div></div>
+        <div class="kpi-card"><div class="label">Cpk 製程能力指數</div><div class="value ${cpkC}">${spc.Cpk.toFixed(2)}</div><div class="unit">${spc.Cpk >= 1.33 ? '✅ 優良' : spc.Cpk >= 1.0 ? '⚠️ 偏移' : '❌ 需改善'}</div></div>
+        <div class="kpi-card"><div class="label">估計不良率</div><div class="value ${drC}">${spc.defectRate < 0.01 ? '<0.01' : spc.defectRate.toFixed(2)}%</div><div class="unit">基於 ±${((measurements[currentKey].usl - measurements[currentKey].lsl) / 2 * 1000).toFixed(1)}μm 公差</div></div>
+        <div class="kpi-card"><div class="label">異常點 / 抽樣數</div><div class="value ${oocC}">${ooc} <span style="font-size:0.5em;color:#667">/ ${spc.totalSamples}</span></div><div class="unit">${ooc === 0 ? '✅ 全部管制內' : '⚠️ 有異常需調查'}</div></div>`;
+}
+
+function renderCharts(spc, meas) {
+    const labels = spc.xbars.map((_, i) => `#${i + 1}`);
+    const dec = meas.decimals;
+    const nc = '#00d4ff', ac = '#ff4466', uc = '#ff666688', cc = '#00ff8888', lc = '#ff666688';
+    const xC = spc.xbars.map((_, i) => spc.xbar_ooc.includes(i) ? ac : nc);
+    const xR = spc.xbars.map((_, i) => spc.xbar_ooc.includes(i) ? 6 : 3);
+    const rC = spc.ranges.map((_, i) => spc.r_ooc.includes(i) ? ac : '#00ff88');
+    const rR = spc.ranges.map((_, i) => spc.r_ooc.includes(i) ? 6 : 3);
+
+    document.getElementById('xbarTitle').textContent = `X̄ 管制圖 — ${meas.name} (${meas.unit})`;
+    if (xbarChartInstance) xbarChartInstance.destroy();
+    xbarChartInstance = new Chart(document.getElementById('xbarChart'), {
+        type: 'line',
+        data: { labels, datasets: [
+            { label: 'X̄', data: spc.xbars.map(v => +v.toFixed(dec)), borderColor: nc, backgroundColor: 'transparent', pointBackgroundColor: xC, pointRadius: xR, borderWidth: 2, tension: 0.1 },
+            { label: `UCL (${spc.xbar_UCL.toFixed(dec)})`, data: Array(spc.xbars.length).fill(+spc.xbar_UCL.toFixed(dec)), borderColor: uc, borderDash: [6,4], borderWidth: 1.5, pointRadius: 0, fill: false },
+            { label: `CL (${spc.xbarBar.toFixed(dec)})`, data: Array(spc.xbars.length).fill(+spc.xbarBar.toFixed(dec)), borderColor: cc, borderDash: [4,4], borderWidth: 1.5, pointRadius: 0, fill: false },
+            { label: `LCL (${spc.xbar_LCL.toFixed(dec)})`, data: Array(spc.xbars.length).fill(+spc.xbar_LCL.toFixed(dec)), borderColor: lc, borderDash: [6,4], borderWidth: 1.5, pointRadius: 0, fill: false },
+        ]},
+        options: { responsive: true, plugins: { legend: { labels: { color: '#889', font: { size: 11 } } }, tooltip: { callbacks: { afterLabel: (ctx) => { if (ctx.datasetIndex === 0 && spc.xbar_ooc.includes(ctx.dataIndex)) return '⚠️ 超出管制線！'; }}}}, scales: { x: { ticks: { color: '#667' }, grid: { color: '#1a2535' }}, y: { ticks: { color: '#667' }, grid: { color: '#1a2535' }}}}
+    });
+
+    document.getElementById('rTitle').textContent = `R 管制圖 — ${meas.name} (${meas.unit})`;
+    if (rChartInstance) rChartInstance.destroy();
+    rChartInstance = new Chart(document.getElementById('rChart'), {
+        type: 'line',
+        data: { labels, datasets: [
+            { label: 'R (全距)', data: spc.ranges.map(v => +v.toFixed(dec)), borderColor: '#00ff88', backgroundColor: 'transparent', pointBackgroundColor: rC, pointRadius: rR, borderWidth: 2, tension: 0.1 },
+            { label: `UCL (${spc.r_UCL.toFixed(dec)})`, data: Array(spc.ranges.length).fill(+spc.r_UCL.toFixed(dec)), borderColor: uc, borderDash: [6,4], borderWidth: 1.5, pointRadius: 0, fill: false },
+            { label: `R̄ (${spc.rBar.toFixed(dec)})`, data: Array(spc.ranges.length).fill(+spc.rBar.toFixed(dec)), borderColor: cc, borderDash: [4,4], borderWidth: 1.5, pointRadius: 0, fill: false },
+        ]},
+        options: { responsive: true, plugins: { legend: { labels: { color: '#889', font: { size: 11 } } }}, scales: { x: { ticks: { color: '#667' }, grid: { color: '#1a2535' }}, y: { ticks: { color: '#667' }, grid: { color: '#1a2535' }, min: 0 }}}
+    });
+}
+
+function renderTable(spc, meas) {
+    const dec = meas.decimals;
+    let h = '<table><thead><tr><th>組</th>';
+    for (let s = 1; s <= SAMPLE_SIZE; s++) h += `<th>S${s}</th>`;
+    h += '<th>X̄</th><th>R</th><th>狀態</th></tr></thead><tbody>';
+    meas.data.forEach((group, i) => {
+        const x = spc.xbar_ooc.includes(i), r = spc.r_ooc.includes(i);
+        const a = (x||r) ? ' class="alert"' : '';
+        h += `<tr><td${a}>${i+1}</td>`;
+        group.forEach(v => h += `<td>${v.toFixed(dec)}</td>`);
+        h += `<td${x?' class="alert"':''}>${spc.xbars[i].toFixed(dec)}</td>`;
+        h += `<td${r?' class="alert"':''}>${spc.ranges[i].toFixed(dec)}</td>`;
+        h += `<td>${(x||r)?'⚠️ 異常':'✅'}</td></tr>`;
+    });
+    h += '</tbody></table>';
+    document.getElementById('tableContainer').innerHTML = h;
+}
+
+function renderAll() {
+    const meas = measurements[currentKey];
+    const spc = calcSPC(meas);
+    renderControls(); renderKPI(spc); renderCharts(spc, meas); renderTable(spc, meas);
+}
+renderAll();
+</script>
+</body>
+</html>
