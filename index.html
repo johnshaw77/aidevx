@@ -5,191 +5,390 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>John Hsiao — Projects</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Noto+Sans+TC:wght@300;400;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400&display=swap');
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    background: #0b0f19;
+    background: #060a13;
     color: #c8cdd8;
     font-family: 'Inter', 'Noto Sans TC', sans-serif;
     min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 40px 20px;
+    overflow-x: hidden;
   }
 
-  .container {
-    max-width: 480px;
-    width: 100%;
+  /* Subtle grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
   }
 
+  /* Glow orbs */
+  .glow-1, .glow-2 {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .glow-1 {
+    width: 400px; height: 400px;
+    background: rgba(99, 102, 241, 0.06);
+    top: -100px; right: -100px;
+  }
+  .glow-2 {
+    width: 350px; height: 350px;
+    background: rgba(16, 185, 129, 0.04);
+    bottom: -80px; left: -80px;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 60px 32px 48px;
+  }
+
+  /* Header */
   .header {
-    text-align: center;
-    margin-bottom: 48px;
+    margin-bottom: 56px;
   }
 
-  .header h1 {
-    font-size: 1.6rem;
-    font-weight: 600;
-    color: #f0f2f6;
-    letter-spacing: 0.02em;
-  }
-
-  .header p {
-    margin-top: 8px;
-    font-size: 0.9rem;
-    color: #6b7280;
-    font-weight: 300;
-  }
-
-  .projects {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .project-link {
+  .header-top {
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 16px 20px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .avatar {
+    width: 44px;
+    height: 44px;
     border-radius: 12px;
-    text-decoration: none;
-    color: #c8cdd8;
-    transition: all 0.2s ease;
-  }
-
-  .project-link:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.12);
-    transform: translateY(-1px);
-  }
-
-  .project-icon {
-    font-size: 1.4rem;
-    width: 40px;
-    height: 40px;
+    background: linear-gradient(135deg, #6366f1, #10b981);
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.04);
-    border-radius: 10px;
+    font-size: 1.3rem;
     flex-shrink: 0;
   }
 
-  .project-info {
-    flex: 1;
+  .header-text h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #f0f2f6;
+    letter-spacing: -0.01em;
   }
 
-  .project-name {
-    font-size: 0.95rem;
-    font-weight: 500;
-    color: #e8ecf2;
-  }
-
-  .project-desc {
-    font-size: 0.78rem;
-    color: #6b7280;
+  .header-text .tagline {
+    font-size: 0.82rem;
+    color: #4b5563;
+    font-weight: 400;
     margin-top: 2px;
   }
 
-  .project-arrow {
-    color: #3b3f4a;
-    font-size: 1.1rem;
+  .header-desc {
+    font-size: 0.9rem;
+    color: #6b7280;
+    line-height: 1.7;
+    max-width: 600px;
+    margin-top: 16px;
+  }
+
+  .header-desc strong {
+    color: #9ca3af;
+    font-weight: 500;
+  }
+
+  .header-links {
+    display: flex;
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .header-links a {
+    font-size: 0.78rem;
+    color: #6366f1;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
     transition: color 0.2s;
   }
 
-  .project-link:hover .project-arrow {
-    color: #6b7280;
+  .header-links a:hover { color: #a5b4fc; }
+
+  /* Section */
+  .section-label {
+    font-size: 0.7rem;
+    color: #4b5563;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 600;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
 
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.05);
+  }
+
+  /* Card Grid */
+  .projects {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+
+  .card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 16px;
+    padding: 24px;
+    text-decoration: none;
+    color: #c8cdd8;
+    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+
+  .card:hover {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.1);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+  }
+
+  .card:hover::before { opacity: 1; }
+
+  .card:nth-child(6n+1)::before { background: linear-gradient(90deg, #6366f1, #818cf8); }
+  .card:nth-child(6n+2)::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+  .card:nth-child(6n+3)::before { background: linear-gradient(90deg, #10b981, #34d399); }
+  .card:nth-child(6n+4)::before { background: linear-gradient(90deg, #0ea5e9, #38bdf8); }
+  .card:nth-child(6n+5)::before { background: linear-gradient(90deg, #f43f5e, #fb7185); }
+  .card:nth-child(6n+6)::before { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+
+  .card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.04);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+  }
+
+  .card-tag {
+    font-size: 0.6rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: #4b5563;
+    background: rgba(255,255,255,0.03);
+    padding: 3px 8px;
+    border-radius: 6px;
+  }
+
+  .card-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #e8ecf2;
+    margin-bottom: 6px;
+  }
+
+  .card-desc {
+    font-size: 0.8rem;
+    color: #6b7280;
+    line-height: 1.5;
+    flex: 1;
+  }
+
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .card-path {
+    font-size: 0.7rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: #3b3f4a;
+  }
+
+  .card-arrow {
+    font-size: 0.9rem;
+    color: #3b3f4a;
+    transition: all 0.2s;
+  }
+
+  .card:hover .card-arrow {
+    color: #6b7280;
+    transform: translateX(3px);
+  }
+
+  /* Footer */
   .footer {
     text-align: center;
-    margin-top: 48px;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
+    color: #2a2e38;
+    padding-top: 8px;
+  }
+
+  .footer a {
     color: #3b3f4a;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .footer a:hover { color: #6b7280; }
+
+  @media (max-width: 680px) {
+    .page { padding: 40px 18px 32px; }
+    .projects { grid-template-columns: 1fr; }
+    .header-desc { font-size: 0.85rem; }
   }
 </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1>John Hsiao</h1>
-      <p>Projects & Experiments</p>
+
+<div class="glow-1"></div>
+<div class="glow-2"></div>
+
+<div class="page">
+  <div class="header">
+    <div class="header-top">
+      <div class="avatar">JH</div>
+      <div class="header-text">
+        <h1>John Hsiao</h1>
+        <div class="tagline">Smart Factory · Data Analytics · FPC Manufacturing</div>
+      </div>
     </div>
-
-    <div class="projects">
-      <a href="/factory-monitor/" class="project-link">
-        <div class="project-icon">🏭</div>
-        <div class="project-info">
-          <div class="project-name">智慧工廠監控系統</div>
-          <div class="project-desc">Factory floor personnel monitoring dashboard</div>
-        </div>
-        <div class="project-arrow">→</div>
-      </a>
-
-      <a href="/bwa-bwei/" class="project-link">
-        <div class="project-icon">🥠</div>
-        <div class="project-info">
-          <div class="project-name">線上擲筊</div>
-          <div class="project-desc">Ask the gods — virtual moon blocks divination</div>
-        </div>
-        <div class="project-arrow">→</div>
-      </a>
-
-      <a href="/aurora-borealis/" class="project-link">
-        <div class="project-icon">🌌</div>
-        <div class="project-info">
-          <div class="project-name">極光模擬器</div>
-          <div class="project-desc">Interactive aurora borealis — move, click, breathe</div>
-        </div>
-        <div class="project-arrow">→</div>
-      </a>
-
-      <a href="/typing-test/" class="project-link">
-        <div class="project-icon">⌨️</div>
-        <div class="project-info">
-          <div class="project-name">打字速度測試</div>
-          <div class="project-desc">Typing speed test — EN / 中文 / Code</div>
-        </div>
-        <div class="project-arrow">→</div>
-      </a>
-
-      <a href="/oee-dashboard/" class="project-link">
-        <div class="project-icon">📊</div>
-        <div class="project-info">
-          <div class="project-name">OEE 設備綜合效率儀表板</div>
-          <div class="project-desc">Overall Equipment Effectiveness — real-time monitoring</div>
-        </div>
-        <div class="project-arrow">→</div>
-      </a>
-
-      <a href="/digital-twin-fpc/" class="project-link">
-        <div class="project-icon">🔮</div>
-        <div class="project-info">
-          <div class="project-name">FPC 數位孿生</div>
-          <div class="project-desc">軟板產線數位孿生 — 8 站製程模擬 + What-If 情境分析</div>
-        </div>
-        <div class="project-arrow">→</div>
-      </a>
-
-      <!-- 未來新增更多專案，複製下方模板即可
-      <a href="/new-project/" class="project-link">
-        <div class="project-icon">🚀</div>
-        <div class="project-info">
-          <div class="project-name">新專案名稱</div>
-          <div class="project-desc">Short description here</div>
-        </div>
-        <div class="project-arrow">→</div>
-      </a>
-      -->
+    <div class="header-desc">
+      快速原型與實驗作品集。專注<strong>智慧製造</strong>與<strong>製程數據分析</strong>，用最少的程式碼把想法變成看得見的東西。
     </div>
-
-    <div class="footer">built with curiosity</div>
+    <div class="header-links">
+      <a href="https://github.com/johnshaw77/aidevx" target="_blank">⟶ GitHub</a>
+    </div>
   </div>
+
+  <div class="section-label">Projects</div>
+
+  <div class="projects">
+    <a href="/factory-monitor/" class="card">
+      <div class="card-top">
+        <div class="card-icon">🏭</div>
+        <div class="card-tag">2026-01-31</div>
+      </div>
+      <div class="card-name">智慧工廠監控系統</div>
+      <div class="card-desc">工廠人員即時監控儀表板，追蹤現場動態與安全狀態</div>
+      <div class="card-footer">
+        <span class="card-path">/factory-monitor</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <a href="/oee-dashboard/" class="card">
+      <div class="card-top">
+        <div class="card-icon">📊</div>
+        <div class="card-tag">2026-02-01</div>
+      </div>
+      <div class="card-name">OEE 設備綜合效率儀表板</div>
+      <div class="card-desc">稼動率 × 性能率 × 良率，六條產線即時 OEE 監控與六大損失分析</div>
+      <div class="card-footer">
+        <span class="card-path">/oee-dashboard</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <a href="/digital-twin-fpc/" class="card">
+      <div class="card-top">
+        <div class="card-icon">🔮</div>
+        <div class="card-tag">2026-02-01</div>
+      </div>
+      <div class="card-name">FPC 數位孿生</div>
+      <div class="card-desc">軟板產線數位孿生，8 站製程模擬 + What-If 情境分析</div>
+      <div class="card-footer">
+        <span class="card-path">/digital-twin-fpc</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <a href="/aurora-borealis/" class="card">
+      <div class="card-top">
+        <div class="card-icon">🌌</div>
+        <div class="card-tag">2026-02-01</div>
+      </div>
+      <div class="card-name">極光模擬器</div>
+      <div class="card-desc">互動式極光動畫，滑鼠控制光影流動，點擊觸發粒子效果</div>
+      <div class="card-footer">
+        <span class="card-path">/aurora-borealis</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <a href="/typing-test/" class="card">
+      <div class="card-top">
+        <div class="card-icon">⌨️</div>
+        <div class="card-tag">2026-02-01</div>
+      </div>
+      <div class="card-name">打字速度測試</div>
+      <div class="card-desc">支援英文、中文、程式碼三種模式的打字速度與準確率測試</div>
+      <div class="card-footer">
+        <span class="card-path">/typing-test</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <a href="/bwa-bwei/" class="card">
+      <div class="card-top">
+        <div class="card-icon">🥠</div>
+        <div class="card-tag">2026-02-01</div>
+      </div>
+      <div class="card-name">線上擲筊</div>
+      <div class="card-desc">心誠則靈，虛擬擲筊問神明，附擲筊統計與粒子特效</div>
+      <div class="card-footer">
+        <span class="card-path">/bwa-bwei</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+  </div>
+
+  <div class="footer">built with curiosity · <a href="https://github.com/johnshaw77/aidevx">source</a></div>
+</div>
+
 </body>
 </html>
