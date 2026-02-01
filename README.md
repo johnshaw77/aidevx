@@ -9,6 +9,8 @@ John Hsiao 的專案入口站 — 快速原型、idea 發想、實驗性作品�
 | 專案 | 路徑 | 說明 |
 |------|------|------|
 | 🏭 智慧工廠監控系統 | `/factory-monitor/` | Factory floor personnel monitoring dashboard |
+| 🥠 線上擲筊 | `/bwa-bwei/` | Virtual moon blocks divination |
+| ⌨️ 打字速度測試 | `/typing-test/` | Typing speed test (EN / 中文 / Code) |
 
 ## 架構
 

@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>打字速度測試 — Typing Speed Test</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Noto+Sans+TC:wght@300;400;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0b0f19;
+    color: #c8cdd8;
+    font-family: 'Noto Sans TC', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .home-link {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    color: #4b5563;
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: color 0.2s;
+  }
+  .home-link:hover { color: #9ca3af; }
+
+  .container {
+    max-width: 700px;
+    width: 100%;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #f0f2f6;
+    margin-bottom: 8px;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: #6b7280;
+    font-size: 0.85rem;
+    margin-bottom: 32px;
+  }
+
+  .mode-switch {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  .mode-btn {
+    padding: 8px 20px;
+    font-size: 0.85rem;
+    font-family: 'Noto Sans TC', sans-serif;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #6b7280;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .mode-btn.active {
+    background: rgba(99,102,241,0.15);
+    border-color: rgba(99,102,241,0.3);
+    color: #a5b4fc;
+  }
+
+  .mode-btn:hover { border-color: rgba(255,255,255,0.15); }
+
+  .text-display {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+    padding: 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.25rem;
+    line-height: 2;
+    letter-spacing: 0.03em;
+    min-height: 160px;
+    margin-bottom: 24px;
+    user-select: none;
+  }
+
+  .text-display .char {
+    transition: color 0.05s;
+  }
+
+  .char.correct { color: #6ee7b7; }
+  .char.incorrect { color: #f87171; background: rgba(248,113,113,0.15); border-radius: 2px; }
+  .char.current { border-bottom: 2px solid #a5b4fc; color: #f0f2f6; }
+  .char.waiting { color: #4b5563; }
+
+  .input-area {
+    width: 100%;
+    padding: 16px 20px;
+    font-size: 1.1rem;
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    color: #e0e6f0;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .input-area:focus {
+    border-color: rgba(99,102,241,0.4);
+  }
+
+  .input-area:disabled {
+    opacity: 0.4;
+  }
+
+  .stats {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin-top: 24px;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .stat-value.wpm { color: #a5b4fc; }
+  .stat-value.acc { color: #6ee7b7; }
+  .stat-value.time { color: #fbbf24; }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .result-panel {
+    display: none;
+    text-align: center;
+    margin-top: 32px;
+    padding: 32px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+  }
+
+  .result-panel h2 {
+    font-size: 1.5rem;
+    color: #f0f2f6;
+    margin-bottom: 24px;
+  }
+
+  .restart-btn {
+    margin-top: 24px;
+    padding: 12px 36px;
+    font-size: 1rem;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-weight: 600;
+    background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
+    color: #fff;
+    border: none;
+    border-radius: 40px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .restart-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(99,102,241,0.3);
+  }
+
+  .timer-bar {
+    height: 3px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+
+  .timer-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1, #a5b4fc);
+    border-radius: 2px;
+    transition: width 0.1s linear;
+    width: 100%;
+  }
+</style>
+</head>
+<body>
+
+<a href="/" class="home-link">← 返回首頁</a>
+
+<div class="container">
+  <h1>⌨️ 打字速度測試</h1>
+  <div class="subtitle">開始打字即計時，看看你有多快</div>
+
+  <div class="mode-switch">
+    <button class="mode-btn active" onclick="setMode('en')">English</button>
+    <button class="mode-btn" onclick="setMode('zh')">中文</button>
+    <button class="mode-btn" onclick="setMode('code')">Code</button>
+  </div>
+
+  <div class="timer-bar"><div class="timer-bar-fill" id="timerBar"></div></div>
+
+  <div class="text-display" id="textDisplay"></div>
+
+  <input type="text" class="input-area" id="inputArea" placeholder="在這裡開始打字..." autofocus autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-value wpm" id="wpmDisplay">0</div>
+      <div class="stat-label">WPM</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value acc" id="accDisplay">100</div>
+      <div class="stat-label">準確率 %</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value time" id="timeDisplay">30</div>
+      <div class="stat-label">秒</div>
+    </div>
+  </div>
+
+  <div class="result-panel" id="resultPanel">
+    <h2>🎉 測試完成！</h2>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value wpm" id="finalWpm">0</div>
+        <div class="stat-label">WPM</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value acc" id="finalAcc">100</div>
+        <div class="stat-label">準確率 %</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value time" id="finalChars">0</div>
+        <div class="stat-label">字元</div>
+      </div>
+    </div>
+    <button class="restart-btn" onclick="restart()">再來一次</button>
+  </div>
+</div>
+
+<script>
+const texts = {
+  en: [
+    "The quick brown fox jumps over the lazy dog near the riverbank while the sun sets behind the mountains creating a beautiful golden glow across the valley",
+    "Programming is not about typing fast it is about thinking clearly and solving problems one step at a time with patience and determination",
+    "Every great developer you know started exactly where you are now and the only difference between them and you is they decided not to give up",
+    "The best way to predict the future is to create it yourself so start building today and let your work speak louder than your words ever could",
+    "Coffee is the fuel that powers the modern world of software development without it nothing would compile and all servers would crash immediately"
+  ],
+  zh: [
+    "今天天氣很好適合出門走走呼吸新鮮空氣看看藍天白雲讓心情變得更加愉快",
+    "學習程式設計最重要的是保持耐心和好奇心每天進步一點點就能累積成大的改變",
+    "科技改變了我們的生活方式從手機到電腦從社群到雲端每一天都有新的可能性",
+    "成功不是終點失敗也不是結局最重要的是繼續前進的勇氣和永不放棄的決心",
+    "寫程式就像寫文章一樣需要清晰的邏輯和結構好的程式碼應該像好的散文一樣易讀"
+  ],
+  code: [
+    "const app = express(); app.get('/api/users', async (req, res) => { const users = await db.query('SELECT * FROM users'); res.json(users); });",
+    "function fibonacci(n) { if (n <= 1) return n; return fibonacci(n - 1) + fibonacci(n - 2); } console.log(fibonacci(10));",
+    "import React, { useState, useEffect } from 'react'; const App = () => { const [data, setData] = useState([]); return <div>{data.map(item => <p key={item.id}>{item.name}</p>)}</div>; };",
+    "docker run -d --name web -p 80:3000 -v ./data:/app/data --env NODE_ENV=production --restart=always my-app:latest",
+    "git checkout -b feature/new-login && git add . && git commit -m 'feat: add OAuth2 login flow' && git push origin feature/new-login"
+  ]
+};
+
+let currentMode = 'en';
+let currentText = '';
+let charIndex = 0;
+let startTime = null;
+let timerInterval = null;
+let totalTime = 30;
+let correctChars = 0;
+let totalTyped = 0;
+let isFinished = false;
+
+function setMode(mode) {
+  currentMode = mode;
+  document.querySelectorAll('.mode-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', ['en','zh','code'][i] === mode);
+  });
+  restart();
+}
+
+function pickText() {
+  const pool = texts[currentMode];
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function renderText() {
+  const display = document.getElementById('textDisplay');
+  display.innerHTML = currentText.split('').map((ch, i) => {
+    let cls = 'waiting';
+    if (i < charIndex) cls = ch === currentText[i] ? 'correct' : 'incorrect';
+    if (i === charIndex) cls = 'current';
+    return `<span class="char ${cls}">${ch === ' ' ? '&nbsp;' : ch}</span>`;
+  }).join('');
+}
+
+function updateStats() {
+  if (!startTime) return;
+  const elapsed = (Date.now() - startTime) / 1000;
+  const remaining = Math.max(0, totalTime - elapsed);
+  const minutes = elapsed / 60;
+  const wpm = minutes > 0 ? Math.round((correctChars / 5) / minutes) : 0;
+  const acc = totalTyped > 0 ? Math.round((correctChars / totalTyped) * 100) : 100;
+
+  document.getElementById('wpmDisplay').textContent = wpm;
+  document.getElementById('accDisplay').textContent = acc;
+  document.getElementById('timeDisplay').textContent = Math.ceil(remaining);
+  document.getElementById('timerBar').style.width = (remaining / totalTime * 100) + '%';
+
+  if (remaining <= 0) finish(wpm, acc);
+}
+
+function finish(wpm, acc) {
+  if (isFinished) return;
+  isFinished = true;
+  clearInterval(timerInterval);
+  
+  const input = document.getElementById('inputArea');
+  input.disabled = true;
+
+  if (!wpm) {
+    const elapsed = (Date.now() - startTime) / 1000;
+    const minutes = elapsed / 60;
+    wpm = minutes > 0 ? Math.round((correctChars / 5) / minutes) : 0;
+    acc = totalTyped > 0 ? Math.round((correctChars / totalTyped) * 100) : 100;
+  }
+
+  document.getElementById('finalWpm').textContent = wpm;
+  document.getElementById('finalAcc').textContent = acc + '%';
+  document.getElementById('finalChars').textContent = correctChars;
+  document.getElementById('resultPanel').style.display = 'block';
+}
+
+function restart() {
+  clearInterval(timerInterval);
+  currentText = pickText();
+  charIndex = 0;
+  startTime = null;
+  correctChars = 0;
+  totalTyped = 0;
+  isFinished = false;
+
+  document.getElementById('inputArea').value = '';
+  document.getElementById('inputArea').disabled = false;
+  document.getElementById('inputArea').focus();
+  document.getElementById('resultPanel').style.display = 'none';
+  document.getElementById('wpmDisplay').textContent = '0';
+  document.getElementById('accDisplay').textContent = '100';
+  document.getElementById('timeDisplay').textContent = totalTime;
+  document.getElementById('timerBar').style.width = '100%';
+
+  renderText();
+}
+
+document.getElementById('inputArea').addEventListener('input', function(e) {
+  if (isFinished) return;
+
+  if (!startTime) {
+    startTime = Date.now();
+    timerInterval = setInterval(updateStats, 100);
+  }
+
+  const val = e.target.value;
+  const lastChar = val[val.length - 1];
+
+  if (charIndex < currentText.length) {
+    totalTyped++;
+    if (lastChar === currentText[charIndex]) {
+      correctChars++;
+    }
+    charIndex++;
+    renderText();
+    updateStats();
+  }
+
+  if (charIndex >= currentText.length) {
+    finish();
+  }
+
+  e.target.value = '';
+});
+
+document.getElementById('inputArea').addEventListener('keydown', function(e) {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    restart();
+  }
+});
+
+restart();
+</script>
+
+</body>
+</html>
