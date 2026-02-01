@@ -11,6 +11,7 @@ John Hsiao 的專案入口站 — 快速原型、idea 發想、實驗性作品�
 | 🏭 智慧工廠監控系統 | `/factory-monitor/` | Factory floor personnel monitoring dashboard |
 | 🥠 線上擲筊 | `/bwa-bwei/` | Virtual moon blocks divination |
 | ⌨️ 打字速度測試 | `/typing-test/` | Typing speed test (EN / 中文 / Code) |
+| 📊 OEE 設備綜合效率儀表板 | `/oee-dashboard/` | Overall Equipment Effectiveness monitoring |
 | 🌌 極光模擬器 | `/aurora-borealis/` | Interactive aurora borealis — move, click, breathe |
 
 ## 架構
