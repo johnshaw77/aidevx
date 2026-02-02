@@ -252,10 +252,102 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
+        .custom-stock {
+            margin-top: 2rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .custom-stock h3 {
+            color: white;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .add-stock-form {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .add-stock-form input {
+            padding: 0.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            min-width: 120px;
+            flex: 1;
+        }
+
+        .add-stock-form button {
+            background: linear-gradient(45deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .add-stock-form button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .stock-list {
+            margin-top: 1rem;
+        }
+
+        .stock-list-title {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stock-list-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .stock-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.3rem 0.7rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stock-item .remove {
+            cursor: pointer;
+            color: #ff6b6b;
+            font-weight: bold;
+            font-size: 0.7rem;
+        }
+
+        .stock-item .remove:hover {
+            color: #ff5252;
+        }
+
         @media (max-width: 768px) {
             h1 { font-size: 2rem; }
             .lottery-machine { flex-direction: column; align-items: center; }
             .slot { width: 250px; margin: 0.5rem 0; }
+            .add-stock-form { flex-direction: column; }
+            .add-stock-form input { min-width: auto; }
         }
     </style>
 </head>
@@ -263,8 +355,8 @@
     <div class="particles" id="particles"></div>
     
     <div class="container">
-        <h1>🎰 股票搖搖樂</h1>
-        <p class="subtitle">搖出你的幸運股票！看看今天運氣如何～</p>
+        <h1>🎰 台股搖搖樂</h1>
+        <p class="subtitle">搖出你的幸運台股！上市櫃精選 + 自訂股票池～</p>
         
         <div class="lottery-machine">
             <div class="slot" id="slot1">
@@ -289,6 +381,18 @@
         
         <button class="spin-button" onclick="spin()">🍀 搖一搖！</button>
         
+        <div class="custom-stock">
+            <h3>📝 自定義股票</h3>
+            <div class="add-stock-form">
+                <input type="text" id="stockSymbol" placeholder="股票代號 (如: 2330)" maxlength="10">
+                <input type="text" id="stockName" placeholder="股票名稱 (如: 台積電)" maxlength="20">
+                <button onclick="addCustomStock()">➕ 添加</button>
+            </div>
+            <div class="stock-list" id="stockList">
+                <div class="stock-list-title">目前股票池：</div>
+            </div>
+        </div>
+        
         <div class="luck-meter">
             <div class="luck-title">🎯 今日運氣指數</div>
             <div class="luck-bar">
@@ -299,34 +403,46 @@
     </div>
 
     <script>
-        const stocks = [
+        let stocks = [
             // 科技股
-            { symbol: 'AAPL', name: 'Apple Inc.', sector: 'tech' },
-            { symbol: 'MSFT', name: 'Microsoft', sector: 'tech' },
-            { symbol: 'GOOGL', name: 'Alphabet', sector: 'tech' },
-            { symbol: 'AMZN', name: 'Amazon', sector: 'tech' },
-            { symbol: 'TSLA', name: 'Tesla Inc.', sector: 'tech' },
-            { symbol: 'META', name: 'Meta Platforms', sector: 'tech' },
-            { symbol: 'NVDA', name: 'NVIDIA', sector: 'tech' },
-            { symbol: 'NFLX', name: 'Netflix', sector: 'tech' },
+            { symbol: '2330', name: '台積電', sector: 'tech' },
+            { symbol: '2454', name: '聯發科', sector: 'tech' },
+            { symbol: '2408', name: '南亞科', sector: 'tech' },
+            { symbol: '3008', name: '大立光', sector: 'tech' },
+            { symbol: '2379', name: '瑞昱', sector: 'tech' },
+            { symbol: '3034', name: '聯詠', sector: 'tech' },
+            { symbol: '6415', name: '矽力-KY', sector: 'tech' },
+            { symbol: '3711', name: '日月光投控', sector: 'tech' },
             
             // 金融股
-            { symbol: 'JPM', name: 'JPMorgan Chase', sector: 'finance' },
-            { symbol: 'BAC', name: 'Bank of America', sector: 'finance' },
-            { symbol: 'WFC', name: 'Wells Fargo', sector: 'finance' },
-            { symbol: 'GS', name: 'Goldman Sachs', sector: 'finance' },
+            { symbol: '2882', name: '國泰金', sector: 'finance' },
+            { symbol: '2881', name: '富邦金', sector: 'finance' },
+            { symbol: '2885', name: '元大金', sector: 'finance' },
+            { symbol: '2886', name: '兆豐金', sector: 'finance' },
+            { symbol: '2883', name: '開發金', sector: 'finance' },
+            { symbol: '5880', name: '合庫金', sector: 'finance' },
             
-            // 傳統股
-            { symbol: 'KO', name: 'Coca-Cola', sector: 'traditional' },
-            { symbol: 'PG', name: 'Procter & Gamble', sector: 'traditional' },
-            { symbol: 'JNJ', name: 'Johnson & Johnson', sector: 'traditional' },
-            { symbol: 'WMT', name: 'Walmart', sector: 'traditional' },
+            // 傳產股
+            { symbol: '2317', name: '鴻海', sector: 'traditional' },
+            { symbol: '1303', name: '南亞', sector: 'traditional' },
+            { symbol: '1301', name: '台塑', sector: 'traditional' },
+            { symbol: '2002', name: '中鋼', sector: 'traditional' },
+            { symbol: '2105', name: '正新', sector: 'traditional' },
+            { symbol: '1326', name: '台化', sector: 'traditional' },
             
-            // 台股
-            { symbol: '2330', name: '台積電 TSMC', sector: 'taiwan' },
-            { symbol: '2317', name: '鴻海 Foxconn', sector: 'taiwan' },
-            { symbol: '2454', name: '聯發科 MediaTek', sector: 'taiwan' },
-            { symbol: '2412', name: '中華電信', sector: 'taiwan' },
+            // 電信/公用事業
+            { symbol: '2412', name: '中華電', sector: 'telecom' },
+            { symbol: '3045', name: '台灣大', sector: 'telecom' },
+            { symbol: '4904', name: '遠傳', sector: 'telecom' },
+            
+            // 零售/服務
+            { symbol: '2915', name: '潤泰全', sector: 'retail' },
+            { symbol: '9921', name: '巨大', sector: 'retail' },
+            { symbol: '2912', name: '統一超', sector: 'retail' },
+            
+            // 生技醫療
+            { symbol: '6505', name: '台塑化', sector: 'biotech' },
+            { symbol: '1477', name: '聚陽', sector: 'biotech' },
         ];
 
         let isSpinning = false;
@@ -383,8 +499,16 @@
                 luckScore += 20; // 全紅獎勵
             }
             
-            if (results.some(r => r.stock.symbol === 'TSLA' || r.stock.symbol === '2330')) {
-                luckScore += 10; // 明星股獎勵
+            if (results.some(r => ['2330', '2454', '3008', '2882'].includes(r.stock.symbol))) {
+                luckScore += 15; // 台股明星股獎勵 (台積電、聯發科、大立光、國泰金)
+            }
+            
+            if (results.some(r => r.stock.sector === 'tech')) {
+                luckScore += 10; // 科技股獎勵
+            }
+            
+            if (results.some(r => r.stock.sector === 'custom')) {
+                luckScore += 5; // 自選股獎勵
             }
             
             return Math.max(0, Math.min(100, luckScore));
@@ -489,7 +613,83 @@
             }, spinDuration);
         }
 
-        // 初始化粒子效果
+        function addCustomStock() {
+            const symbolInput = document.getElementById('stockSymbol');
+            const nameInput = document.getElementById('stockName');
+            
+            const symbol = symbolInput.value.trim();
+            const name = nameInput.value.trim();
+            
+            if (!symbol || !name) {
+                alert('請輸入股票代號和名稱！');
+                return;
+            }
+            
+            // 檢查是否已存在
+            if (stocks.find(s => s.symbol === symbol)) {
+                alert('此股票已在清單中！');
+                return;
+            }
+            
+            // 添加到股票清單
+            stocks.push({
+                symbol: symbol,
+                name: name,
+                sector: 'custom'
+            });
+            
+            // 清空輸入框
+            symbolInput.value = '';
+            nameInput.value = '';
+            
+            // 更新顯示
+            updateStockList();
+            
+            // 顯示成功提示
+            alert(`成功添加 ${symbol} ${name}！`);
+        }
+        
+        function removeStock(symbol) {
+            if (confirm(`確定要移除 ${symbol} 嗎？`)) {
+                stocks = stocks.filter(s => s.symbol !== symbol);
+                updateStockList();
+            }
+        }
+        
+        function updateStockList() {
+            const stockList = document.getElementById('stockList');
+            
+            let html = '<div class="stock-list-title">目前股票池：</div>';
+            html += '<div class="stock-list-items">';
+            
+            stocks.forEach(stock => {
+                html += `
+                    <div class="stock-item">
+                        ${stock.symbol} ${stock.name}
+                        <span class="remove" onclick="removeStock('${stock.symbol}')">✕</span>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            stockList.innerHTML = html;
+        }
+        
+        // Enter 鍵支援
+        document.getElementById('stockSymbol').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('stockName').focus();
+            }
+        });
+        
+        document.getElementById('stockName').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addCustomStock();
+            }
+        });
+        
+        // 初始化
+        updateStockList();
         setInterval(createParticles, 5000);
         createParticles();
     </script>
