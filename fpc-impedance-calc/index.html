@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FPC 阻抗計算器 | AIDevX</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: rgba(52, 152, 219, 0.2);
+            color: #3498db;
+            text-decoration: none;
+            border-radius: 8px;
+            border: 1px solid rgba(52, 152, 219, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            background: rgba(52, 152, 219, 0.3);
+            transform: translateY(-2px);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #3498db, #e74c3c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #bdc3c7;
+            margin-bottom: 30px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .calc-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #3498db;
+            border-bottom: 2px solid rgba(52, 152, 219, 0.3);
+            padding-bottom: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #ecf0f1;
+            font-weight: 500;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+        .input-group select option {
+            background: #2c3e50;
+            color: white;
+        }
+
+        .unit {
+            color: #95a5a6;
+            font-size: 0.9rem;
+            margin-left: 5px;
+        }
+
+        .result-section {
+            background: rgba(46, 204, 113, 0.1);
+            border: 1px solid rgba(46, 204, 113, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .result-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2ecc71;
+            margin-bottom: 10px;
+        }
+
+        .result-label {
+            color: #bdc3c7;
+        }
+
+        .formula-section {
+            background: rgba(155, 89, 182, 0.1);
+            border: 1px solid rgba(155, 89, 182, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .formula {
+            font-family: 'Courier New', monospace;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            color: #f39c12;
+        }
+
+        .note {
+            background: rgba(241, 196, 15, 0.1);
+            border: 1px solid rgba(241, 196, 15, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            color: #f1c40f;
+        }
+
+        .specs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .spec-item {
+            background: rgba(52, 152, 219, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(52, 152, 219, 0.2);
+        }
+
+        .spec-label {
+            color: #3498db;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .spec-value {
+            color: #ecf0f1;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .calc-section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="../" class="back-link">← 返回首頁</a>
+        <h1>🔌 FPC 阻抗計算器</h1>
+        <p class="subtitle">精準計算軟板走線阻抗，優化製程參數</p>
+    </div>
+
+    <div class="container">
+        <!-- 單端阻抗計算 -->
+        <div class="calc-section">
+            <h2 class="section-title">🔗 單端阻抗計算</h2>
+            
+            <div class="input-group">
+                <label>走線寬度 (W) <span class="unit">μm</span></label>
+                <input type="number" id="singleW" value="100" step="0.1">
+            </div>
+            
+            <div class="input-group">
+                <label>介電層厚度 (H) <span class="unit">μm</span></label>
+                <input type="number" id="singleH" value="50" step="0.1">
+            </div>
+            
+            <div class="input-group">
+                <label>走線厚度 (T) <span class="unit">μm</span></label>
+                <input type="number" id="singleT" value="18" step="0.1">
+            </div>
+            
+            <div class="input-group">
+                <label>介電常數 (εr)</label>
+                <select id="singleEr">
+                    <option value="3.3">PI (聚酰亞胺) - 3.3</option>
+                    <option value="3.0">PET (聚酯) - 3.0</option>
+                    <option value="2.8">LCP (液晶聚合物) - 2.8</option>
+                    <option value="4.2">FR4 - 4.2</option>
+                    <option value="custom">自定義</option>
+                </select>
+            </div>
+            
+            <div class="input-group" id="customErSingle" style="display: none;">
+                <label>自定義介電常數</label>
+                <input type="number" id="customSingleEr" value="3.3" step="0.1">
+            </div>
+
+            <div class="result-section">
+                <div class="result-value" id="singleResult">50.0 Ω</div>
+                <div class="result-label">單端阻抗</div>
+            </div>
+
+            <div class="formula-section">
+                <h3 style="color: #9b59b6; margin-bottom: 15px;">計算公式</h3>
+                <div class="formula">Z₀ = (87/√(εr+1.41)) × ln(5.98H/(0.8W+T))</div>
+                <p style="color: #bdc3c7; font-size: 0.9rem;">適用於微帶線結構 (W/H ≤ 1)</p>
+            </div>
+        </div>
+
+        <!-- 差分阻抗計算 -->
+        <div class="calc-section">
+            <h2 class="section-title">⚡ 差分阻抗計算</h2>
+            
+            <div class="input-group">
+                <label>走線寬度 (W) <span class="unit">μm</span></label>
+                <input type="number" id="diffW" value="100" step="0.1">
+            </div>
+            
+            <div class="input-group">
+                <label>走線間距 (S) <span class="unit">μm</span></label>
+                <input type="number" id="diffS" value="100" step="0.1">
+            </div>
+            
+            <div class="input-group">
+                <label>介電層厚度 (H) <span class="unit">μm</span></label>
+                <input type="number" id="diffH" value="50" step="0.1">
+            </div>
+            
+            <div class="input-group">
+                <label>走線厚度 (T) <span class="unit">μm</span></label>
+                <input type="number" id="diffT" value="18" step="0.1">
+            </div>
+            
+            <div class="input-group">
+                <label>介電常數 (εr)</label>
+                <select id="diffEr">
+                    <option value="3.3">PI (聚酰亞胺) - 3.3</option>
+                    <option value="3.0">PET (聚酯) - 3.0</option>
+                    <option value="2.8">LCP (液晶聚合物) - 2.8</option>
+                    <option value="4.2">FR4 - 4.2</option>
+                    <option value="custom">自定義</option>
+                </select>
+            </div>
+            
+            <div class="input-group" id="customErDiff" style="display: none;">
+                <label>自定義介電常數</label>
+                <input type="number" id="customDiffEr" value="3.3" step="0.1">
+            </div>
+
+            <div class="result-section">
+                <div class="result-value" id="diffResult">100.0 Ω</div>
+                <div class="result-label">差分阻抗</div>
+            </div>
+
+            <div class="specs-grid">
+                <div class="spec-item">
+                    <div class="spec-label">奇模阻抗</div>
+                    <div class="spec-value" id="oddMode">50.0 Ω</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">偶模阻抗</div>
+                    <div class="spec-value" id="evenMode">25.0 Ω</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">耦合係數</div>
+                    <div class="spec-value" id="coupling">0.33</div>
+                </div>
+            </div>
+
+            <div class="formula-section">
+                <h3 style="color: #9b59b6; margin-bottom: 15px;">計算公式</h3>
+                <div class="formula">Z_diff = 2 × Z_odd</div>
+                <div class="formula">Z_odd = Z₀ / √(1 + k)</div>
+                <div class="formula">k = C_coupled / C_isolated</div>
+                <p style="color: #bdc3c7; font-size: 0.9rem;">k 為耦合係數，與走線間距和介電層厚度相關</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="note">
+        <strong>⚠️ 使用說明：</strong><br>
+        • 此計算器適用於典型 FPC 微帶線結構<br>
+        • 計算結果為理論值，實際製程中需考慮加工公差<br>
+        • 建議配合阻抗測試進行驗證<br>
+        • PI 材料在高頻應用中具有優異的介電特性
+    </div>
+
+    <script>
+        // 單端阻抗計算
+        function calculateSingleEndedImpedance() {
+            const W = parseFloat(document.getElementById('singleW').value) || 0;
+            const H = parseFloat(document.getElementById('singleH').value) || 0;
+            const T = parseFloat(document.getElementById('singleT').value) || 0;
+            let Er = parseFloat(document.getElementById('singleEr').value) || 0;
+            
+            if (document.getElementById('singleEr').value === 'custom') {
+                Er = parseFloat(document.getElementById('customSingleEr').value) || 0;
+            }
+            
+            if (W > 0 && H > 0 && Er > 0) {
+                // 微帶線阻抗計算公式 (考慮走線厚度)
+                const effectiveW = W + T * 1.25; // 有效寬度修正
+                const Z0 = (87 / Math.sqrt(Er + 1.41)) * Math.log(5.98 * H / (0.8 * effectiveW + T));
+                
+                document.getElementById('singleResult').textContent = Z0.toFixed(1) + ' Ω';
+            }
+        }
+
+        // 差分阻抗計算
+        function calculateDifferentialImpedance() {
+            const W = parseFloat(document.getElementById('diffW').value) || 0;
+            const S = parseFloat(document.getElementById('diffS').value) || 0;
+            const H = parseFloat(document.getElementById('diffH').value) || 0;
+            const T = parseFloat(document.getElementById('diffT').value) || 0;
+            let Er = parseFloat(document.getElementById('diffEr').value) || 0;
+            
+            if (document.getElementById('diffEr').value === 'custom') {
+                Er = parseFloat(document.getElementById('customDiffEr').value) || 0;
+            }
+            
+            if (W > 0 && S > 0 && H > 0 && Er > 0) {
+                // 計算單端阻抗
+                const effectiveW = W + T * 1.25;
+                const Z0 = (87 / Math.sqrt(Er + 1.41)) * Math.log(5.98 * H / (0.8 * effectiveW + T));
+                
+                // 計算耦合係數
+                const ratio = S / H;
+                const coupling = Math.exp(-Math.PI * ratio / 2) * (ratio < 1 ? 0.6 : 0.4);
+                
+                // 奇偶模阻抗
+                const ZOdd = Z0 * Math.sqrt((1 - coupling) / (1 + coupling));
+                const ZEven = Z0 * Math.sqrt((1 + coupling) / (1 - coupling));
+                
+                // 差分阻抗
+                const ZDiff = 2 * ZOdd;
+                
+                document.getElementById('diffResult').textContent = ZDiff.toFixed(1) + ' Ω';
+                document.getElementById('oddMode').textContent = ZOdd.toFixed(1) + ' Ω';
+                document.getElementById('evenMode').textContent = ZEven.toFixed(1) + ' Ω';
+                document.getElementById('coupling').textContent = coupling.toFixed(3);
+            }
+        }
+
+        // 自定義介電常數顯示控制
+        document.getElementById('singleEr').addEventListener('change', function() {
+            const customDiv = document.getElementById('customErSingle');
+            if (this.value === 'custom') {
+                customDiv.style.display = 'block';
+            } else {
+                customDiv.style.display = 'none';
+            }
+            calculateSingleEndedImpedance();
+        });
+
+        document.getElementById('diffEr').addEventListener('change', function() {
+            const customDiv = document.getElementById('customErDiff');
+            if (this.value === 'custom') {
+                customDiv.style.display = 'block';
+            } else {
+                customDiv.style.display = 'none';
+            }
+            calculateDifferentialImpedance();
+        });
+
+        // 綁定輸入事件
+        const singleInputs = ['singleW', 'singleH', 'singleT', 'customSingleEr'];
+        singleInputs.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('input', calculateSingleEndedImpedance);
+            }
+        });
+
+        const diffInputs = ['diffW', 'diffS', 'diffH', 'diffT', 'customDiffEr'];
+        diffInputs.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('input', calculateDifferentialImpedance);
+            }
+        });
+
+        // 初始計算
+        calculateSingleEndedImpedance();
+        calculateDifferentialImpedance();
+    </script>
+</body>
+</html>
