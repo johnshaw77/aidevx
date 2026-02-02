@@ -155,13 +155,13 @@
         }
 
         .positive {
-            color: #27ae60;
-            background: rgba(39, 174, 96, 0.1);
+            color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
         }
 
         .negative {
-            color: #e74c3c;
-            background: rgba(231, 76, 60, 0.1);
+            color: #27ae60;
+            background: rgba(39, 174, 96, 0.1);
         }
 
         .spin-button {
@@ -362,19 +362,19 @@
             <div class="slot" id="slot1">
                 <div class="stock-symbol">?</div>
                 <div class="stock-name">準備搖獎</div>
-                <div class="stock-price">$--</div>
+                <div class="stock-price">NT$--</div>
                 <div class="stock-change">--%</div>
             </div>
             <div class="slot" id="slot2">
                 <div class="stock-symbol">?</div>
                 <div class="stock-name">準備搖獎</div>
-                <div class="stock-price">$--</div>
+                <div class="stock-price">NT$--</div>
                 <div class="stock-change">--%</div>
             </div>
             <div class="slot" id="slot3">
                 <div class="stock-symbol">?</div>
                 <div class="stock-name">準備搖獎</div>
-                <div class="stock-price">$--</div>
+                <div class="stock-price">NT$--</div>
                 <div class="stock-change">--%</div>
             </div>
         </div>
@@ -470,7 +470,7 @@
         }
 
         function getRandomPrice() {
-            return (Math.random() * 500 + 50).toFixed(2);
+            return (Math.random() * 800 + 20).toFixed(2);
         }
 
         function getRandomChange() {
@@ -578,7 +578,7 @@
                     
                     symbolEl.textContent = stock.symbol;
                     nameEl.textContent = stock.name;
-                    priceEl.textContent = `$${price}`;
+                    priceEl.textContent = `NT$${price}`;
                     changeEl.textContent = `${change.positive ? '+' : ''}${change.value} (${change.positive ? '+' : ''}${change.percentage}%)`;
                     changeEl.className = `stock-change ${change.positive ? 'positive' : 'negative'}`;
                     
