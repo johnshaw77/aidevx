@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emoji 翻譯神器 | 表情符號雙向翻譯</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            padding: 30px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .translator-section {
+            margin-bottom: 40px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            border-left: 5px solid #4ECDC4;
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-area, .output-area {
+            margin-bottom: 20px;
+        }
+
+        .input-area textarea, .output-area .result-box {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+        }
+
+        .input-area textarea {
+            background: white;
+        }
+
+        .input-area textarea:focus {
+            outline: none;
+            border-color: #4ECDC4;
+        }
+
+        .result-box {
+            background: #fff3cd;
+            border-color: #ffeaa7;
+            font-size: 20px;
+            line-height: 1.6;
+            color: #333;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .translate-btn {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .translate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .emoji-display {
+            font-size: 2.5em;
+            line-height: 1.4;
+        }
+
+        .examples {
+            background: #e3f2fd;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .examples h3 {
+            color: #1976d2;
+            margin-bottom: 15px;
+        }
+
+        .example-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .example-arrow {
+            color: #4ECDC4;
+            font-weight: bold;
+        }
+
+        .reverse-section {
+            border-left-color: #FF6B6B;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌟 Emoji 翻譯神器 🌟</h1>
+            <p>讓文字和表情符號互相翻譯，感受不一樣的溝通樂趣！</p>
+        </div>
+
+        <div class="main-content">
+            <!-- 文字轉 Emoji -->
+            <div class="translator-section">
+                <h2 class="section-title">
+                    📝 文字轉表情符號
+                </h2>
+                <div class="input-area">
+                    <textarea id="textInput" placeholder="輸入中文或英文，例如：我很開心賺錢了！"></textarea>
+                </div>
+                <button class="translate-btn" onclick="translateToEmoji()">
+                    ✨ 轉換成 Emoji
+                </button>
+                <div class="output-area">
+                    <div id="emojiResult" class="result-box emoji-display">
+                        在上方輸入文字，看看會變成什麼表情符號！ 🤔
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emoji 轉文字 -->
+            <div class="translator-section reverse-section">
+                <h2 class="section-title">
+                    😊 表情符號轉文字
+                </h2>
+                <div class="input-area">
+                    <textarea id="emojiInput" placeholder="輸入表情符號，例如：😊📈💰🎉"></textarea>
+                </div>
+                <button class="translate-btn" onclick="translateToText()">
+                    📖 解讀含義
+                </button>
+                <div class="output-area">
+                    <div id="textResult" class="result-box">
+                        在上方輸入表情符號，讓我為你解讀含義！
+                    </div>
+                </div>
+            </div>
+
+            <!-- 範例展示 -->
+            <div class="examples">
+                <h3>💡 使用範例</h3>
+                <div class="example-item">
+                    <span>我今天很開心</span>
+                    <span class="example-arrow">→</span>
+                    <span>😊🌞💖</span>
+                </div>
+                <div class="example-item">
+                    <span>股票大漲賺錢了</span>
+                    <span class="example-arrow">→</span>
+                    <span>📈💰🎉🚀</span>
+                </div>
+                <div class="example-item">
+                    <span>😴☕📚💼</span>
+                    <span class="example-arrow">→</span>
+                    <span>疲憊的上班族需要咖啡和工作</span>
+                </div>
+                <div class="example-item">
+                    <span>🌮🍕🍣❤️</span>
+                    <span class="example-arrow">→</span>
+                    <span>熱愛各國美食的吃貨</span>
+                </div>
+            </div>
+
+            <!-- 統計資訊 -->
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number">500+</div>
+                    <div>支援詞彙</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">1000+</div>
+                    <div>表情符號</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">∞</div>
+                    <div>創意組合</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 文字到 Emoji 的映射表
+        const textToEmoji = {
+            // 情感
+            '開心': '😊', '快樂': '😄', '高興': '😃', '喜悦': '😆',
+            '難過': '😢', '傷心': '😭', '沮喪': '😞', '憂鬱': '😔',
+            '生氣': '😡', '憤怒': '🤬', '煩躁': '😤', '不爽': '😠',
+            '驚訝': '😲', '震驚': '😱', '嚇到': '😨', '意外': '😮',
+            '愛': '❤️', '喜歡': '💖', '心動': '💓', '戀愛': '😍',
+            '累': '😴', '疲憊': '😪', '睏': '💤', '想睡': '😴',
+            
+            // 動作
+            '吃': '🍽️', '睡覺': '😴', '工作': '💼', '學習': '📚',
+            '跑步': '🏃', '運動': '🏋️', '游泳': '🏊', '騎車': '🚴',
+            '開車': '🚗', '飛行': '✈️', '旅行': '🧳', '度假': '🏖️',
+            '購物': '🛍️', '買': '💳', '花錢': '💸', '省錢': '💰',
+            
+            // 金錢相關
+            '賺錢': '💰', '發財': '🤑', '有錢': '💵', '窮': '💸',
+            '投資': '📈', '股票': '📊', '漲': '📈', '跌': '📉',
+            '暴富': '💎', '中獎': '🎰', '彩票': '🎫',
+            
+            // 食物
+            '吃飯': '🍚', '麵': '🍜', '披薩': '🍕', '漢堡': '🍔',
+            '咖啡': '☕', '茶': '🍵', '酒': '🍷', '啤酒': '🍺',
+            '蛋糕': '🎂', '冰淇淋': '🍦', '水果': '🍎', '蔬菜': '🥕',
+            
+            // 天氣
+            '晴天': '☀️', '下雨': '🌧️', '雪': '❄️', '風': '💨',
+            '熱': '🔥', '冷': '🧊', '溫暖': '🌞', '涼爽': '🍃',
+            
+            // 時間
+            '早上': '🌅', '中午': '☀️', '晚上': '🌙', '夜晚': '🌃',
+            '今天': '📅', '明天': '🔮', '昨天': '📰',
+            
+            // 動物
+            '狗': '🐕', '貓': '🐱', '魚': '🐟', '鳥': '🐦',
+            '老虎': '🐅', '獅子': '🦁', '熊': '🐻', '兔子': '🐰',
+            
+            // 地點
+            '家': '🏠', '學校': '🏫', '公司': '🏢', '醫院': '🏥',
+            '餐廳': '🍽️', '商店': '🏪', '銀行': '🏦', '機場': '✈️',
+            
+            // 科技
+            '電腦': '💻', '手機': '📱', '網路': '🌐', '遊戲': '🎮',
+            'AI': '🤖', '科技': '⚡', '程式': '💾', '代碼': '👨‍💻',
+            
+            // 其他
+            '成功': '🎉', '失敗': '💥', '努力': '💪', '加油': '🔥',
+            '好棒': '👍', '不好': '👎', '完美': '💯', '厲害': '⭐',
+            '問題': '❓', '答案': '💡', '想法': '🤔', '創意': '✨'
+        };
+
+        // Emoji 到文字的映射表
+        const emojiToText = {
+            '😊': '開心', '😄': '快樂', '😃': '高興', '😆': '喜悦',
+            '😢': '難過', '😭': '傷心', '😞': '沮喪', '😔': '憂鬱',
+            '😡': '生氣', '🤬': '憤怒', '😤': '煩躁', '😠': '不爽',
+            '😲': '驚訝', '😱': '震驚', '😨': '嚇到', '😮': '意外',
+            '❤️': '愛', '💖': '喜歡', '💓': '心動', '😍': '戀愛',
+            '😴': '想睡', '😪': '疲憊', '💤': '睏覺',
+            
+            '🍽️': '用餐', '💼': '工作', '📚': '學習', '🏃': '跑步',
+            '🏋️': '運動', '🏊': '游泳', '🚴': '騎車', '🚗': '開車',
+            '✈️': '飛行', '🧳': '旅行', '🏖️': '度假', '🛍️': '購物',
+            
+            '💰': '金錢', '🤑': '發財', '💵': '鈔票', '💸': '花錢',
+            '📈': '上漲', '📊': '股市', '📉': '下跌', '💎': '珍貴',
+            '🎰': '賭博', '🎫': '彩票',
+            
+            '☀️': '陽光', '🌧️': '下雨', '❄️': '下雪', '💨': '大風',
+            '🔥': '火熱', '🧊': '冰冷', '🌞': '溫暖', '🍃': '微風',
+            
+            '🐕': '小狗', '🐱': '小貓', '🐟': '魚兒', '🐦': '小鳥',
+            '🐅': '老虎', '🦁': '獅子', '🐻': '熊熊', '🐰': '兔子',
+            
+            '🏠': '家', '🏫': '學校', '🏢': '公司', '🏥': '醫院',
+            '💻': '電腦', '📱': '手機', '🌐': '網路', '🎮': '遊戲',
+            '🤖': '機器人', '⚡': '科技', '💾': '程式', '👨‍💻': '工程師',
+            
+            '🎉': '慶祝', '💥': '失敗', '💪': '努力', '👍': '讚',
+            '👎': '不讚', '💯': '完美', '⭐': '厲害', '❓': '疑問',
+            '💡': '想法', '🤔': '思考', '✨': '創意'
+        };
+
+        function translateToEmoji() {
+            const input = document.getElementById('textInput').value.trim();
+            if (!input) {
+                document.getElementById('emojiResult').innerHTML = '請輸入一些文字！ 🤷‍♀️';
+                return;
+            }
+
+            let result = '';
+            let foundMatches = [];
+            
+            // 檢查每個詞彙
+            for (let word in textToEmoji) {
+                if (input.includes(word)) {
+                    foundMatches.push(textToEmoji[word]);
+                }
+            }
+            
+            if (foundMatches.length === 0) {
+                // 如果沒有找到匹配，提供一些通用的表情符號
+                result = '🤔💭✨ (找不到直接對應的表情符號，但你的想法很有趣！)';
+            } else {
+                result = foundMatches.join(' ') + ' ';
+                // 根據內容添加額外的表情符號
+                if (input.includes('很') || input.includes('超') || input.includes('非常')) {
+                    result += '🔥';
+                }
+                if (input.includes('了') || input.includes('！') || input.includes('!')) {
+                    result += '✨';
+                }
+            }
+            
+            document.getElementById('emojiResult').innerHTML = result;
+        }
+
+        function translateToText() {
+            const input = document.getElementById('emojiInput').value.trim();
+            if (!input) {
+                document.getElementById('textResult').innerHTML = '請輸入一些表情符號！';
+                return;
+            }
+
+            let foundMeanings = [];
+            
+            // 將輸入分割成單個字符來檢查表情符號
+            for (let char of input) {
+                if (emojiToText[char]) {
+                    foundMeanings.push(emojiToText[char]);
+                }
+            }
+            
+            if (foundMeanings.length === 0) {
+                document.getElementById('textResult').innerHTML = '這些表情符號很有趣，但我還在學習它們的含義！ 🤖';
+            } else {
+                // 組合成有意義的句子
+                let result = generateMeaningfulSentence(foundMeanings);
+                document.getElementById('textResult').innerHTML = result;
+            }
+        }
+
+        function generateMeaningfulSentence(meanings) {
+            if (meanings.length === 1) {
+                return `表達了「${meanings[0]}」的情感`;
+            } else if (meanings.length === 2) {
+                return `${meanings[0]}又${meanings[1]}的心情`;
+            } else if (meanings.length >= 3) {
+                return `${meanings[0]}、${meanings[1]}，還有${meanings.slice(2).join('、')}的複雜情感`;
+            }
+            return meanings.join('、');
+        }
+
+        // 為輸入框添加即時翻譯功能
+        document.getElementById('textInput').addEventListener('input', function() {
+            if (this.value.trim()) {
+                setTimeout(translateToEmoji, 500);
+            }
+        });
+
+        document.getElementById('emojiInput').addEventListener('input', function() {
+            if (this.value.trim()) {
+                setTimeout(translateToText, 500);
+            }
+        });
+    </script>
+</body>
+</html>
