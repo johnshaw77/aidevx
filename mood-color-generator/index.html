@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>心情顏色產生器 | Mood Color Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+        
+        .input-section {
+            margin-bottom: 30px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .generate-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 20px;
+        }
+        
+        .generate-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .result-section {
+            margin-top: 40px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+        
+        .result-section.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .color-display {
+            height: 200px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: 600;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .color-info {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .color-code {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+        
+        .explanation {
+            line-height: 1.6;
+            color: #4a5568;
+        }
+        
+        .share-btn {
+            margin-top: 20px;
+            padding: 12px 24px;
+            background: #48bb78;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .examples {
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        .example-btn {
+            display: inline-block;
+            margin: 5px;
+            padding: 8px 16px;
+            background: #edf2f7;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            color: #4a5568;
+            transition: background-color 0.3s;
+        }
+        
+        .example-btn:hover {
+            background: #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 心情顏色產生器</h1>
+        <p class="subtitle">描述你的心情，讓 AI 為你創造專屬的情感色彩</p>
+        
+        <div class="input-section">
+            <label for="mood">你現在的心情是什麼？</label>
+            <input type="text" id="mood" placeholder="例如：今天很開心，像春天的陽光...">
+            <button class="generate-btn" onclick="generateColor()">🎭 生成我的心情色彩</button>
+        </div>
+        
+        <div class="examples">
+            <p style="margin-bottom: 10px; color: #718096;">💡 試試這些範例：</p>
+            <button class="example-btn" onclick="setExample('今天很開心，像春天的陽光')">春天的開心</button>
+            <button class="example-btn" onclick="setExample('有點憂鬱，像下雨天')">憂鬱雨天</button>
+            <button class="example-btn" onclick="setExample('很興奮，像要去冒險')">冒險興奮</button>
+            <button class="example-btn" onclick="setExample('平靜安詳，像夕陽西下')">平靜夕陽</button>
+            <button class="example-btn" onclick="setExample('焦慮不安，思緒混亂')">焦慮混亂</button>
+        </div>
+        
+        <div class="result-section" id="result">
+            <div class="color-display" id="colorDisplay">你的心情色彩將在這裡顯示</div>
+            <div class="color-info">
+                <h3 id="colorTitle">色彩解析</h3>
+                <div class="color-code" id="colorCode">CSS Gradient Code</div>
+                <div class="explanation" id="explanation">在這裡會顯示你的心情色彩分析...</div>
+                <button class="share-btn" onclick="shareColor()">📱 分享我的心情色彩</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const moodColorMap = {
+            // 積極情緒
+            '開心': { colors: ['#FFE066', '#FF6B6B'], title: '陽光橘黃', explanation: '黃色代表快樂和活力，橘紅色象徵熱情。這個漸變就像早晨的陽光，溫暖而充滿希望。' },
+            '興奮': { colors: ['#FF6B6B', '#4ECDC4'], title: '活力彩虹', explanation: '紅色的熱情與青綠色的清新形成動感對比，就像心跳加速時血液中的腎上腺素。' },
+            '快樂': { colors: ['#FFA726', '#FFEB3B'], title: '金色陽光', explanation: '溫暖的橘黃漸變，像夏日午後的陽光灑在臉上，純粹而單純的快樂感受。' },
+            '愉悅': { colors: ['#81C784', '#AED581'], title: '春日嫩綠', explanation: '清新的綠色調代表生命力和成長，就像春天新芽破土而出的喜悅感。' },
+            
+            // 平靜情緒  
+            '平靜': { colors: ['#64B5F6', '#81C784'], title: '湖水綠藍', explanation: '藍色的寧靜與綠色的平和相融，就像湖邊的微風，讓心靈得到完全的放鬆。' },
+            '安詳': { colors: ['#B39DDB', '#C5CAE9'], title: '薰衣草紫', explanation: '淡紫色系有著天然的舒緩效果，像薰衣草田中的寧靜時光，內心無比安詳。' },
+            '舒適': { colors: ['#FFAB91', '#FFCC80'], title: '溫暖米橘', explanation: '暖色調的漸變像被溫暖擁抱，給人安全感和舒適感，如家的溫暖。' },
+            
+            // 憂鬱情緒
+            '憂鬱': { colors: ['#546E7A', '#78909C'], title: '雨雲灰藍', explanation: '深淺藍灰色就像陰雨天的雲朵，反映內心的陰霾和沉思，但也有著深度的美感。' },
+            '悲傷': { colors: ['#5C6BC0', '#3F51B5'], title: '深海藍調', explanation: '深藍色代表深深的情感和內省。就像深海的靜謐，悲傷中也有著純淨的力量。' },
+            '失落': { colors: ['#90A4AE', '#B0BEC5'], title: '迷霧銀灰', explanation: '灰色調象徵迷茫和失落，但銀色的光澤提醒我們，即使在迷霧中也有希望的微光。' },
+            
+            // 焦慮情緒
+            '焦慮': { colors: ['#FF7043', '#FFAB40'], title: '焦躁橘紅', explanation: '橘紅色的不安與黃橘色的緊張交織，就像內心翻騰的思緒，需要找到出口。' },
+            '緊張': { colors: ['#EF5350', '#FF8A65'], title: '緊張紅暈', explanation: '紅色系代表心跳加速和血壓上升，這是身體對壓力的自然反應色彩。' },
+            '不安': { colors: ['#8D6E63', '#A1887F'], title: '焦躁棕褐', explanation: '棕色系反映內心的不穩定，像秋天落葉般的飄搖不定，需要尋找安定的力量。' },
+            
+            // 愛與溫暖
+            '愛': { colors: ['#E91E63', '#F06292'], title: '玫瑰粉紅', explanation: '粉紅色是愛的經典色彩，溫柔而熱烈，像心中綻放的玫瑰花瓣。' },
+            '溫暖': { colors: ['#FF8A50', '#FFAB70'], title: '夕陽溫橘', explanation: '溫暖的橘色調像夕陽的擁抱，給人無比的溫馨感和歸屬感。' },
+            '感動': { colors: ['#F8BBD9', '#E1BEE7'], title: '輕柔粉紫', explanation: '粉紫色代表感性和感動，像初春的櫻花花瓣，輕柔而動人。' }
+        };
+        
+        function setExample(mood) {
+            document.getElementById('mood').value = mood;
+        }
+        
+        function generateColor() {
+            const mood = document.getElementById('mood').value.trim();
+            if (!mood) {
+                alert('請描述你的心情！');
+                return;
+            }
+            
+            const result = analyzeeMood(mood);
+            displayResult(result, mood);
+        }
+        
+        function analyzeeMood(moodText) {
+            // 簡單的關鍵字匹配
+            for (let [keyword, colorData] of Object.entries(moodColorMap)) {
+                if (moodText.includes(keyword)) {
+                    return colorData;
+                }
+            }
+            
+            // 基於文本長度和內容的智能分析
+            const text = moodText.toLowerCase();
+            
+            // 積極詞彙檢測
+            if (text.includes('開心') || text.includes('快樂') || text.includes('高興') || text.includes('陽光')) {
+                return moodColorMap['開心'];
+            }
+            if (text.includes('興奮') || text.includes('激動') || text.includes('冒險')) {
+                return moodColorMap['興奮'];
+            }
+            if (text.includes('平靜') || text.includes('安靜') || text.includes('寧靜')) {
+                return moodColorMap['平靜'];
+            }
+            if (text.includes('憂鬱') || text.includes('難過') || text.includes('雨天')) {
+                return moodColorMap['憂鬱'];
+            }
+            if (text.includes('焦慮') || text.includes('緊張') || text.includes('不安') || text.includes('混亂')) {
+                return moodColorMap['焦慮'];
+            }
+            if (text.includes('愛') || text.includes('喜歡') || text.includes('溫馨')) {
+                return moodColorMap['愛'];
+            }
+            
+            // 默認基於文本情感生成
+            if (text.length > 20) {
+                // 長文本通常情感復雜，使用混合色彩
+                return { 
+                    colors: ['#667eea', '#764ba2'], 
+                    title: '複雜心境', 
+                    explanation: '你的心情描述很豐富，反映出複雜的內在世界。藍紫漸變代表深度思考和多層次的情感體驗。' 
+                };
+            } else {
+                // 短文本使用中性色彩
+                return { 
+                    colors: ['#74b9ff', '#0984e3'], 
+                    title: '清澈藍調', 
+                    explanation: '簡潔的表達反映出清澈的心境，藍色調象徵純淨和真誠的情感。' 
+                };
+            }
+        }
+        
+        function displayResult(colorData, originalMood) {
+            const resultSection = document.getElementById('result');
+            const colorDisplay = document.getElementById('colorDisplay');
+            const colorTitle = document.getElementById('colorTitle');
+            const colorCode = document.getElementById('colorCode');
+            const explanation = document.getElementById('explanation');
+            
+            // 設置漸變背景
+            const gradient = `linear-gradient(135deg, ${colorData.colors[0]}, ${colorData.colors[1]})`;
+            colorDisplay.style.background = gradient;
+            colorDisplay.textContent = colorData.title;
+            
+            // 設置內容
+            colorTitle.textContent = `🎨 ${colorData.title}`;
+            colorCode.textContent = `background: ${gradient}`;
+            explanation.textContent = `💭 原始心情：「${originalMood}」\n\n${colorData.explanation}`;
+            
+            // 顯示結果區域
+            resultSection.classList.add('show');
+            
+            // 平滑滾動到結果區域
+            resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        function shareColor() {
+            const colorCode = document.getElementById('colorCode').textContent;
+            const title = document.getElementById('colorTitle').textContent;
+            const shareText = `我的心情色彩：${title}\n\n${colorCode}\n\n來試試心情顏色產生器吧！ https://aidevx.pro/mood-color-generator/`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: '我的心情色彩',
+                    text: shareText
+                });
+            } else {
+                navigator.clipboard.writeText(shareText).then(() => {
+                    alert('已複製到剪貼板！可以分享給朋友了 🎨');
+                });
+            }
+        }
+        
+        // 按 Enter 鍵生成
+        document.getElementById('mood').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generateColor();
+            }
+        });
+    </script>
+</body>
+</html>
