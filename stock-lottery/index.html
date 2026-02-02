@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎰 股票搖搖樂 - Stock Lottery</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            animation: float 6s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            text-align: center;
+            padding: 2rem;
+            z-index: 2;
+            position: relative;
+        }
+
+        h1 {
+            color: white;
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 2px 2px 4px rgba(0,0,0,0.3), 0 0 10px rgba(255,255,255,0.2); }
+            to { text-shadow: 2px 2px 4px rgba(0,0,0,0.3), 0 0 20px rgba(255,255,255,0.4); }
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .lottery-machine {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .slot {
+            background: white;
+            border-radius: 15px;
+            padding: 1rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            width: 200px;
+            height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slot::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7);
+            background-size: 300% 300%;
+            animation: rainbow 3s ease infinite;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .slot.spinning::before {
+            opacity: 0.1;
+        }
+
+        @keyframes rainbow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .stock-symbol {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .stock-name {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .stock-price {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .stock-change {
+            font-size: 0.9rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .positive {
+            color: #27ae60;
+            background: rgba(39, 174, 96, 0.1);
+        }
+
+        .negative {
+            color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+        }
+
+        .spin-button {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.3rem;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+            margin: 1rem;
+            font-weight: bold;
+        }
+
+        .spin-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .spin-button:active {
+            transform: translateY(0);
+        }
+
+        .spin-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .luck-meter {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .luck-title {
+            color: white;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .luck-bar {
+            background: rgba(255, 255, 255, 0.2);
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .luck-fill {
+            height: 100%;
+            transition: width 1s ease;
+            border-radius: 10px;
+        }
+
+        .luck-text {
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .spinning {
+            animation: spin 0.1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0); }
+        }
+
+        .result-animation {
+            animation: bounceIn 0.5s ease;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            .lottery-machine { flex-direction: column; align-items: center; }
+            .slot { width: 250px; margin: 0.5rem 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    
+    <div class="container">
+        <h1>🎰 股票搖搖樂</h1>
+        <p class="subtitle">搖出你的幸運股票！看看今天運氣如何～</p>
+        
+        <div class="lottery-machine">
+            <div class="slot" id="slot1">
+                <div class="stock-symbol">?</div>
+                <div class="stock-name">準備搖獎</div>
+                <div class="stock-price">$--</div>
+                <div class="stock-change">--%</div>
+            </div>
+            <div class="slot" id="slot2">
+                <div class="stock-symbol">?</div>
+                <div class="stock-name">準備搖獎</div>
+                <div class="stock-price">$--</div>
+                <div class="stock-change">--%</div>
+            </div>
+            <div class="slot" id="slot3">
+                <div class="stock-symbol">?</div>
+                <div class="stock-name">準備搖獎</div>
+                <div class="stock-price">$--</div>
+                <div class="stock-change">--%</div>
+            </div>
+        </div>
+        
+        <button class="spin-button" onclick="spin()">🍀 搖一搖！</button>
+        
+        <div class="luck-meter">
+            <div class="luck-title">🎯 今日運氣指數</div>
+            <div class="luck-bar">
+                <div class="luck-fill" id="luckFill" style="width: 50%; background: linear-gradient(90deg, #feca57, #ff9ff3);"></div>
+            </div>
+            <div class="luck-text" id="luckText">點擊搖獎來測試運氣！</div>
+        </div>
+    </div>
+
+    <script>
+        const stocks = [
+            // 科技股
+            { symbol: 'AAPL', name: 'Apple Inc.', sector: 'tech' },
+            { symbol: 'MSFT', name: 'Microsoft', sector: 'tech' },
+            { symbol: 'GOOGL', name: 'Alphabet', sector: 'tech' },
+            { symbol: 'AMZN', name: 'Amazon', sector: 'tech' },
+            { symbol: 'TSLA', name: 'Tesla Inc.', sector: 'tech' },
+            { symbol: 'META', name: 'Meta Platforms', sector: 'tech' },
+            { symbol: 'NVDA', name: 'NVIDIA', sector: 'tech' },
+            { symbol: 'NFLX', name: 'Netflix', sector: 'tech' },
+            
+            // 金融股
+            { symbol: 'JPM', name: 'JPMorgan Chase', sector: 'finance' },
+            { symbol: 'BAC', name: 'Bank of America', sector: 'finance' },
+            { symbol: 'WFC', name: 'Wells Fargo', sector: 'finance' },
+            { symbol: 'GS', name: 'Goldman Sachs', sector: 'finance' },
+            
+            // 傳統股
+            { symbol: 'KO', name: 'Coca-Cola', sector: 'traditional' },
+            { symbol: 'PG', name: 'Procter & Gamble', sector: 'traditional' },
+            { symbol: 'JNJ', name: 'Johnson & Johnson', sector: 'traditional' },
+            { symbol: 'WMT', name: 'Walmart', sector: 'traditional' },
+            
+            // 台股
+            { symbol: '2330', name: '台積電 TSMC', sector: 'taiwan' },
+            { symbol: '2317', name: '鴻海 Foxconn', sector: 'taiwan' },
+            { symbol: '2454', name: '聯發科 MediaTek', sector: 'taiwan' },
+            { symbol: '2412', name: '中華電信', sector: 'taiwan' },
+        ];
+
+        let isSpinning = false;
+
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 6 + 's';
+                    particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                    container.appendChild(particle);
+                    
+                    setTimeout(() => {
+                        container.removeChild(particle);
+                    }, 6000);
+                }, i * 100);
+            }
+        }
+
+        function getRandomStock() {
+            return stocks[Math.floor(Math.random() * stocks.length)];
+        }
+
+        function getRandomPrice() {
+            return (Math.random() * 500 + 50).toFixed(2);
+        }
+
+        function getRandomChange() {
+            const change = (Math.random() - 0.5) * 20;
+            const percentage = (Math.random() - 0.5) * 10;
+            return {
+                value: change.toFixed(2),
+                percentage: percentage.toFixed(2),
+                positive: change > 0
+            };
+        }
+
+        function calculateLuck(results) {
+            let luckScore = 50; // 基礎分數
+            
+            results.forEach(result => {
+                if (result.change.positive) {
+                    luckScore += parseFloat(result.change.percentage) * 2;
+                } else {
+                    luckScore += parseFloat(result.change.percentage) * 2;
+                }
+            });
+            
+            // 特別獎勵
+            if (results.every(r => r.change.positive)) {
+                luckScore += 20; // 全紅獎勵
+            }
+            
+            if (results.some(r => r.stock.symbol === 'TSLA' || r.stock.symbol === '2330')) {
+                luckScore += 10; // 明星股獎勵
+            }
+            
+            return Math.max(0, Math.min(100, luckScore));
+        }
+
+        function getLuckMessage(score) {
+            if (score >= 80) return '🚀 運氣爆棚！今天適合大膽投資！';
+            if (score >= 60) return '✨ 運氣不錯！可以小試身手！';
+            if (score >= 40) return '🎯 運氣平平，謹慎為上！';
+            return '🙏 今天運氣欠佳，建議觀望...';
+        }
+
+        function getLuckColor(score) {
+            if (score >= 80) return 'linear-gradient(90deg, #2ecc71, #27ae60)';
+            if (score >= 60) return 'linear-gradient(90deg, #f39c12, #e67e22)';
+            if (score >= 40) return 'linear-gradient(90deg, #feca57, #ff9ff3)';
+            return 'linear-gradient(90deg, #e74c3c, #c0392b)';
+        }
+
+        async function spin() {
+            if (isSpinning) return;
+            
+            isSpinning = true;
+            const button = document.querySelector('.spin-button');
+            button.disabled = true;
+            button.textContent = '🎰 搖獎中...';
+            
+            const slots = [
+                document.getElementById('slot1'),
+                document.getElementById('slot2'),
+                document.getElementById('slot3')
+            ];
+            
+            // 開始搖獎動畫
+            slots.forEach(slot => {
+                slot.classList.add('spinning');
+                slot.classList.add('spinning');
+            });
+            
+            createParticles();
+            
+            // 模擬搖獎過程
+            const spinDuration = 2000 + Math.random() * 1000;
+            
+            // 在搖獎過程中顯示隨機變化
+            const interval = setInterval(() => {
+                slots.forEach(slot => {
+                    const randomStock = getRandomStock();
+                    slot.querySelector('.stock-symbol').textContent = randomStock.symbol;
+                    slot.querySelector('.stock-name').textContent = randomStock.name;
+                });
+            }, 100);
+            
+            setTimeout(() => {
+                clearInterval(interval);
+                
+                // 產生最終結果
+                const results = slots.map(slot => {
+                    const stock = getRandomStock();
+                    const price = getRandomPrice();
+                    const change = getRandomChange();
+                    
+                    const symbolEl = slot.querySelector('.stock-symbol');
+                    const nameEl = slot.querySelector('.stock-name');
+                    const priceEl = slot.querySelector('.stock-price');
+                    const changeEl = slot.querySelector('.stock-change');
+                    
+                    symbolEl.textContent = stock.symbol;
+                    nameEl.textContent = stock.name;
+                    priceEl.textContent = `$${price}`;
+                    changeEl.textContent = `${change.positive ? '+' : ''}${change.value} (${change.positive ? '+' : ''}${change.percentage}%)`;
+                    changeEl.className = `stock-change ${change.positive ? 'positive' : 'negative'}`;
+                    
+                    slot.classList.remove('spinning');
+                    slot.classList.add('result-animation');
+                    
+                    return { stock, price, change };
+                });
+                
+                // 計算運氣指數
+                const luckScore = calculateLuck(results);
+                const luckFill = document.getElementById('luckFill');
+                const luckText = document.getElementById('luckText');
+                
+                setTimeout(() => {
+                    luckFill.style.width = luckScore + '%';
+                    luckFill.style.background = getLuckColor(luckScore);
+                    luckText.textContent = `${luckScore}分 - ${getLuckMessage(luckScore)}`;
+                }, 500);
+                
+                button.disabled = false;
+                button.textContent = '🍀 再搖一次！';
+                isSpinning = false;
+                
+                // 清除動畫class
+                setTimeout(() => {
+                    slots.forEach(slot => {
+                        slot.classList.remove('result-animation');
+                    });
+                }, 500);
+                
+            }, spinDuration);
+        }
+
+        // 初始化粒子效果
+        setInterval(createParticles, 5000);
+        createParticles();
+    </script>
+</body>
+</html>
