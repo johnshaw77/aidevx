@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎭 表情動作模仿器 - AIDevX</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.3em;
+            margin-bottom: 40px;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        
+        .upload-area {
+            border: 3px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 15px;
+            padding: 60px 20px;
+            margin: 30px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .upload-area:hover {
+            border-color: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-5px);
+        }
+        
+        .upload-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+        
+        .upload-text {
+            font-size: 1.4em;
+            margin-bottom: 10px;
+        }
+        
+        .upload-hint {
+            opacity: 0.7;
+            font-size: 1em;
+        }
+        
+        #fileInput {
+            display: none;
+        }
+        
+        .preview-area {
+            margin: 30px 0;
+            display: none;
+        }
+        
+        .preview-image {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+        
+        .analysis-result {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: left;
+            display: none;
+        }
+        
+        .expression-title {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: #FFE066;
+            text-align: center;
+        }
+        
+        .instruction-step {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #FFE066;
+        }
+        
+        .step-number {
+            font-weight: bold;
+            color: #FFE066;
+            margin-right: 10px;
+        }
+        
+        .analyze-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            border: none;
+            color: white;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+        }
+        
+        .analyze-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+        }
+        
+        .loading {
+            display: none;
+            margin: 20px 0;
+        }
+        
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .footer {
+            margin-top: 40px;
+            opacity: 0.7;
+            font-size: 0.9em;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2.5em;
+            }
+            
+            .subtitle {
+                font-size: 1.1em;
+            }
+            
+            .upload-area {
+                padding: 40px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎭</h1>
+        <h1>表情動作模仿器</h1>
+        <div class="subtitle">
+            上傳你的表情照片，AI 會分析並教你如何做出完美的表情！<br>
+            讓每一個表情都充滿魅力 ✨
+        </div>
+        
+        <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+            <div class="upload-icon">📸</div>
+            <div class="upload-text">點擊上傳表情照片</div>
+            <div class="upload-hint">支援 JPG、PNG 格式</div>
+        </div>
+        
+        <input type="file" id="fileInput" accept="image/*">
+        
+        <div class="preview-area" id="previewArea">
+            <img class="preview-image" id="previewImage" alt="預覽圖片">
+            <br>
+            <button class="analyze-btn" onclick="analyzeExpression()">🔍 分析表情</button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div>AI 正在分析你的表情...</div>
+        </div>
+        
+        <div class="analysis-result" id="analysisResult">
+            <div class="expression-title" id="expressionTitle">😊 開心笑容</div>
+            <div id="instructionSteps"></div>
+        </div>
+        
+        <div class="footer">
+            讓 AI 成為你的表情教練 | AIDevX.pro
+        </div>
+    </div>
+
+    <script>
+        const expressions = {
+            happy: {
+                title: "😊 開心笑容",
+                steps: [
+                    "放鬆臉部肌肉，深呼吸",
+                    "嘴角慢慢上揚，形成自然弧度",
+                    "眼睛微瞇，讓眼角出現細紋",
+                    "確保笑容延伸到眼部（真誠笑容的關鍵）",
+                    "保持自然，不要用力過度"
+                ]
+            },
+            sad: {
+                title: "😢 憂傷表情",
+                steps: [
+                    "眉頭輕微皺起，形成八字眉",
+                    "眼神向下看，顯得失落",
+                    "嘴角自然下垂",
+                    "整體表情要柔和，避免過度戲劇化",
+                    "可搭配輕微嘆氣的動作"
+                ]
+            },
+            surprised: {
+                title: "😲 驚訝表情",
+                steps: [
+                    "眉毛快速上揚到最高點",
+                    "眼睛睜大，顯露更多眼白",
+                    "嘴巴微張成 O 型",
+                    "整個表情要瞬間完成",
+                    "保持 2-3 秒後慢慢恢復"
+                ]
+            },
+            angry: {
+                title: "😠 生氣表情",
+                steps: [
+                    "眉頭緊皺，形成明顯皺紋",
+                    "眼神銳利，直視前方",
+                    "嘴唇緊閉或微微張開",
+                    "下顎稍微前伸",
+                    "整體表情要有力度但不失控"
+                ]
+            },
+            thoughtful: {
+                title: "🤔 思考表情",
+                steps: [
+                    "眉頭輕微皺起，顯示專注",
+                    "眼神稍微上移或側移",
+                    "嘴唇輕抿或微微張開",
+                    "可以手托下巴增強效果",
+                    "保持自然的沉思狀態"
+                ]
+            }
+        };
+        
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewImage = document.getElementById('previewImage');
+                    previewImage.src = e.target.result;
+                    document.getElementById('previewArea').style.display = 'block';
+                    document.getElementById('analysisResult').style.display = 'none';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        function analyzeExpression() {
+            const loading = document.getElementById('loading');
+            const analysisResult = document.getElementById('analysisResult');
+            
+            // 顯示載入動畫
+            loading.style.display = 'block';
+            analysisResult.style.display = 'none';
+            
+            // 模擬 AI 分析過程
+            setTimeout(() => {
+                loading.style.display = 'none';
+                
+                // 隨機選擇一個表情類型
+                const expressionTypes = Object.keys(expressions);
+                const randomExpression = expressionTypes[Math.floor(Math.random() * expressionTypes.length)];
+                const expression = expressions[randomExpression];
+                
+                // 顯示分析結果
+                document.getElementById('expressionTitle').textContent = expression.title;
+                
+                const stepsHtml = expression.steps.map((step, index) => 
+                    `<div class="instruction-step">
+                        <span class="step-number">步驟 ${index + 1}:</span>
+                        ${step}
+                    </div>`
+                ).join('');
+                
+                document.getElementById('instructionSteps').innerHTML = stepsHtml;
+                analysisResult.style.display = 'block';
+                
+                // 平滑滾動到結果區域
+                analysisResult.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 2000);
+        }
+        
+        // 防止拖拽文件到頁面其他區域
+        document.addEventListener('dragover', function(e) {
+            e.preventDefault();
+        });
+        
+        document.addEventListener('drop', function(e) {
+            e.preventDefault();
+        });
+    </script>
+</body>
+</html>
