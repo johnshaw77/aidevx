@@ -150,6 +150,19 @@ body {
     100% { text-shadow: 0 0 20px #4ecdc4, 0 0 30px #4ecdc4; }
 }
 
+.auto-info {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin-top: 0.5rem;
+    opacity: 0.8;
+    animation: autoInfoPulse 3s ease-in-out infinite;
+}
+
+@keyframes autoInfoPulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
 /* 股票跑馬燈 */
 .stock-ticker {
     width: 100%;
