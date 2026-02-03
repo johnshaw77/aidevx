@@ -179,6 +179,48 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
+// 強制事件綁定函數
+function forceBindEvents() {
+    const startBtn = document.getElementById('startBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    
+    if (startBtn) {
+        console.log('找到開始按鈕，綁定事件');
+        
+        // 移除所有現有事件
+        startBtn.replaceWith(startBtn.cloneNode(true));
+        const newStartBtn = document.getElementById('startBtn');
+        
+        // 多種方式綁定事件
+        newStartBtn.onclick = function() {
+            console.log('開始按鈕被點擊！(onclick)');
+            startCountdown();
+        };
+        
+        newStartBtn.addEventListener('click', function() {
+            console.log('開始按鈕被點擊！(addEventListener)');
+            startCountdown();
+        });
+        
+        newStartBtn.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            console.log('開始按鈕被觸碰！(touch)');
+            startCountdown();
+        });
+        
+        console.log('按鈕事件綁定完成，onclick:', typeof newStartBtn.onclick);
+    } else {
+        console.error('找不到開始按鈕！');
+    }
+    
+    if (resetBtn) {
+        resetBtn.onclick = function() {
+            console.log('重置按鈕被點擊！');
+            resetCountdown();
+        };
+    }
+}
+
 // 等待頁面載入
 document.addEventListener('DOMContentLoaded', function() {
     console.log('頁面載入完成');
@@ -186,26 +228,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // 初始化音效
     initAudio();
     
-    // 綁定按鈕事件
-    const startBtn = document.getElementById('startBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    
-    if (startBtn) {
-        console.log('找到開始按鈕，綁定事件');
-        startBtn.addEventListener('click', function() {
-            console.log('開始按鈕被點擊！');
-            startCountdown();
-        });
-    } else {
-        console.error('找不到開始按鈕！');
-    }
-    
-    if (resetBtn) {
-        resetBtn.addEventListener('click', function() {
-            console.log('重置按鈕被點擊！');
-            resetCountdown();
-        });
-    }
+    // 延遲綁定確保元素完全載入
+    setTimeout(forceBindEvents, 100);
     
     // 首次點擊啟動音效
     document.addEventListener('click', function() {
@@ -213,6 +237,12 @@ document.addEventListener('DOMContentLoaded', function() {
             audioContext.resume();
         }
     }, { once: true });
+});
+
+// 備用：頁面完全載入後再綁定一次
+window.addEventListener('load', function() {
+    console.log('窗口完全載入');
+    setTimeout(forceBindEvents, 200);
 });
 
 console.log('腳本載入完成');

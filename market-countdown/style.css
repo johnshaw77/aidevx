@@ -193,6 +193,9 @@ body {
     letter-spacing: 1px;
     box-shadow: 0 8px 15px rgba(255, 107, 107, 0.3);
     margin: 0 10px;
+    position: relative;
+    z-index: 100;
+    pointer-events: auto;
 }
 
 .start-btn:hover, .reset-btn:hover {
