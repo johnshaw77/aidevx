@@ -1,0 +1,325 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', 'Microsoft JhengHei', sans-serif;
+    background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+    color: #fff;
+    overflow-x: hidden;
+    min-height: 100vh;
+    position: relative;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+    position: relative;
+    z-index: 10;
+}
+
+/* 背景動畫 */
+.bg-animation {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.3;
+    z-index: 1;
+}
+
+.stock-chart {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.chart-line {
+    position: absolute;
+    height: 2px;
+    background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
+    background-size: 200% 100%;
+    animation: chartMove 4s linear infinite, chartPulse 2s ease-in-out infinite alternate;
+}
+
+.chart-line:nth-child(1) { top: 20%; width: 80%; animation-delay: 0s; }
+.chart-line:nth-child(2) { top: 35%; width: 70%; animation-delay: 0.8s; }
+.chart-line:nth-child(3) { top: 50%; width: 90%; animation-delay: 1.6s; }
+.chart-line:nth-child(4) { top: 65%; width: 60%; animation-delay: 2.4s; }
+.chart-line:nth-child(5) { top: 80%; width: 85%; animation-delay: 3.2s; }
+
+@keyframes chartMove {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+@keyframes chartPulse {
+    0% { opacity: 0.3; transform: scaleY(1); }
+    100% { opacity: 0.8; transform: scaleY(1.5); }
+}
+
+/* 主標題 */
+.main-title {
+    font-size: 3rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 2rem;
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: rainbowText 3s ease-in-out infinite;
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+}
+
+.rocket {
+    display: inline-block;
+    animation: rocketBounce 1s ease-in-out infinite alternate;
+}
+
+@keyframes rainbowText {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+@keyframes rocketBounce {
+    0% { transform: translateY(0px) rotate(0deg); }
+    100% { transform: translateY(-10px) rotate(5deg); }
+}
+
+/* 倒數容器 */
+.countdown-container {
+    text-align: center;
+    margin: 2rem 0;
+}
+
+.countdown-number {
+    font-size: 8rem;
+    font-weight: bold;
+    background: linear-gradient(45deg, #ff4757, #ff3838);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 50px rgba(255, 71, 87, 0.5);
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.countdown-number.pulse {
+    animation: countdownPulse 1s ease-in-out;
+}
+
+.countdown-number.final {
+    animation: finalCountdown 1s ease-in-out;
+    color: #ffd700 !important;
+    -webkit-text-fill-color: #ffd700 !important;
+}
+
+@keyframes countdownPulse {
+    0% { transform: scale(1); filter: hue-rotate(0deg); }
+    50% { transform: scale(1.3) rotate(5deg); filter: hue-rotate(180deg); }
+    100% { transform: scale(1); filter: hue-rotate(360deg); }
+}
+
+@keyframes finalCountdown {
+    0% { transform: scale(1); }
+    25% { transform: scale(1.5) rotate(-10deg); }
+    50% { transform: scale(1.8) rotate(10deg); }
+    75% { transform: scale(2.2) rotate(-5deg); }
+    100% { transform: scale(2.5) rotate(0deg); }
+}
+
+.countdown-label {
+    font-size: 1.5rem;
+    margin-top: 1rem;
+    color: #4ecdc4;
+    font-weight: bold;
+    animation: labelGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes labelGlow {
+    0% { text-shadow: 0 0 10px #4ecdc4; }
+    100% { text-shadow: 0 0 20px #4ecdc4, 0 0 30px #4ecdc4; }
+}
+
+/* 股票跑馬燈 */
+.stock-ticker {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    border-top: 2px solid #4ecdc4;
+    border-bottom: 2px solid #4ecdc4;
+    overflow: hidden;
+    white-space: nowrap;
+    margin: 2rem 0;
+    padding: 15px 0;
+}
+
+.ticker-content {
+    display: inline-block;
+    animation: tickerScroll 15s linear infinite;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+@keyframes tickerScroll {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+}
+
+/* 按鈕樣式 */
+.action-buttons {
+    margin: 2rem 0;
+}
+
+.start-btn, .reset-btn {
+    background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+    border: none;
+    padding: 15px 30px;
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: white;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 8px 15px rgba(255, 107, 107, 0.3);
+    margin: 0 10px;
+}
+
+.start-btn:hover, .reset-btn:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 15px 25px rgba(255, 107, 107, 0.5);
+}
+
+.start-btn:active, .reset-btn:active {
+    transform: translateY(-1px) scale(1.02);
+    animation: buttonShake 0.3s ease-in-out;
+}
+
+@keyframes buttonShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.btn-icon {
+    animation: iconSpin 2s ease-in-out infinite;
+}
+
+@keyframes iconSpin {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(180deg); }
+}
+
+/* 衝刺訊息 */
+.rush-message {
+    text-align: center;
+    margin-top: 2rem;
+    animation: rushAppear 1s ease-out;
+}
+
+.message-text {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 0 0 30px #ffd700;
+    animation: messageFlash 0.5s ease-in-out infinite alternate;
+}
+
+.sub-message {
+    font-size: 1.5rem;
+    color: #4ecdc4;
+    margin-top: 1rem;
+    animation: subMessageBounce 1s ease-in-out infinite;
+}
+
+@keyframes rushAppear {
+    0% { opacity: 0; transform: scale(0.5); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes messageFlash {
+    0% { transform: scale(1); filter: brightness(1); }
+    100% { transform: scale(1.1); filter: brightness(1.3); }
+}
+
+@keyframes subMessageBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* 金錢雨效果 */
+.money-rain {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 20;
+}
+
+.money {
+    position: absolute;
+    font-size: 2rem;
+    animation: moneyFall 3s linear infinite;
+    opacity: 0.8;
+}
+
+@keyframes moneyFall {
+    0% {
+        transform: translateY(-100px) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .main-title {
+        font-size: 2rem;
+    }
+    
+    .countdown-number {
+        font-size: 5rem;
+    }
+    
+    .message-text {
+        font-size: 2rem;
+    }
+    
+    .start-btn, .reset-btn {
+        font-size: 1.1rem;
+        padding: 12px 25px;
+    }
+    
+    .ticker-content {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .countdown-number {
+        font-size: 4rem;
+    }
+    
+    .main-title {
+        font-size: 1.5rem;
+    }
+    
+    .message-text {
+        font-size: 1.5rem;
+    }
+}

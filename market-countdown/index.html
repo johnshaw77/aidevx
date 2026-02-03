@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 股市開盤倒數 - 準備衝刺！</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 背景動態效果 -->
+        <div class="bg-animation">
+            <div class="stock-chart">
+                <div class="chart-line"></div>
+                <div class="chart-line"></div>
+                <div class="chart-line"></div>
+                <div class="chart-line"></div>
+                <div class="chart-line"></div>
+            </div>
+        </div>
+
+        <!-- 主標題 -->
+        <h1 class="main-title">
+            <span class="rocket">🚀</span>
+            股市開盤倒數
+            <span class="rocket">🚀</span>
+        </h1>
+
+        <!-- 倒數顯示 -->
+        <div class="countdown-container">
+            <div id="countdown" class="countdown-number">10</div>
+            <div class="countdown-label">秒後開盤</div>
+        </div>
+
+        <!-- 股票代號滾動 -->
+        <div class="stock-ticker">
+            <div class="ticker-content">
+                📈 TSMC +2.5% | 台積電 衝衝衝！ | 📊 0050 +1.8% | 加權指數 突破新高！ | 🔥 鴻海 +3.2% | 
+                💎 聯發科 強勢！ | 📈 台達電 飆漲！ | ⚡ 今日必勝！ | 🚀 衝破天際！
+            </div>
+        </div>
+
+        <!-- 動作按鈕 -->
+        <div class="action-buttons">
+            <button id="startBtn" class="start-btn">
+                <span class="btn-icon">⚡</span>
+                開始倒數
+                <span class="btn-icon">⚡</span>
+            </button>
+            <button id="resetBtn" class="reset-btn" style="display: none;">
+                <span class="btn-icon">🔄</span>
+                重新開始
+            </button>
+        </div>
+
+        <!-- 衝刺訊息 -->
+        <div id="rushMessage" class="rush-message" style="display: none;">
+            <div class="message-text">🔥 衝啊！股市開盤了！🔥</div>
+            <div class="sub-message">準備迎接今日的勝利！💰</div>
+        </div>
+
+        <!-- 金錢飄落效果 -->
+        <div class="money-rain" id="moneyRain"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
