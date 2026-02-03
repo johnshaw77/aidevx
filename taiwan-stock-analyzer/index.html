@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 台股分析大將 - 專業級股市分析平台</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 頂部導航 -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">🎯</span>
+                <span class="logo-text">台股分析大將</span>
+            </div>
+            <div class="market-status" id="marketStatus">
+                <span class="status-dot"></span>
+                <span class="status-text">開盤中</span>
+                <span class="update-time" id="updateTime">10:05:30</span>
+            </div>
+        </header>
+
+        <!-- 大盤指數區 -->
+        <section class="market-overview">
+            <div class="index-cards">
+                <div class="index-card twii">
+                    <div class="index-header">
+                        <span class="index-name">加權指數</span>
+                        <span class="index-code">TWII</span>
+                    </div>
+                    <div class="index-price" id="twiiPrice">17,856</div>
+                    <div class="index-change positive" id="twiiChange">+156 (+0.88%)</div>
+                </div>
+                
+                <div class="index-card otc">
+                    <div class="index-header">
+                        <span class="index-name">櫃買指數</span>
+                        <span class="index-code">OTC</span>
+                    </div>
+                    <div class="index-price" id="otcPrice">182.45</div>
+                    <div class="index-change negative" id="otcChange">-1.23 (-0.67%)</div>
+                </div>
+                
+                <div class="index-card electronic">
+                    <div class="index-header">
+                        <span class="index-name">電子指數</span>
+                        <span class="index-code">ELEC</span>
+                    </div>
+                    <div class="index-price" id="elecPrice">892.34</div>
+                    <div class="index-change positive" id="elecChange">+12.45 (+1.42%)</div>
+                </div>
+
+                <div class="index-card finance">
+                    <div class="index-header">
+                        <span class="index-name">金融指數</span>
+                        <span class="index-code">FINC</span>
+                    </div>
+                    <div class="index-price" id="fincPrice">1,234.56</div>
+                    <div class="index-change positive" id="fincChange">+8.90 (+0.73%)</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 主要分析區 -->
+        <div class="main-content">
+            <!-- 左側面板 -->
+            <aside class="sidebar">
+                <!-- 個股搜尋 -->
+                <div class="search-panel">
+                    <h3>📊 個股分析</h3>
+                    <div class="search-box">
+                        <input type="text" id="stockSearch" placeholder="輸入股票代碼或名稱 (ex: 2330, 台積電)">
+                        <button id="searchBtn">搜尋</button>
+                    </div>
+                    <div class="quick-stocks">
+                        <span class="quick-stock" data-code="2330">台積電</span>
+                        <span class="quick-stock" data-code="2317">鴻海</span>
+                        <span class="quick-stock" data-code="2454">聯發科</span>
+                        <span class="quick-stock" data-code="2308">台達電</span>
+                    </div>
+                </div>
+
+                <!-- 法人進出 -->
+                <div class="institutional-panel">
+                    <h3>💼 法人進出</h3>
+                    <div class="institutional-data">
+                        <div class="inst-item">
+                            <span class="inst-name">外資</span>
+                            <span class="inst-value positive">+52.3億</span>
+                        </div>
+                        <div class="inst-item">
+                            <span class="inst-name">投信</span>
+                            <span class="inst-value negative">-8.7億</span>
+                        </div>
+                        <div class="inst-item">
+                            <span class="inst-name">自營商</span>
+                            <span class="inst-value positive">+12.1億</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 熱門股 -->
+                <div class="hot-stocks-panel">
+                    <h3>🔥 今日熱門</h3>
+                    <div class="hot-stocks-list" id="hotStocksList">
+                        <!-- 動態生成 -->
+                    </div>
+                </div>
+            </aside>
+
+            <!-- 中央分析區 -->
+            <main class="analysis-area">
+                <!-- 個股資訊 -->
+                <div class="stock-info-panel" id="stockInfoPanel">
+                    <div class="stock-header">
+                        <div class="stock-title">
+                            <span class="stock-name" id="stockName">台積電</span>
+                            <span class="stock-code" id="stockCode">2330</span>
+                        </div>
+                        <div class="stock-industry" id="stockIndustry">半導體業</div>
+                    </div>
+                    <div class="stock-price-info">
+                        <div class="current-price" id="currentPrice">585.00</div>
+                        <div class="price-change positive" id="priceChange">+8.00 (+1.39%)</div>
+                        <div class="price-details">
+                            <span>開盤: <span id="openPrice">578.00</span></span>
+                            <span>最高: <span id="highPrice">588.00</span></span>
+                            <span>最低: <span id="lowPrice">575.00</span></span>
+                            <span>成交量: <span id="volume">25,643 張</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- K線圖 -->
+                <div class="chart-panel">
+                    <div class="chart-header">
+                        <h3>📈 技術線圖</h3>
+                        <div class="chart-controls">
+                            <button class="chart-btn active" data-period="1d">日線</button>
+                            <button class="chart-btn" data-period="1w">週線</button>
+                            <button class="chart-btn" data-period="1m">月線</button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="stockChart" width="800" height="400"></canvas>
+                    </div>
+                </div>
+
+                <!-- 技術指標 -->
+                <div class="indicators-panel">
+                    <h3>📊 技術指標</h3>
+                    <div class="indicators-grid">
+                        <div class="indicator-card">
+                            <div class="indicator-name">RSI (14)</div>
+                            <div class="indicator-value" id="rsiValue">68.2</div>
+                            <div class="indicator-status neutral">中性偏強</div>
+                        </div>
+                        <div class="indicator-card">
+                            <div class="indicator-name">MACD</div>
+                            <div class="indicator-value" id="macdValue">2.34</div>
+                            <div class="indicator-status positive">黃金交叉</div>
+                        </div>
+                        <div class="indicator-card">
+                            <div class="indicator-name">KD</div>
+                            <div class="indicator-value" id="kdValue">K:72 D:68</div>
+                            <div class="indicator-status positive">多方訊號</div>
+                        </div>
+                        <div class="indicator-card">
+                            <div class="indicator-name">威廉指標</div>
+                            <div class="indicator-value" id="wrValue">-25.6</div>
+                            <div class="indicator-status neutral">中性區間</div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- 右側資訊區 -->
+            <aside class="info-sidebar">
+                <!-- 即時資訊 -->
+                <div class="news-panel">
+                    <h3>📰 重要資訊</h3>
+                    <div class="news-list" id="newsList">
+                        <!-- 動態生成 -->
+                    </div>
+                </div>
+
+                <!-- 成交明細 -->
+                <div class="trade-detail-panel">
+                    <h3>📋 成交明細</h3>
+                    <div class="trade-table">
+                        <div class="trade-header">
+                            <span>時間</span>
+                            <span>價格</span>
+                            <span>成交量</span>
+                        </div>
+                        <div class="trade-body" id="tradeDetail">
+                            <!-- 動態生成 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 技術分析建議 -->
+                <div class="analysis-suggestion">
+                    <h3>🎯 分析建議</h3>
+                    <div class="suggestion-content" id="suggestionContent">
+                        <div class="suggestion-item">
+                            <span class="suggestion-type positive">技術面</span>
+                            <span class="suggestion-text">多項指標呈現多方排列，建議持續觀察</span>
+                        </div>
+                        <div class="suggestion-item">
+                            <span class="suggestion-type neutral">籌碼面</span>
+                            <span class="suggestion-text">法人持續買盤，籌碼穩定</span>
+                        </div>
+                        <div class="suggestion-item">
+                            <span class="suggestion-type positive">基本面</span>
+                            <span class="suggestion-text">營收成長動能強勁，獲利展望佳</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <!-- 底部統計 -->
+        <footer class="footer-stats">
+            <div class="stat-item">
+                <span class="stat-label">上漲家數</span>
+                <span class="stat-value positive">892</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">下跌家數</span>
+                <span class="stat-value negative">645</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">平盤家數</span>
+                <span class="stat-value">178</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">總成交金額</span>
+                <span class="stat-value">2,456 億</span>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
