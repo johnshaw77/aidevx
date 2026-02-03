@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microsoft Excel - 資料分析報表.xlsx</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==">
+</head>
+<body>
+    <!-- 應急快捷鍵提示 -->
+    <div id="helpTip" class="help-tip">
+        按 <kbd>Space</kbd> 切換模式 | 按 <kbd>B</kbd> 老闆鍵 | 按 <kbd>H</kbd> 隱藏提示
+    </div>
+
+    <!-- 工作模式容器 -->
+    <div id="workContainer" class="work-container">
+        
+        <!-- Excel 模式 -->
+        <div id="excelMode" class="work-mode active">
+            <div class="excel-header">
+                <div class="excel-toolbar">
+                    <span class="excel-logo">📊 Microsoft Excel</span>
+                    <div class="file-tabs">
+                        <span class="tab active">資料分析報表.xlsx</span>
+                        <span class="tab">Q4銷售統計.xlsx</span>
+                        <span class="tab">預算規劃2024.xlsx</span>
+                    </div>
+                </div>
+                <div class="excel-menu">
+                    <span>檔案</span>
+                    <span>常用</span>
+                    <span>插入</span>
+                    <span>版面配置</span>
+                    <span>公式</span>
+                    <span>資料</span>
+                    <span>檢閱</span>
+                    <span>檢視</span>
+                </div>
+            </div>
+            <div class="excel-body">
+                <div class="excel-sidebar">
+                    <div class="sheet-tabs">
+                        <div class="sheet-tab active">銷售數據</div>
+                        <div class="sheet-tab">趨勢分析</div>
+                        <div class="sheet-tab">預測模型</div>
+                    </div>
+                </div>
+                <div class="excel-content">
+                    <table class="excel-table" id="excelTable">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>A</th>
+                                <th>B</th>
+                                <th>C</th>
+                                <th>D</th>
+                                <th>E</th>
+                                <th>F</th>
+                                <th>G</th>
+                            </tr>
+                        </thead>
+                        <tbody id="excelData">
+                            <!-- 動態生成 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="excel-status">
+                <span>準備就緒</span>
+                <span id="excelProgress">正在計算公式... 67%</span>
+                <span>自動儲存: 2分鐘前</span>
+            </div>
+        </div>
+
+        <!-- 程式碼編輯器模式 -->
+        <div id="codeMode" class="work-mode">
+            <div class="code-header">
+                <div class="code-title">🖥️ Visual Studio Code - 專案分析系統</div>
+                <div class="code-tabs">
+                    <span class="code-tab active">main.py</span>
+                    <span class="code-tab">data_processor.py</span>
+                    <span class="code-tab">config.json</span>
+                </div>
+            </div>
+            <div class="code-body">
+                <div class="code-sidebar">
+                    <div class="folder-tree">
+                        <div class="folder">📁 project-analysis</div>
+                        <div class="folder indent">📁 src</div>
+                        <div class="folder indent2">📄 main.py</div>
+                        <div class="folder indent2">📄 data_processor.py</div>
+                        <div class="folder indent">📁 data</div>
+                        <div class="folder indent">📁 tests</div>
+                        <div class="folder">📄 README.md</div>
+                    </div>
+                </div>
+                <div class="code-content">
+                    <pre class="code-editor" id="codeEditor">
+<span class="comment"># 資料分析處理系統</span>
+<span class="keyword">import</span> pandas <span class="keyword">as</span> pd
+<span class="keyword">import</span> numpy <span class="keyword">as</span> np
+<span class="keyword">from</span> datetime <span class="keyword">import</span> datetime
+
+<span class="keyword">class</span> <span class="class-name">DataProcessor</span>:
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="param">self</span>, <span class="param">data_path</span>):
+        <span class="param">self</span>.data_path = data_path
+        <span class="param">self</span>.df = <span class="keyword">None</span>
+        
+    <span class="keyword">def</span> <span class="function">load_data</span>(<span class="param">self</span>):
+        <span class="string">"""載入並預處理資料"""</span>
+        <span class="param">self</span>.df = pd.read_csv(<span class="param">self</span>.data_path)
+        <span class="comment"># 清理空值</span>
+        <span class="param">self</span>.df = <span class="param">self</span>.df.dropna()
+        <span class="keyword">return</span> <span class="param">self</span>.df
+        
+    <span class="keyword">def</span> <span class="function">analyze_trends</span>(<span class="param">self</span>):
+        <span class="comment"># 正在重構演算法...</span>
+<span id="typingCursor">|</span></pre>
+                </div>
+            </div>
+            <div class="code-status">
+                <span class="status-item">🔴 Python 3.9.7</span>
+                <span class="status-item">✓ 已儲存</span>
+                <span class="status-item">編譯中... 89%</span>
+            </div>
+        </div>
+
+        <!-- 郵件模式 -->
+        <div id="emailMode" class="work-mode">
+            <div class="email-header">
+                <div class="email-toolbar">
+                    <span class="email-logo">📧 Outlook</span>
+                    <button class="email-btn">新郵件</button>
+                    <button class="email-btn">回覆</button>
+                    <button class="email-btn">轉寄</button>
+                </div>
+            </div>
+            <div class="email-body">
+                <div class="email-sidebar">
+                    <div class="email-folders">
+                        <div class="folder-item active">📥 收件匣 (47)</div>
+                        <div class="folder-item">📤 寄件匣</div>
+                        <div class="folder-item">📋 草稿 (3)</div>
+                        <div class="folder-item">🗑️ 已刪除</div>
+                    </div>
+                </div>
+                <div class="email-content">
+                    <div class="email-compose">
+                        <div class="compose-header">
+                            <div class="compose-field">
+                                <label>收件者:</label>
+                                <input type="text" value="manager@company.com" readonly>
+                            </div>
+                            <div class="compose-field">
+                                <label>主旨:</label>
+                                <input type="text" value="Re: Q4 專案進度報告更新" readonly>
+                            </div>
+                        </div>
+                        <div class="compose-body">
+                            <div id="emailContent" class="email-text"></div>
+                            <div id="emailCursor" class="email-cursor">|</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 會議記錄模式 -->
+        <div id="meetingMode" class="work-mode">
+            <div class="meeting-header">
+                <span class="meeting-title">📝 會議記錄 - 週會報告 2024/02/03</span>
+                <div class="meeting-status">
+                    <span class="online-dot"></span>
+                    <span>Teams 會議進行中</span>
+                </div>
+            </div>
+            <div class="meeting-content">
+                <div id="meetingNotes" class="meeting-notes"></div>
+                <div id="meetingCursor" class="meeting-cursor">|</div>
+            </div>
+        </div>
+
+        <!-- 老闆模式 (應急) -->
+        <div id="bossMode" class="work-mode boss-mode">
+            <div class="boss-content">
+                <h1>公司重要政策文件</h1>
+                <div class="document-section">
+                    <h2>📋 2024年度營運目標</h2>
+                    <p>為提升公司整體競爭力，確保穩定成長，特制定以下重要營運方針...</p>
+                    
+                    <h3>一、業務發展策略</h3>
+                    <ul>
+                        <li>強化客戶關係管理系統</li>
+                        <li>拓展新興市場業務</li>
+                        <li>提升產品服務品質</li>
+                    </ul>
+                    
+                    <h3>二、人力資源規劃</h3>
+                    <ul>
+                        <li>員工專業能力培訓計畫</li>
+                        <li>績效管理制度優化</li>
+                        <li>工作環境改善措施</li>
+                    </ul>
+                    
+                    <p class="important-note">
+                        ⚠️ 本文件為機密資料，請勿外洩。如有疑問請洽人資部門。
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 忙碌指示器 -->
+    <div id="busyIndicator" class="busy-indicator">
+        <div class="busy-dot"></div>
+        <span id="busyText">處理中...</span>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

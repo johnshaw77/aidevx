@@ -1,0 +1,565 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background: #f3f3f3;
+    overflow: hidden;
+    height: 100vh;
+}
+
+/* 幫助提示 */
+.help-tip {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    z-index: 1000;
+    transition: opacity 0.3s;
+}
+
+.help-tip.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.help-tip kbd {
+    background: #555;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+}
+
+/* 工作模式容器 */
+.work-container {
+    height: 100vh;
+    position: relative;
+}
+
+.work-mode {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+}
+
+.work-mode.active {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Excel 模式 */
+.excel-header {
+    background: #217346;
+    color: white;
+}
+
+.excel-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 16px;
+    background: #1e6b3a;
+}
+
+.excel-logo {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.file-tabs {
+    display: flex;
+    gap: 4px;
+}
+
+.tab {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 6px 12px;
+    border-radius: 4px 4px 0 0;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.tab.active {
+    background: white;
+    color: #333;
+}
+
+.excel-menu {
+    display: flex;
+    gap: 24px;
+    padding: 8px 16px;
+    background: #217346;
+    font-size: 13px;
+}
+
+.excel-body {
+    flex: 1;
+    display: flex;
+}
+
+.excel-sidebar {
+    width: 200px;
+    background: #f8f9fa;
+    border-right: 1px solid #ddd;
+    padding: 16px;
+}
+
+.sheet-tabs {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sheet-tab {
+    padding: 8px 12px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.sheet-tab.active {
+    background: #217346;
+    color: white;
+    border-color: #217346;
+}
+
+.excel-content {
+    flex: 1;
+    overflow: auto;
+    background: white;
+}
+
+.excel-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.excel-table th,
+.excel-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+    min-width: 100px;
+}
+
+.excel-table th {
+    background: #f8f9fa;
+    font-weight: bold;
+    text-align: center;
+}
+
+.excel-table tr:nth-child(even) {
+    background: #f9f9f9;
+}
+
+.excel-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 16px;
+    background: #f0f0f0;
+    border-top: 1px solid #ddd;
+    font-size: 12px;
+    color: #666;
+}
+
+/* 程式碼編輯器模式 */
+#codeMode {
+    background: #1e1e1e;
+    color: #d4d4d4;
+}
+
+.code-header {
+    background: #2d2d30;
+    padding: 8px 16px;
+    border-bottom: 1px solid #3e3e42;
+}
+
+.code-title {
+    color: #cccccc;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.code-tabs {
+    display: flex;
+    gap: 4px;
+}
+
+.code-tab {
+    background: #2d2d30;
+    color: #cccccc;
+    padding: 6px 12px;
+    border-radius: 4px 4px 0 0;
+    border: 1px solid #3e3e42;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.code-tab.active {
+    background: #1e1e1e;
+    border-bottom: 1px solid #1e1e1e;
+}
+
+.code-body {
+    flex: 1;
+    display: flex;
+}
+
+.code-sidebar {
+    width: 250px;
+    background: #252526;
+    border-right: 1px solid #3e3e42;
+    padding: 16px;
+}
+
+.folder-tree {
+    font-size: 13px;
+}
+
+.folder {
+    padding: 4px 0;
+    cursor: pointer;
+    color: #cccccc;
+}
+
+.folder:hover {
+    background: #2a2d2e;
+}
+
+.indent { padding-left: 20px; }
+.indent2 { padding-left: 40px; }
+
+.code-content {
+    flex: 1;
+    background: #1e1e1e;
+    padding: 16px;
+    overflow: auto;
+}
+
+.code-editor {
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #d4d4d4;
+}
+
+.keyword { color: #569cd6; }
+.string { color: #ce9178; }
+.comment { color: #6a9955; }
+.function { color: #dcdcaa; }
+.class-name { color: #4ec9b0; }
+.param { color: #9cdcfe; }
+
+#typingCursor {
+    animation: blink 1s infinite;
+    color: #ffffff;
+}
+
+.code-status {
+    background: #007acc;
+    color: white;
+    padding: 4px 16px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* 郵件模式 */
+#emailMode {
+    background: #f3f2f1;
+}
+
+.email-header {
+    background: #0078d4;
+    color: white;
+    padding: 8px 16px;
+}
+
+.email-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.email-logo {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.email-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.email-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.email-body {
+    flex: 1;
+    display: flex;
+}
+
+.email-sidebar {
+    width: 250px;
+    background: white;
+    border-right: 1px solid #ddd;
+    padding: 16px;
+}
+
+.email-folders {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.folder-item {
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.folder-item:hover {
+    background: #f3f2f1;
+}
+
+.folder-item.active {
+    background: #0078d4;
+    color: white;
+}
+
+.email-content {
+    flex: 1;
+    background: white;
+    padding: 20px;
+}
+
+.compose-header {
+    margin-bottom: 20px;
+}
+
+.compose-field {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    gap: 12px;
+}
+
+.compose-field label {
+    min-width: 80px;
+    font-weight: 500;
+}
+
+.compose-field input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #f9f9f9;
+}
+
+.compose-body {
+    position: relative;
+    min-height: 300px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 16px;
+    background: white;
+}
+
+.email-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #333;
+}
+
+.email-cursor,
+.meeting-cursor {
+    animation: blink 1s infinite;
+    color: #333;
+    font-weight: bold;
+}
+
+/* 會議記錄模式 */
+#meetingMode {
+    background: white;
+}
+
+.meeting-header {
+    background: #464775;
+    color: white;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.meeting-title {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.meeting-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+}
+
+.online-dot {
+    width: 8px;
+    height: 8px;
+    background: #92c353;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+.meeting-content {
+    padding: 32px;
+    font-size: 14px;
+    line-height: 1.8;
+    position: relative;
+}
+
+.meeting-notes {
+    color: #333;
+}
+
+/* 老闆模式 */
+.boss-mode {
+    background: white !important;
+    padding: 40px;
+    overflow-y: auto;
+}
+
+.boss-content h1 {
+    color: #1a365d;
+    text-align: center;
+    margin-bottom: 32px;
+    font-size: 28px;
+}
+
+.boss-content h2 {
+    color: #2d3748;
+    margin: 24px 0 16px 0;
+    font-size: 20px;
+}
+
+.boss-content h3 {
+    color: #4a5568;
+    margin: 16px 0 12px 0;
+    font-size: 16px;
+}
+
+.boss-content p {
+    margin-bottom: 16px;
+    color: #2d3748;
+    line-height: 1.6;
+}
+
+.boss-content ul {
+    margin-left: 24px;
+    margin-bottom: 16px;
+}
+
+.boss-content li {
+    margin-bottom: 8px;
+    color: #4a5568;
+}
+
+.important-note {
+    background: #fed7d7;
+    border: 1px solid #fc8181;
+    color: #c53030;
+    padding: 16px;
+    border-radius: 8px;
+    margin-top: 32px;
+}
+
+/* 忙碌指示器 */
+.busy-indicator {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #0078d4;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 25px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.busy-dot {
+    width: 8px;
+    height: 8px;
+    background: white;
+    border-radius: 50%;
+    animation: bounce 1.4s infinite ease-in-out;
+}
+
+/* 動畫 */
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+@keyframes bounce {
+    0%, 80%, 100% {
+        transform: scale(0);
+    }
+    40% {
+        transform: scale(1);
+    }
+}
+
+/* 響應式 */
+@media (max-width: 768px) {
+    .excel-sidebar,
+    .code-sidebar,
+    .email-sidebar {
+        width: 200px;
+    }
+    
+    .help-tip {
+        font-size: 11px;
+        padding: 6px 10px;
+    }
+    
+    .boss-content {
+        padding: 20px;
+    }
+}
