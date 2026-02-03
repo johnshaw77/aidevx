@@ -1,235 +1,218 @@
-class MarketCountdown {
-    constructor() {
-        this.countdownElement = document.getElementById('countdown');
-        this.startBtn = document.getElementById('startBtn');
-        this.resetBtn = document.getElementById('resetBtn');
-        this.rushMessage = document.getElementById('rushMessage');
-        this.moneyRain = document.getElementById('moneyRain');
-        
-        this.currentCount = 10;
-        this.isRunning = false;
-        this.intervalId = null;
-        
-        this.init();
-    }
-    
-    init() {
-        this.startBtn.addEventListener('click', () => this.startCountdown());
-        this.resetBtn.addEventListener('click', () => this.resetCountdown());
-        
-        // 初始化音效上下文
-        this.setupAudio();
-    }
-    
-    setupAudio() {
-        try {
-            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        } catch (e) {
-            console.log('Web Audio API not supported');
-        }
-    }
-    
-    playBeep(frequency = 800, duration = 200) {
-        if (!this.audioContext) return;
-        
-        const oscillator = this.audioContext.createOscillator();
-        const gainNode = this.audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(this.audioContext.destination);
-        
-        oscillator.frequency.value = frequency;
-        oscillator.type = 'sine';
-        
-        gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + duration / 1000);
-        
-        oscillator.start(this.audioContext.currentTime);
-        oscillator.stop(this.audioContext.currentTime + duration / 1000);
-    }
-    
-    startCountdown() {
-        if (this.isRunning) return;
-        
-        // 確保音效上下文可以使用
-        if (this.audioContext && this.audioContext.state === 'suspended') {
-            this.audioContext.resume();
-        }
-        
-        this.isRunning = true;
-        this.startBtn.style.display = 'none';
-        this.resetBtn.style.display = 'inline-block';
-        this.rushMessage.style.display = 'none';
-        
-        // 清除金錢雨
-        this.moneyRain.innerHTML = '';
-        
-        this.intervalId = setInterval(() => {
-            this.updateCountdown();
-        }, 1000);
-    }
-    
-    updateCountdown() {
-        // 添加脈衝動畫
-        this.countdownElement.classList.add('pulse');
-        setTimeout(() => {
-            this.countdownElement.classList.remove('pulse');
-        }, 1000);
-        
-        // 播放音效
-        if (this.currentCount <= 3) {
-            this.playBeep(1200, 300); // 最後三秒高音
-        } else {
-            this.playBeep(800, 200); // 一般音效
-        }
-        
-        // 更新顯示
-        this.countdownElement.textContent = this.currentCount;
-        
-        // 最後三秒特殊效果
-        if (this.currentCount <= 3) {
-            this.countdownElement.classList.add('final');
-            this.shakeScreen();
-        }
-        
-        // 倒數結束
-        if (this.currentCount === 0) {
-            this.finishCountdown();
-            return;
-        }
-        
-        this.currentCount--;
-    }
-    
-    shakeScreen() {
-        document.body.style.animation = 'screenShake 0.5s ease-in-out';
-        setTimeout(() => {
-            document.body.style.animation = '';
-        }, 500);
-    }
-    
-    finishCountdown() {
-        clearInterval(this.intervalId);
-        
-        // 播放勝利音效
-        this.playBeep(1500, 500);
-        setTimeout(() => this.playBeep(1800, 500), 200);
-        setTimeout(() => this.playBeep(2000, 800), 400);
-        
-        // 顯示衝刺訊息
-        this.countdownElement.textContent = '開盤!';
-        this.countdownElement.style.background = 'linear-gradient(45deg, #ffd700, #ffed4e)';
-        this.countdownElement.style.webkitBackgroundClip = 'text';
-        this.countdownElement.style.webkitTextFillColor = 'transparent';
-        
-        setTimeout(() => {
-            this.rushMessage.style.display = 'block';
-            this.startMoneyRain();
-            this.flashScreen();
-        }, 500);
-        
-        this.isRunning = false;
-    }
-    
-    startMoneyRain() {
-        const moneySymbols = ['💰', '💵', '💸', '🤑', '💲', '🏆', '📈', '🚀'];
-        
-        for (let i = 0; i < 50; i++) {
-            setTimeout(() => {
-                this.createMoneyDrop(moneySymbols[Math.floor(Math.random() * moneySymbols.length)]);
-            }, i * 100);
-        }
-    }
-    
-    createMoneyDrop(symbol) {
-        const money = document.createElement('div');
-        money.className = 'money';
-        money.textContent = symbol;
-        money.style.left = Math.random() * 100 + '%';
-        money.style.animationDuration = (Math.random() * 2 + 2) + 's';
-        money.style.animationDelay = Math.random() * 0.5 + 's';
-        
-        this.moneyRain.appendChild(money);
-        
-        // 清理
-        setTimeout(() => {
-            if (money.parentNode) {
-                money.parentNode.removeChild(money);
-            }
-        }, 5000);
-    }
-    
-    flashScreen() {
-        const flashOverlay = document.createElement('div');
-        flashOverlay.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, rgba(255,215,0,0.8) 0%, rgba(255,215,0,0) 70%);
-            z-index: 30;
-            animation: flashFade 1s ease-out forwards;
-            pointer-events: none;
-        `;
-        
-        document.body.appendChild(flashOverlay);
-        
-        setTimeout(() => {
-            if (flashOverlay.parentNode) {
-                flashOverlay.parentNode.removeChild(flashOverlay);
-            }
-        }, 1000);
-    }
-    
-    resetCountdown() {
-        clearInterval(this.intervalId);
-        
-        this.currentCount = 10;
-        this.isRunning = false;
-        
-        this.countdownElement.textContent = '10';
-        this.countdownElement.classList.remove('final');
-        this.countdownElement.style.background = 'linear-gradient(45deg, #ff4757, #ff3838)';
-        this.countdownElement.style.webkitBackgroundClip = 'text';
-        this.countdownElement.style.webkitTextFillColor = 'transparent';
-        
-        this.startBtn.style.display = 'inline-block';
-        this.resetBtn.style.display = 'none';
-        this.rushMessage.style.display = 'none';
-        
-        // 清除金錢雨
-        this.moneyRain.innerHTML = '';
+// 簡化版倒數器，移除複雜功能確保基本功能正常
+let countdown = 10;
+let isRunning = false;
+let timer = null;
+let audioContext = null;
+
+// 初始化音效
+function initAudio() {
+    try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    } catch (e) {
+        console.log('音效不支援');
     }
 }
 
-// 添加螢幕震動動畫
+// 播放音效
+function playSound(freq = 800) {
+    if (!audioContext) return;
+    
+    try {
+        if (audioContext.state === 'suspended') {
+            audioContext.resume();
+        }
+        
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        
+        osc.frequency.value = freq;
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0.2, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.3);
+        
+        osc.start(audioContext.currentTime);
+        osc.stop(audioContext.currentTime + 0.3);
+    } catch (e) {
+        console.log('音效播放失敗');
+    }
+}
+
+// 開始倒數
+function startCountdown() {
+    if (isRunning) return;
+    
+    console.log('開始倒數！');
+    isRunning = true;
+    countdown = 10;
+    
+    const startBtn = document.getElementById('startBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const countdownEl = document.getElementById('countdown');
+    const rushMessage = document.getElementById('rushMessage');
+    
+    startBtn.style.display = 'none';
+    resetBtn.style.display = 'inline-block';
+    rushMessage.style.display = 'none';
+    
+    timer = setInterval(() => {
+        console.log('倒數:', countdown);
+        
+        countdownEl.textContent = countdown;
+        countdownEl.style.transform = 'scale(1.2)';
+        
+        setTimeout(() => {
+            countdownEl.style.transform = 'scale(1)';
+        }, 200);
+        
+        // 播放音效
+        if (countdown <= 3) {
+            playSound(1200);
+            document.body.style.animation = 'shake 0.5s';
+            setTimeout(() => {
+                document.body.style.animation = '';
+            }, 500);
+        } else {
+            playSound(800);
+        }
+        
+        if (countdown === 0) {
+            finishCountdown();
+            return;
+        }
+        
+        countdown--;
+    }, 1000);
+}
+
+// 倒數結束
+function finishCountdown() {
+    clearInterval(timer);
+    isRunning = false;
+    
+    const countdownEl = document.getElementById('countdown');
+    const rushMessage = document.getElementById('rushMessage');
+    
+    countdownEl.textContent = '開盤!';
+    countdownEl.style.color = '#ffd700';
+    countdownEl.style.transform = 'scale(2)';
+    
+    // 勝利音效
+    playSound(1500);
+    setTimeout(() => playSound(1800), 200);
+    setTimeout(() => playSound(2000), 400);
+    
+    setTimeout(() => {
+        rushMessage.style.display = 'block';
+        createMoneyRain();
+    }, 500);
+}
+
+// 重置倒數
+function resetCountdown() {
+    clearInterval(timer);
+    isRunning = false;
+    countdown = 10;
+    
+    const startBtn = document.getElementById('startBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const countdownEl = document.getElementById('countdown');
+    const rushMessage = document.getElementById('rushMessage');
+    
+    countdownEl.textContent = '10';
+    countdownEl.style.color = '#ff4757';
+    countdownEl.style.transform = 'scale(1)';
+    
+    startBtn.style.display = 'inline-block';
+    resetBtn.style.display = 'none';
+    rushMessage.style.display = 'none';
+    
+    // 清除金錢雨
+    const moneyRain = document.getElementById('moneyRain');
+    moneyRain.innerHTML = '';
+}
+
+// 金錢雨
+function createMoneyRain() {
+    const moneyRain = document.getElementById('moneyRain');
+    const symbols = ['💰', '💵', '💸', '🤑', '💲', '🏆', '📈', '🚀'];
+    
+    for (let i = 0; i < 30; i++) {
+        setTimeout(() => {
+            const money = document.createElement('div');
+            money.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+            money.style.position = 'fixed';
+            money.style.left = Math.random() * 100 + '%';
+            money.style.top = '-50px';
+            money.style.fontSize = '2rem';
+            money.style.zIndex = '1000';
+            money.style.pointerEvents = 'none';
+            money.style.animation = 'fall 3s linear forwards';
+            
+            moneyRain.appendChild(money);
+            
+            setTimeout(() => {
+                if (money.parentNode) {
+                    money.parentNode.removeChild(money);
+                }
+            }, 3000);
+        }, i * 100);
+    }
+}
+
+// 加入 CSS 動畫
 const style = document.createElement('style');
 style.textContent = `
-    @keyframes screenShake {
-        0%, 100% { transform: translateX(0); }
-        10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
-        20%, 40%, 60%, 80% { transform: translateX(10px); }
+    @keyframes fall {
+        to {
+            transform: translateY(100vh) rotate(360deg);
+            opacity: 0;
+        }
     }
-    
-    @keyframes flashFade {
-        0% { opacity: 1; }
-        100% { opacity: 0; }
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-10px); }
+        75% { transform: translateX(10px); }
     }
 `;
 document.head.appendChild(style);
 
-// 全域變數存放實例，供音效恢復使用
-let marketCountdownInstance = null;
-
-// 等待DOM載入完成
-document.addEventListener('DOMContentLoaded', () => {
-    marketCountdownInstance = new MarketCountdown();
+// 等待頁面載入
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('頁面載入完成');
+    
+    // 初始化音效
+    initAudio();
+    
+    // 綁定按鈕事件
+    const startBtn = document.getElementById('startBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    
+    if (startBtn) {
+        console.log('找到開始按鈕，綁定事件');
+        startBtn.addEventListener('click', function() {
+            console.log('開始按鈕被點擊！');
+            startCountdown();
+        });
+    } else {
+        console.error('找不到開始按鈕！');
+    }
+    
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+            console.log('重置按鈕被點擊！');
+            resetCountdown();
+        });
+    }
+    
+    // 首次點擊啟動音效
+    document.addEventListener('click', function() {
+        if (audioContext && audioContext.state === 'suspended') {
+            audioContext.resume();
+        }
+    }, { once: true });
 });
 
-// 點擊任何地方恢復音效上下文（某些瀏覽器需要）
-document.addEventListener('click', () => {
-    if (marketCountdownInstance && marketCountdownInstance.audioContext && marketCountdownInstance.audioContext.state === 'suspended') {
-        marketCountdownInstance.audioContext.resume();
-    }
-}, { once: true });
+console.log('腳本載入完成');
