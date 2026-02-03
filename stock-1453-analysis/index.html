@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📊 1453 大將 - 個股深度分析報告</title>
+    <title>📊 1453 大將 - 建材營造股分析報告</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -14,10 +14,10 @@
                 <div class="stock-title">
                     <span class="stock-code">1453</span>
                     <span class="stock-name">大將</span>
-                    <span class="stock-industry">光電業</span>
+                    <span class="stock-industry">建材營造業</span>
                 </div>
                 <div class="update-info">
-                    <span class="update-time" id="updateTime">2026-02-03 10:15:30</span>
+                    <span class="update-time" id="updateTime">2026-02-03 10:24:30</span>
                     <span class="market-status">盤中交易</span>
                 </div>
             </div>
@@ -26,33 +26,33 @@
         <!-- 股價資訊區 -->
         <section class="price-section">
             <div class="price-main">
-                <div class="current-price" id="currentPrice">42.85</div>
-                <div class="price-change positive" id="priceChange">+1.25 (+3.01%)</div>
+                <div class="current-price" id="currentPrice">13.35</div>
+                <div class="price-change negative" id="priceChange">-0.05 (-0.37%)</div>
             </div>
             <div class="price-details">
                 <div class="price-item">
                     <span class="label">開盤</span>
-                    <span class="value" id="openPrice">42.00</span>
+                    <span class="value" id="openPrice">13.40</span>
                 </div>
                 <div class="price-item">
                     <span class="label">最高</span>
-                    <span class="value high" id="highPrice">43.20</span>
+                    <span class="value high" id="highPrice">13.80</span>
                 </div>
                 <div class="price-item">
                     <span class="label">最低</span>
-                    <span class="value low" id="lowPrice">41.80</span>
+                    <span class="value low" id="lowPrice">13.20</span>
                 </div>
                 <div class="price-item">
                     <span class="label">昨收</span>
-                    <span class="value" id="yesterdayPrice">41.60</span>
+                    <span class="value" id="yesterdayPrice">13.40</span>
                 </div>
                 <div class="price-item">
                     <span class="label">成交量</span>
-                    <span class="value volume" id="volume">3,258 張</span>
+                    <span class="value volume" id="volume">78 張</span>
                 </div>
                 <div class="price-item">
-                    <span class="label">成交值</span>
-                    <span class="value" id="turnover">139.6 萬</span>
+                    <span class="label">均價</span>
+                    <span class="value" id="avgPrice">13.52</span>
                 </div>
             </div>
         </section>
@@ -75,15 +75,15 @@
                         <canvas id="stockChart" width="800" height="400"></canvas>
                         <div class="chart-overlay">
                             <div class="ma-legends">
-                                <span class="ma-5">MA5: <span id="ma5">42.12</span></span>
-                                <span class="ma-20">MA20: <span id="ma20">40.85</span></span>
-                                <span class="ma-60">MA60: <span id="ma60">39.45</span></span>
+                                <span class="ma-5">MA5: <span id="ma5">13.45</span></span>
+                                <span class="ma-20">MA20: <span id="ma20">13.60</span></span>
+                                <span class="ma-60">MA60: <span id="ma60">14.20</span></span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 技術指標 -->
+                <!-- 技術指標 */
                 <div class="indicators-panel">
                     <h3>📊 技術指標分析</h3>
                     <div class="indicators-grid">
@@ -92,9 +92,9 @@
                                 <span class="indicator-name">RSI (14)</span>
                                 <span class="indicator-period">日線</span>
                             </div>
-                            <div class="indicator-value strong" id="rsiValue">72.3</div>
-                            <div class="indicator-signal positive">偏強 - 注意回檔</div>
-                            <div class="indicator-desc">RSI高於70，股價可能進入超買區域</div>
+                            <div class="indicator-value neutral" id="rsiValue">45.2</div>
+                            <div class="indicator-signal neutral">中性偏弱</div>
+                            <div class="indicator-desc">RSI低於50，短期動能較弱</div>
                         </div>
                         
                         <div class="indicator-card">
@@ -102,9 +102,9 @@
                                 <span class="indicator-name">MACD</span>
                                 <span class="indicator-period">12,26,9</span>
                             </div>
-                            <div class="indicator-value positive" id="macdValue">0.85</div>
-                            <div class="indicator-signal positive">黃金交叉</div>
-                            <div class="indicator-desc">MACD線上穿信號線，多頭訊號</div>
+                            <div class="indicator-value negative" id="macdValue">-0.12</div>
+                            <div class="indicator-signal negative">空頭訊號</div>
+                            <div class="indicator-desc">MACD為負值，趨勢偏空</div>
                         </div>
                         
                         <div class="indicator-card">
@@ -112,19 +112,19 @@
                                 <span class="indicator-name">KD</span>
                                 <span class="indicator-period">9,3,3</span>
                             </div>
-                            <div class="indicator-value" id="kdValue">K:78 D:72</div>
-                            <div class="indicator-signal positive">多頭排列</div>
-                            <div class="indicator-desc">K值大於D值，短期仍有上漲動能</div>
+                            <div class="indicator-value" id="kdValue">K:42 D:48</div>
+                            <div class="indicator-signal negative">空頭排列</div>
+                            <div class="indicator-desc">K值小於D值，短期趨勢偏弱</div>
                         </div>
                         
                         <div class="indicator-card">
                             <div class="indicator-header">
-                                <span class="indicator-name">威廉%R</span>
-                                <span class="indicator-period">14</span>
+                                <span class="indicator-name">成交量</span>
+                                <span class="indicator-period">日均</span>
                             </div>
-                            <div class="indicator-value strong" id="wrValue">-18.5</div>
-                            <div class="indicator-signal neutral">超買警戒</div>
-                            <div class="indicator-desc">接近超買區域，留意獲利了結壓力</div>
+                            <div class="indicator-value weak" id="volumeIndicator">78</div>
+                            <div class="indicator-signal weak">量能不足</div>
+                            <div class="indicator-desc">成交量偏低，市場關注度不高</div>
                         </div>
                     </div>
                 </div>
@@ -136,23 +136,23 @@
                         <div class="resistance-zone">
                             <h4>壓力區間</h4>
                             <div class="sr-level strong">
-                                <span class="level-price">45.50</span>
-                                <span class="level-desc">強壓力 - 前高密集區</span>
+                                <span class="level-price">14.20</span>
+                                <span class="level-desc">強壓力 - 60日均線</span>
                             </div>
                             <div class="sr-level medium">
-                                <span class="level-price">44.20</span>
-                                <span class="level-desc">中等壓力 - 60日均線</span>
+                                <span class="level-price">13.80</span>
+                                <span class="level-desc">中等壓力 - 當日高點</span>
                             </div>
                         </div>
                         
                         <div class="support-zone">
                             <h4>支撐區間</h4>
                             <div class="sr-level medium">
-                                <span class="level-price">41.00</span>
-                                <span class="level-desc">中等支撐 - 20日均線</span>
+                                <span class="level-price">13.20</span>
+                                <span class="level-desc">中等支撐 - 當日低點</span>
                             </div>
                             <div class="sr-level strong">
-                                <span class="level-price">39.80</span>
+                                <span class="level-price">12.80</span>
                                 <span class="level-desc">強支撐 - 前低密集區</span>
                             </div>
                         </div>
@@ -172,106 +172,77 @@
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">產業別</span>
-                            <span class="detail-value">光電業 / LED相關</span>
+                            <span class="detail-value">建材營造業</span>
                         </div>
                         <div class="detail-item">
-                            <span class="detail-label">實收資本</span>
-                            <span class="detail-value">12.8 億元</span>
+                            <span class="detail-label">市場別</span>
+                            <span class="detail-value">上櫃股票</span>
                         </div>
                         <div class="detail-item">
-                            <span class="detail-label">總發行股數</span>
-                            <span class="detail-value">128,000 千股</span>
+                            <span class="detail-label">股本</span>
+                            <span class="detail-value">約6-8億元</span>
                         </div>
                         <div class="detail-item">
-                            <span class="detail-label">每股淨值</span>
-                            <span class="detail-value">38.5 元</span>
+                            <span class="detail-label">主要業務</span>
+                            <span class="detail-value">建材製造、營造工程</span>
                         </div>
                         <div class="detail-item">
-                            <span class="detail-label">本益比</span>
-                            <span class="detail-value">18.2 倍</span>
+                            <span class="detail-label">股價區間</span>
+                            <span class="detail-value">近期 12.8-14.2元</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- 財務指標 -->
-                <div class="financial-panel">
-                    <h3>💰 財務概況</h3>
-                    <div class="financial-metrics">
-                        <div class="metric-card">
-                            <div class="metric-title">營收年增率</div>
-                            <div class="metric-value positive">+12.5%</div>
-                            <div class="metric-period">2023 Q3</div>
+                <!-- 產業特性 -->
+                <div class="industry-panel">
+                    <h3>🏗️ 建材營造產業分析</h3>
+                    <div class="industry-features">
+                        <div class="feature-card">
+                            <div class="feature-title">景氣循環性</div>
+                            <div class="feature-desc">受房地產景氣影響較大</div>
+                            <div class="feature-status neutral">目前處於調整期</div>
                         </div>
-                        <div class="metric-card">
-                            <div class="metric-title">毛利率</div>
-                            <div class="metric-value">28.3%</div>
-                            <div class="metric-period">2023 Q3</div>
+                        <div class="feature-card">
+                            <div class="feature-title">政策敏感度</div>
+                            <div class="feature-desc">政府政策對產業影響顯著</div>
+                            <div class="feature-status positive">基建政策支持</div>
                         </div>
-                        <div class="metric-card">
-                            <div class="metric-title">ROE</div>
-                            <div class="metric-value positive">15.2%</div>
-                            <div class="metric-period">TTM</div>
+                        <div class="feature-card">
+                            <div class="feature-title">成本壓力</div>
+                            <div class="feature-desc">原物料價格波動影響</div>
+                            <div class="feature-status negative">成本控制挑戰</div>
                         </div>
-                        <div class="metric-card">
-                            <div class="metric-title">負債比</div>
-                            <div class="metric-value">32.1%</div>
-                            <div class="metric-period">2023 Q3</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 法人持股 -->
-                <div class="institutional-panel">
-                    <h3>👔 法人持股分析</h3>
-                    <div class="institutional-data">
-                        <div class="inst-item">
-                            <div class="inst-info">
-                                <span class="inst-name">外資</span>
-                                <span class="inst-change positive">+126張</span>
-                            </div>
-                            <div class="inst-holding">持股: 28.5% (36,480張)</div>
-                        </div>
-                        <div class="inst-item">
-                            <div class="inst-info">
-                                <span class="inst-name">投信</span>
-                                <span class="inst-change neutral">0張</span>
-                            </div>
-                            <div class="inst-holding">持股: 3.2% (4,096張)</div>
-                        </div>
-                        <div class="inst-item">
-                            <div class="inst-info">
-                                <span class="inst-name">自營商</span>
-                                <span class="inst-change negative">-45張</span>
-                            </div>
-                            <div class="inst-holding">持股: 1.8% (2,304張)</div>
+                        <div class="feature-card">
+                            <div class="feature-title">競爭態勢</div>
+                            <div class="feature-desc">中小型業者競爭激烈</div>
+                            <div class="feature-status neutral">分化明顯</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 新聞資訊 -->
-                <div class="news-panel">
-                    <h3>📰 相關新聞</h3>
-                    <div class="news-list">
-                        <div class="news-item">
-                            <div class="news-title">大將Q4營收創新高，LED照明需求強勁</div>
-                            <div class="news-meta">
-                                <span class="news-time">02/02 15:30</span>
-                                <span class="news-source">經濟日報</span>
-                            </div>
+                <!-- 交易特徵 -->
+                <div class="trading-panel">
+                    <h3>📈 交易特徵分析</h3>
+                    <div class="trading-metrics">
+                        <div class="metric-item">
+                            <div class="metric-label">成交量</div>
+                            <div class="metric-value weak">78張</div>
+                            <div class="metric-desc">成交清淡，流動性不佳</div>
                         </div>
-                        <div class="news-item">
-                            <div class="news-title">大將獲得大型照明專案訂單，預計貢獻Q1業績</div>
-                            <div class="news-meta">
-                                <span class="news-time">02/01 10:15</span>
-                                <span class="news-source">工商時報</span>
-                            </div>
+                        <div class="metric-item">
+                            <div class="metric-label">價格波動</div>
+                            <div class="metric-value neutral">0.6元</div>
+                            <div class="metric-desc">日內波動約4.5%</div>
                         </div>
-                        <div class="news-item">
-                            <div class="news-title">LED產業回溫，大將受惠汽車照明市場成長</div>
-                            <div class="news-meta">
-                                <span class="news-time">01/30 14:20</span>
-                                <span class="news-source">聯合報</span>
-                            </div>
+                        <div class="metric-item">
+                            <div class="metric-label">市場關注</div>
+                            <div class="metric-value weak">低</div>
+                            <div class="metric-desc">投資人關注度不高</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">籌碼集中</div>
+                            <div class="metric-value neutral">中等</div>
+                            <div class="metric-desc">小型股特性明顯</div>
                         </div>
                     </div>
                 </div>
@@ -282,37 +253,37 @@
                     <div class="recommendation-content">
                         <div class="overall-rating">
                             <div class="rating-label">綜合評等</div>
-                            <div class="rating-value positive">偏多 👍</div>
-                            <div class="rating-score">75/100</div>
+                            <div class="rating-value neutral">觀望 ⚠️</div>
+                            <div class="rating-score">45/100</div>
                         </div>
                         
                         <div class="recommendation-factors">
-                            <div class="factor-item positive">
-                                <span class="factor-icon">📈</span>
-                                <span class="factor-desc">技術面：多項指標呈現多頭排列</span>
+                            <div class="factor-item negative">
+                                <span class="factor-icon">📉</span>
+                                <span class="factor-desc">技術面：多項指標偏空，趨勢不明</span>
                             </div>
-                            <div class="factor-item positive">
-                                <span class="factor-icon">💼</span>
-                                <span class="factor-desc">籌碼面：外資持續買超，籌碼穩定</span>
-                            </div>
-                            <div class="factor-item positive">
-                                <span class="factor-icon">💰</span>
-                                <span class="factor-desc">基本面：營收成長，LED產業復甦</span>
+                            <div class="factor-item weak">
+                                <span class="factor-icon">💧</span>
+                                <span class="factor-desc">量能面：成交量過低，流動性風險</span>
                             </div>
                             <div class="factor-item neutral">
-                                <span class="factor-icon">⚠️</span>
-                                <span class="factor-desc">風險：RSI進入超買區，注意回檔</span>
+                                <span class="factor-icon">🏗️</span>
+                                <span class="factor-desc">產業面：建材營造處於調整期</span>
+                            </div>
+                            <div class="factor-item positive">
+                                <span class="factor-icon">📍</span>
+                                <span class="factor-desc">價位面：股價位於相對低檔區間</span>
                             </div>
                         </div>
                         
                         <div class="price-targets">
                             <div class="target-item">
-                                <span class="target-label">目標價</span>
-                                <span class="target-value">46.5 元</span>
+                                <span class="target-label">觀察價</span>
+                                <span class="target-value">14.20 元</span>
                             </div>
                             <div class="target-item">
-                                <span class="target-label">停損價</span>
-                                <span class="target-value">39.0 元</span>
+                                <span class="target-label">支撐價</span>
+                                <span class="target-value">12.80 元</span>
                             </div>
                         </div>
                     </div>
@@ -324,34 +295,57 @@
         <section class="strategy-section">
             <h3>📋 操作策略建議</h3>
             <div class="strategy-cards">
-                <div class="strategy-card short-term">
-                    <h4>🔥 短線操作 (1-3天)</h4>
+                <div class="strategy-card conservative">
+                    <h4>⚠️ 保守策略 (建議)</h4>
                     <div class="strategy-content">
-                        <p><strong>進場點：</strong>回檔至41.5-42.0元附近可考慮進場</p>
-                        <p><strong>停利點：</strong>45.0元附近，突破可續抱</p>
-                        <p><strong>停損點：</strong>跌破40.5元停損</p>
-                        <p><strong>操作重點：</strong>注意RSI超買，可分批進場降低風險</p>
+                        <p><strong>觀望為主：</strong>等待明確方向再進場</p>
+                        <p><strong>關鍵價位：</strong>突破14.20或跌破12.80再行動</p>
+                        <p><strong>風險控制：</strong>成交量過低，流動性風險較高</p>
+                        <p><strong>注意事項：</strong>小型股波動大，資金控制在5%以內</p>
                     </div>
                 </div>
                 
-                <div class="strategy-card mid-term">
-                    <h4>📈 中線佈局 (1-2個月)</h4>
+                <div class="strategy-card speculative">
+                    <h4>📊 投機策略 (高風險)</h4>
                     <div class="strategy-content">
-                        <p><strong>買進策略：</strong>分批佈局，均價成本控制在42元以下</p>
-                        <p><strong>目標價位：</strong>第一目標46.5元，第二目標50元</p>
-                        <p><strong>停損設定：</strong>跌破20日均線(40.85元)停損</p>
-                        <p><strong>持有理由：</strong>LED產業復甦，公司基本面改善</p>
+                        <p><strong>短線操作：</strong>13.2-13.8區間震盪操作</p>
+                        <p><strong>進場條件：</strong>接近13.2支撐且有量</p>
+                        <p><strong>出場策略：</strong>接近13.8壓力立即獲利了結</p>
+                        <p><strong>嚴格停損：</strong>跌破12.8立即停損</p>
                     </div>
                 </div>
                 
                 <div class="strategy-card long-term">
-                    <h4>💎 長線投資 (3-6個月)</h4>
+                    <h4>🏗️ 產業投資 (長線)</h4>
                     <div class="strategy-content">
-                        <p><strong>投資邏輯：</strong>LED照明、汽車照明需求成長</p>
-                        <p><strong>目標報酬：</strong>20-30%報酬空間</p>
-                        <p><strong>風險控制：</strong>建議不超過總資金20%</p>
-                        <p><strong>關注重點：</strong>季報營收成長性，新訂單取得狀況</p>
+                        <p><strong>產業前景：</strong>等待建材營造業景氣復甦</p>
+                        <p><strong>基本面：</strong>需關注財報和營收表現</p>
+                        <p><strong>政策面：</strong>留意政府基建政策動向</p>
+                        <p><strong>投資比重：</strong>建議不超過總資金3-5%</p>
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 風險警示 -->
+        <section class="risk-warning">
+            <h3>⚠️ 重要風險提醒</h3>
+            <div class="warning-items">
+                <div class="warning-item high">
+                    <span class="warning-level">高風險</span>
+                    <span class="warning-desc">成交量極低（78張），流動性風險高</span>
+                </div>
+                <div class="warning-item medium">
+                    <span class="warning-level">中風險</span>
+                    <span class="warning-desc">建材營造業景氣週期性，波動較大</span>
+                </div>
+                <div class="warning-item medium">
+                    <span class="warning-level">中風險</span>
+                    <span class="warning-desc">小型股特性，容易受主力操控</span>
+                </div>
+                <div class="warning-item low">
+                    <span class="warning-level">低風險</span>
+                    <span class="warning-desc">股價已在相對低檔，下檔風險有限</span>
                 </div>
             </div>
         </section>
