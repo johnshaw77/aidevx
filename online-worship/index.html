@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>線上拜拜祈福平台 | 心誠則靈</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft JhengHei', '微軟正黑體', sans-serif;
+            background: linear-gradient(180deg, #8B4513 0%, #A0522D 30%, #CD853F 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* 背景裝飾 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(255, 69, 0, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px 20px;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 3px solid #B8860B;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            color: #8B0000;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            font-weight: bold;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            color: #654321;
+            margin-bottom: 15px;
+        }
+        
+        .current-time {
+            font-size: 1em;
+            color: #8B4513;
+            font-weight: bold;
+        }
+        
+        .gods-selection {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .god-card {
+            background: linear-gradient(135deg, #FFF8DC, #FFFAF0);
+            border: 3px solid #DAA520;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .god-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 215, 0, 0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.5s;
+            opacity: 0;
+        }
+        
+        .god-card:hover::before {
+            animation: shine 1.5s ease-in-out;
+        }
+        
+        .god-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border-color: #FFD700;
+        }
+        
+        .god-icon {
+            font-size: 4em;
+            margin-bottom: 15px;
+            display: block;
+            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+        }
+        
+        .god-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #8B0000;
+            margin-bottom: 10px;
+        }
+        
+        .god-description {
+            color: #654321;
+            font-size: 0.95em;
+            line-height: 1.4;
+        }
+        
+        .god-specialty {
+            margin-top: 10px;
+            padding: 8px 12px;
+            background: rgba(255, 215, 0, 0.2);
+            border-radius: 20px;
+            font-size: 0.85em;
+            color: #B8860B;
+            font-weight: bold;
+        }
+        
+        .worship-area {
+            background: linear-gradient(135deg, #2F1B14, #4A2C17);
+            border: 4px solid #DAA520;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: inset 0 5px 20px rgba(0, 0, 0, 0.5);
+            display: none;
+            position: relative;
+        }
+        
+        .worship-area.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        .altar {
+            background: linear-gradient(180deg, #8B4513, #A0522D);
+            border: 2px solid #DAA520;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .deity-image {
+            font-size: 6em;
+            margin-bottom: 20px;
+            filter: drop-shadow(3px 3px 6px rgba(0, 0, 0, 0.5));
+        }
+        
+        .deity-title {
+            font-size: 2em;
+            color: #FFD700;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+        
+        .incense-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin: 30px 0;
+            position: relative;
+        }
+        
+        .incense-stick {
+            width: 8px;
+            height: 80px;
+            background: linear-gradient(180deg, #8B4513, #A0522D);
+            border-radius: 10px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .incense-stick.lit::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background: #FF4500;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #FF4500;
+        }
+        
+        .incense-stick.lit::after {
+            content: '';
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 40px;
+            background: linear-gradient(180deg, rgba(200, 200, 200, 0.8), transparent);
+            animation: smokeRise 3s ease-in-out infinite;
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 30px 0;
+        }
+        
+        .action-btn {
+            padding: 15px 25px;
+            background: linear-gradient(45deg, #DAA520, #FFD700);
+            border: 2px solid #B8860B;
+            border-radius: 25px;
+            color: #8B0000;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .action-btn:hover {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+        }
+        
+        .wish-area {
+            background: rgba(255, 248, 220, 0.1);
+            border: 2px solid #DAA520;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        
+        .wish-input {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 2px solid #DAA520;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-family: inherit;
+            background: rgba(255, 255, 255, 0.9);
+            resize: vertical;
+        }
+        
+        .wish-input::placeholder {
+            color: #888;
+            font-style: italic;
+        }
+        
+        .submit-wish {
+            margin-top: 15px;
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #FF6347, #FF4500);
+            border: 2px solid #DC143C;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .submit-wish:hover {
+            background: linear-gradient(45deg, #FF4500, #FF6347);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .fortune-result {
+            background: linear-gradient(135deg, #FFF8DC, #FFFAF0);
+            border: 3px solid #DAA520;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+            display: none;
+        }
+        
+        .fortune-result.show {
+            display: block;
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        .fortune-title {
+            font-size: 1.5em;
+            color: #8B0000;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        
+        .fortune-content {
+            font-size: 1.1em;
+            color: #654321;
+            line-height: 1.6;
+        }
+        
+        .back-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 15px 20px;
+            background: linear-gradient(45deg, #8B4513, #A0522D);
+            border: 2px solid #DAA520;
+            border-radius: 50px;
+            color: #FFD700;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .back-btn.show {
+            display: block;
+        }
+        
+        .back-btn:hover {
+            background: linear-gradient(45deg, #A0522D, #CD853F);
+            transform: scale(1.1);
+        }
+        
+        /* 動畫效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        @keyframes smokeRise {
+            0% { opacity: 0.8; transform: translateX(-50%) translateY(0) rotate(0deg); }
+            50% { opacity: 0.4; transform: translateX(-50%) translateY(-20px) rotate(5deg); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-40px) rotate(-5deg); }
+        }
+        
+        @keyframes shine {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .gods-selection {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .incense-area {
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 標題區域 -->
+        <div class="header">
+            <h1>🏮 線上拜拜祈福平台 🏮</h1>
+            <p>心誠則靈 • 虔誠祈福 • 神明保佑</p>
+            <div class="current-time" id="currentTime"></div>
+        </div>
+
+        <!-- 神明選擇區域 -->
+        <div class="gods-selection" id="godsSelection">
+            <div class="god-card" onclick="selectGod('土地公', '🧙‍♂️', '掌管土地、保佑平安、招財進寶')">
+                <div class="god-icon floating">🧙‍♂️</div>
+                <div class="god-name">土地公</div>
+                <div class="god-description">掌管土地、守護鄉里的慈祥神明</div>
+                <div class="god-specialty">✨ 保佑平安、招財進寶</div>
+            </div>
+
+            <div class="god-card" onclick="selectGod('財神爺', '💰', '招財進寶、財源廣進、事業興隆')">
+                <div class="god-icon floating">💰</div>
+                <div class="god-name">財神爺</div>
+                <div class="god-description">掌管財富的神明，賜予財運與商業成功</div>
+                <div class="god-specialty">💎 招財進寶、事業興隆</div>
+            </div>
+
+            <div class="god-card" onclick="selectGod('觀世音菩薩', '🙏', '慈悲為懷、救苦救難、保佑平安')">
+                <div class="god-icon floating">🙏</div>
+                <div class="god-name">觀世音菩薩</div>
+                <div class="god-description">慈悲為懷的菩薩，聞聲救苦救難</div>
+                <div class="god-specialty">💖 慈悲救世、保佑平安</div>
+            </div>
+
+            <div class="god-card" onclick="selectGod('媽祖', '⛵', '海上守護神、保佑平安、順風順水')">
+                <div class="god-icon floating">⛵</div>
+                <div class="god-name">媽祖</div>
+                <div class="god-description">海上守護神，保佑航海與出行平安</div>
+                <div class="god-specialty">🌊 出入平安、順風順水</div>
+            </div>
+
+            <div class="god-card" onclick="selectGod('關聖帝君', '⚔️', '忠義之神、事業成功、驅邪除惡')">
+                <div class="god-icon floating">⚔️</div>
+                <div class="god-name">關聖帝君</div>
+                <div class="god-description">忠義之神，保佑正義與事業成功</div>
+                <div class="god-specialty">💪 忠義護佑、事業成功</div>
+            </div>
+
+            <div class="god-card" onclick="selectGod('文昌帝君', '📚', '學業進步、考試順利、智慧開啟')">
+                <div class="god-icon floating">📚</div>
+                <div class="god-name">文昌帝君</div>
+                <div class="god-description">掌管文運與學業的神明</div>
+                <div class="god-specialty">🎓 學業進步、考試順利</div>
+            </div>
+        </div>
+
+        <!-- 拜拜區域 -->
+        <div class="worship-area" id="worshipArea">
+            <div class="altar">
+                <div class="deity-image" id="deityIcon">🧙‍♂️</div>
+                <div class="deity-title" id="deityName">土地公</div>
+                <div class="deity-blessing" id="deityBlessing">掌管土地、保佑平安、招財進寶</div>
+                
+                <div class="incense-area">
+                    <div class="incense-stick" onclick="lightIncense(this)"></div>
+                    <div class="incense-stick" onclick="lightIncense(this)"></div>
+                    <div class="incense-stick" onclick="lightIncense(this)"></div>
+                </div>
+                <p style="color: #FFD700; margin-top: 15px;">點擊香爐上香 🔥</p>
+            </div>
+
+            <div class="action-buttons">
+                <button class="action-btn" onclick="makeWish()">
+                    <span>📝</span> 許願祈福
+                </button>
+                <button class="action-btn" onclick="throwMoonBlocks()">
+                    <span>🥠</span> 擲筊問事
+                </button>
+                <button class="action-btn" onclick="drawFortune()">
+                    <span>🎋</span> 抽籤詩
+                </button>
+                <button class="action-btn" onclick="donate()">
+                    <span>💰</span> 功德箱
+                </button>
+            </div>
+
+            <!-- 許願區域 -->
+            <div class="wish-area" id="wishArea" style="display: none;">
+                <h3 style="color: #FFD700; margin-bottom: 15px;">🙏 虔誠許願</h3>
+                <textarea class="wish-input" id="wishInput" placeholder="請虔誠許下您的心願...
+
+例如：
+• 祈求身體健康、家庭和睦
+• 祈求事業順利、財源廣進
+• 祈求考試順利、學業進步
+• 祈求愛情美滿、姻緣美好
+
+心誠則靈，神明會聽到您的心願 🙏"></textarea>
+                <button class="submit-wish" onclick="submitWish()">🔥 上達天聽</button>
+            </div>
+
+            <!-- 結果顯示區域 -->
+            <div class="fortune-result" id="fortuneResult">
+                <div class="fortune-title" id="fortuneTitle">籤詩結果</div>
+                <div class="fortune-content" id="fortuneContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 返回按鈕 -->
+    <button class="back-btn" id="backBtn" onclick="backToSelection()">
+        🏠 返回神明選擇
+    </button>
+
+    <script>
+        let currentGod = null;
+        let litIncense = 0;
+
+        // 更新時間
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleDateString('zh-TW') + ' ' + now.toLocaleTimeString('zh-TW');
+            document.getElementById('currentTime').textContent = `現在時間：${timeStr}`;
+        }
+
+        // 選擇神明
+        function selectGod(name, icon, blessing) {
+            currentGod = { name, icon, blessing };
+            
+            document.getElementById('deityIcon').textContent = icon;
+            document.getElementById('deityName').textContent = name;
+            document.getElementById('deityBlessing').textContent = blessing;
+            
+            document.getElementById('godsSelection').style.display = 'none';
+            document.getElementById('worshipArea').classList.add('active');
+            document.getElementById('backBtn').classList.add('show');
+            
+            // 重置香爐
+            const incenseSticks = document.querySelectorAll('.incense-stick');
+            incenseSticks.forEach(stick => stick.classList.remove('lit'));
+            litIncense = 0;
+            
+            // 播放選擇音效（如果需要）
+            playSound('select');
+        }
+
+        // 點香
+        function lightIncense(stick) {
+            if (!stick.classList.contains('lit')) {
+                stick.classList.add('lit');
+                litIncense++;
+                playSound('incense');
+                
+                // 添加一些祝福文字
+                if (litIncense === 3) {
+                    setTimeout(() => {
+                        alert(`🙏 已為您點燃三炷清香，${currentGod.name}已收到您的虔誠！`);
+                    }, 500);
+                }
+            }
+        }
+
+        // 許願
+        function makeWish() {
+            const wishArea = document.getElementById('wishArea');
+            wishArea.style.display = wishArea.style.display === 'none' ? 'block' : 'none';
+            hideOtherResults();
+        }
+
+        // 提交心願
+        function submitWish() {
+            const wish = document.getElementById('wishInput').value.trim();
+            if (!wish) {
+                alert('請輸入您的心願！');
+                return;
+            }
+            
+            const blessings = [
+                `${currentGod.name}已收到您的心願，將會保佑您心想事成！`,
+                `您的祈願已上達天聽，${currentGod.name}會時刻守護著您！`,
+                `虔誠的心願最為珍貴，${currentGod.name}定會賜予您福報！`,
+                `心誠則靈，您的善願已被${currentGod.name}接納！`
+            ];
+            
+            const randomBlessing = blessings[Math.floor(Math.random() * blessings.length)];
+            alert(`🙏 ${randomBlessing}`);
+            
+            document.getElementById('wishInput').value = '';
+            document.getElementById('wishArea').style.display = 'none';
+            playSound('blessing');
+        }
+
+        // 擲筊
+        function throwMoonBlocks() {
+            hideOtherResults();
+            
+            const results = ['聖筊', '笑筊', '陰筊'];
+            const meanings = {
+                '聖筊': '神明同意您的請求，是最好的結果！',
+                '笑筊': '神明覺得您的請求有待商榷，建議再想想。',
+                '陰筊': '神明不同意您的請求，或許時機未到。'
+            };
+            
+            // 模擬擲筊動畫
+            let count = 0;
+            const interval = setInterval(() => {
+                const tempResult = results[Math.floor(Math.random() * results.length)];
+                showResult('擲筊結果', `🥠 ${tempResult}`);
+                count++;
+                
+                if (count > 5) {
+                    clearInterval(interval);
+                    const finalResult = results[Math.floor(Math.random() * results.length)];
+                    showResult('擲筊結果', `🥠 ${finalResult}\n\n${meanings[finalResult]}\n\n——來自${currentGod.name}的指示`);
+                    playSound('dice');
+                }
+            }, 200);
+        }
+
+        // 抽籤詩
+        function drawFortune() {
+            hideOtherResults();
+            
+            const fortunes = [
+                {
+                    title: '大吉籤',
+                    content: '龍遇風雲便化龍，鳳凰展翅上九重。\n前程似錦多順遂，富貴榮華在其中。\n\n解：此籤大吉，凡事順利，前程光明。'
+                },
+                {
+                    title: '中吉籤', 
+                    content: '春雷一聲天地動，萬物復甦展新容。\n耐心等待時機到，成功就在不遠中。\n\n解：需要耐心等待，時機成熟自然成功。'
+                },
+                {
+                    title: '小吉籤',
+                    content: '小船雖小能載重，穩步前行不急躁。\n積少成多見功效，平安就是最大寶。\n\n解：穩紮穩打，小心謹慎，平安為要。'
+                },
+                {
+                    title: '平籤',
+                    content: '路雖崎嶇心要正，一步一腳印前行。\n天助自助者成功，誠心誠意感動天。\n\n解：需要更多努力，誠心待人處事。'
+                },
+                {
+                    title: '中平籤',
+                    content: '雲開霧散見青天，雨後彩虹分外鮮。\n困難終將會過去，光明就在轉角邊。\n\n解：目前有困難，但很快就會改善。'
+                }
+            ];
+            
+            // 抽籤動畫
+            let count = 0;
+            const interval = setInterval(() => {
+                const tempFortune = fortunes[Math.floor(Math.random() * fortunes.length)];
+                showResult('抽籤詩', `🎋 抽籤中...`);
+                count++;
+                
+                if (count > 8) {
+                    clearInterval(interval);
+                    const finalFortune = fortunes[Math.floor(Math.random() * fortunes.length)];
+                    showResult(finalFortune.title, `🎋 ${finalFortune.content}\n\n——${currentGod.name} 賜籤`);
+                    playSound('fortune');
+                }
+            }, 300);
+        }
+
+        // 功德箱
+        function donate() {
+            const donations = [
+                '功德無量！您的善心已被記錄在功德簿上。',
+                '善有善報，您的功德將會帶來福報！',
+                '慈悲為懷，您的善舉將會廣結善緣！',
+                '積善之家必有餘慶，感謝您的慈悲心！'
+            ];
+            
+            const randomDonation = donations[Math.floor(Math.random() * donations.length)];
+            alert(`🙏 ${randomDonation}\n\n——來自${currentGod.name}的讚嘆`);
+            playSound('blessing');
+        }
+
+        // 顯示結果
+        function showResult(title, content) {
+            document.getElementById('fortuneTitle').textContent = title;
+            document.getElementById('fortuneContent').textContent = content;
+            document.getElementById('fortuneResult').classList.add('show');
+        }
+
+        // 隱藏其他結果
+        function hideOtherResults() {
+            document.getElementById('fortuneResult').classList.remove('show');
+            document.getElementById('wishArea').style.display = 'none';
+        }
+
+        // 返回選擇
+        function backToSelection() {
+            document.getElementById('godsSelection').style.display = 'grid';
+            document.getElementById('worshipArea').classList.remove('active');
+            document.getElementById('backBtn').classList.remove('show');
+            hideOtherResults();
+        }
+
+        // 音效播放（簡單實現）
+        function playSound(type) {
+            // 這裡可以添加實際的音效檔案
+            // const audio = new Audio(`sounds/${type}.mp3`);
+            // audio.play().catch(e => console.log('音效播放失敗'));
+        }
+
+        // 初始化
+        function init() {
+            updateTime();
+            setInterval(updateTime, 1000);
+            
+            // 添加一些動態效果
+            const godCards = document.querySelectorAll('.god-card');
+            godCards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    card.style.animation = 'fadeIn 0.5s ease-out forwards';
+                }, index * 100);
+            });
+        }
+
+        // 頁面載入完成後初始化
+        document.addEventListener('DOMContentLoaded', init);
+
+        // 添加一些節慶祝福
+        function getSeasonalGreeting() {
+            const now = new Date();
+            const month = now.getMonth() + 1;
+            
+            if (month === 1 || month === 2) return '🧧 新春吉祥，神明保佑！';
+            if (month === 5) return '🏮 端午安康，神明護佑！';
+            if (month === 8 || month === 9) return '🥮 中秋團圓，神明賜福！';
+            return '🙏 四季平安，神明保佑！';
+        }
+
+        // 在適當時機顯示節慶祝福
+        setTimeout(() => {
+            const greeting = getSeasonalGreeting();
+            // 可以在這裡顯示節慶問候
+        }, 2000);
+    </script>
+</body>
+</html>
