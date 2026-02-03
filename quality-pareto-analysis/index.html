@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>品質柏拉圖分析工具 | Quality Pareto Analysis Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #4fc3f7;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(79, 195, 247, 0.3);
+        }
+
+        .header p {
+            color: #b0b0b0;
+            font-size: 1.1rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: #4fc3f7;
+            text-decoration: none;
+            margin-bottom: 20px;
+            padding: 8px 15px;
+            border: 1px solid #4fc3f7;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            background: #4fc3f7;
+            color: #1e1e2e;
+            transform: translateY(-2px);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .input-section {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 25px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chart-section {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 25px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section-title {
+            color: #4fc3f7;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #4fc3f7;
+            padding-bottom: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #e0e0e0;
+            font-weight: 500;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .input-row input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #e0e0e0;
+            font-size: 14px;
+        }
+
+        .input-row input:focus {
+            outline: none;
+            border-color: #4fc3f7;
+            box-shadow: 0 0 10px rgba(79, 195, 247, 0.3);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #4fc3f7, #29b6f6);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 195, 247, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 5px 15px rgba(244, 67, 54, 0.4);
+        }
+
+        #chart-canvas {
+            width: 100%;
+            max-width: 600px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .data-table {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 25px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #444;
+        }
+
+        th {
+            color: #4fc3f7;
+            font-weight: 600;
+        }
+
+        .critical {
+            background: rgba(255, 193, 7, 0.2);
+        }
+
+        .tips {
+            background: rgba(76, 175, 80, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #4caf50;
+            margin-top: 20px;
+        }
+
+        .tips h4 {
+            color: #4caf50;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-link">← 返回首頁</a>
+        
+        <div class="header">
+            <h1>品質柏拉圖分析工具</h1>
+            <p>Quality Pareto Analysis Tool - 找出影響品質的關鍵因子</p>
+        </div>
+
+        <div class="main-content">
+            <div class="input-section">
+                <h3 class="section-title">數據輸入</h3>
+                
+                <div class="input-group">
+                    <label>快速範例數據：</label>
+                    <button class="btn" onclick="loadSampleData()">載入範例數據</button>
+                </div>
+
+                <div class="input-group">
+                    <label>新增缺陷項目：</label>
+                    <div class="input-row">
+                        <input type="text" id="defect-name" placeholder="缺陷名稱 (例如：焊接不良)">
+                        <input type="number" id="defect-count" placeholder="發生次數" min="1">
+                        <button class="btn" onclick="addDefect()">新增</button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <button class="btn" onclick="generateChart()">生成柏拉圖</button>
+                    <button class="btn btn-danger" onclick="clearAll()">清除全部</button>
+                </div>
+
+                <div class="tips">
+                    <h4>💡 使用說明：</h4>
+                    <ul style="margin-left: 20px; color: #b0b0b0;">
+                        <li>輸入各種品質缺陷及其發生次數</li>
+                        <li>系統會自動依頻率排序並計算累計百分比</li>
+                        <li>紅色區域表示影響 80% 問題的關鍵因子</li>
+                        <li>優先改善關鍵因子可獲得最大效益</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="chart-section">
+                <h3 class="section-title">柏拉圖分析圖</h3>
+                <canvas id="chart-canvas" width="600" height="400"></canvas>
+                <div id="chart-message" style="text-align: center; padding: 50px; color: #888;">
+                    請先輸入缺陷數據，然後點擊「生成柏拉圖」
+                </div>
+            </div>
+        </div>
+
+        <div class="data-table">
+            <h3 class="section-title">數據分析表</h3>
+            <div id="table-container">
+                <p style="text-align: center; color: #888;">尚未有數據</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let defectsData = [];
+
+        function addDefect() {
+            const name = document.getElementById('defect-name').value.trim();
+            const count = parseInt(document.getElementById('defect-count').value);
+
+            if (!name || !count || count <= 0) {
+                alert('請輸入有效的缺陷名稱和次數');
+                return;
+            }
+
+            // 檢查是否已存在相同名稱的缺陷
+            const existingIndex = defectsData.findIndex(item => item.name === name);
+            if (existingIndex >= 0) {
+                defectsData[existingIndex].count += count;
+            } else {
+                defectsData.push({ name, count });
+            }
+
+            // 清空輸入框
+            document.getElementById('defect-name').value = '';
+            document.getElementById('defect-count').value = '';
+
+            updateTable();
+        }
+
+        function loadSampleData() {
+            defectsData = [
+                { name: '焊接不良', count: 45 },
+                { name: '尺寸偏差', count: 32 },
+                { name: '表面刮傷', count: 28 },
+                { name: '材料缺陷', count: 15 },
+                { name: '污染', count: 12 },
+                { name: '包裝破損', count: 8 },
+                { name: '標示錯誤', count: 5 },
+                { name: '其他', count: 3 }
+            ];
+            updateTable();
+        }
+
+        function updateTable() {
+            if (defectsData.length === 0) {
+                document.getElementById('table-container').innerHTML = '<p style="text-align: center; color: #888;">尚未有數據</p>';
+                return;
+            }
+
+            // 排序數據（按次數從大到小）
+            defectsData.sort((a, b) => b.count - a.count);
+
+            // 計算總數和百分比
+            const total = defectsData.reduce((sum, item) => sum + item.count, 0);
+            let cumulative = 0;
+
+            const tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>排名</th>
+                            <th>缺陷項目</th>
+                            <th>次數</th>
+                            <th>百分比</th>
+                            <th>累計百分比</th>
+                            <th>狀態</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${defectsData.map((item, index) => {
+                            cumulative += item.count;
+                            const percentage = ((item.count / total) * 100).toFixed(1);
+                            const cumulativePercentage = ((cumulative / total) * 100).toFixed(1);
+                            const isCritical = cumulativePercentage <= 80;
+                            
+                            return `
+                                <tr class="${isCritical ? 'critical' : ''}">
+                                    <td>${index + 1}</td>
+                                    <td>${item.name}</td>
+                                    <td>${item.count}</td>
+                                    <td>${percentage}%</td>
+                                    <td>${cumulativePercentage}%</td>
+                                    <td>${isCritical ? '🔴 關鍵因子' : '🟢 次要因子'}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            document.getElementById('table-container').innerHTML = tableHTML;
+        }
+
+        function generateChart() {
+            if (defectsData.length === 0) {
+                alert('請先輸入缺陷數據');
+                return;
+            }
+
+            const canvas = document.getElementById('chart-canvas');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+
+            // 清空畫布
+            ctx.clearRect(0, 0, width, height);
+
+            // 排序數據
+            defectsData.sort((a, b) => b.count - a.count);
+            const total = defectsData.reduce((sum, item) => sum + item.count, 0);
+
+            // 設置邊距
+            const margin = { top: 40, right: 80, bottom: 80, left: 60 };
+            const chartWidth = width - margin.left - margin.right;
+            const chartHeight = height - margin.top - margin.bottom;
+
+            // 找出最大值
+            const maxCount = Math.max(...defectsData.map(item => item.count));
+            const barWidth = chartWidth / defectsData.length;
+
+            // 繪製背景網格
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i <= 5; i++) {
+                const y = margin.top + (chartHeight * i / 5);
+                ctx.beginPath();
+                ctx.moveTo(margin.left, y);
+                ctx.lineTo(margin.left + chartWidth, y);
+                ctx.stroke();
+            }
+
+            // 繪製柱狀圖
+            let cumulative = 0;
+            const linePoints = [];
+
+            defectsData.forEach((item, index) => {
+                cumulative += item.count;
+                const cumulativePercentage = (cumulative / total) * 100;
+                
+                const x = margin.left + index * barWidth;
+                const barHeight = (item.count / maxCount) * chartHeight;
+                const y = margin.top + chartHeight - barHeight;
+
+                // 判斷是否為關鍵因子（累計80%）
+                const isCritical = cumulativePercentage <= 80;
+                ctx.fillStyle = isCritical ? '#ff6b35' : '#4fc3f7';
+
+                // 繪製柱子
+                ctx.fillRect(x + 5, y, barWidth - 10, barHeight);
+
+                // 柱子上的數值
+                ctx.fillStyle = '#e0e0e0';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(item.count.toString(), x + barWidth/2, y - 5);
+
+                // X軸標籤
+                ctx.save();
+                ctx.translate(x + barWidth/2, height - margin.bottom + 20);
+                ctx.rotate(-Math.PI / 4);
+                ctx.textAlign = 'right';
+                ctx.fillText(item.name, 0, 0);
+                ctx.restore();
+
+                // 累計百分比線的點
+                const lineY = margin.top + chartHeight - (cumulativePercentage / 100) * chartHeight;
+                linePoints.push({ x: x + barWidth/2, y: lineY });
+            });
+
+            // 繪製累計百分比線
+            ctx.strokeStyle = '#ffeb3b';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            linePoints.forEach((point, index) => {
+                if (index === 0) {
+                    ctx.moveTo(point.x, point.y);
+                } else {
+                    ctx.lineTo(point.x, point.y);
+                }
+            });
+            ctx.stroke();
+
+            // 繪製累計百分比點
+            ctx.fillStyle = '#ffeb3b';
+            linePoints.forEach(point => {
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, 4, 0, 2 * Math.PI);
+                ctx.fill();
+            });
+
+            // 繪製80%線
+            const eightyPercentY = margin.top + chartHeight - (80 / 100) * chartHeight;
+            ctx.strokeStyle = '#f44336';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(margin.left, eightyPercentY);
+            ctx.lineTo(margin.left + chartWidth, eightyPercentY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Y軸標籤（次數）
+            ctx.fillStyle = '#e0e0e0';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'right';
+            for (let i = 0; i <= 5; i++) {
+                const value = Math.round((maxCount * i / 5));
+                const y = margin.top + chartHeight - (chartHeight * i / 5);
+                ctx.fillText(value.toString(), margin.left - 10, y + 4);
+            }
+
+            // 右側Y軸標籤（百分比）
+            ctx.textAlign = 'left';
+            for (let i = 0; i <= 5; i++) {
+                const value = i * 20;
+                const y = margin.top + chartHeight - (chartHeight * i / 5);
+                ctx.fillText(value + '%', margin.left + chartWidth + 10, y + 4);
+            }
+
+            // 標題和標籤
+            ctx.fillStyle = '#4fc3f7';
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('品質柏拉圖分析', width / 2, 25);
+
+            ctx.fillStyle = '#e0e0e0';
+            ctx.font = '12px Arial';
+            ctx.fillText('缺陷次數', margin.left / 2, height / 2);
+            ctx.fillText('累計百分比 (%)', width - margin.right / 2, height / 2);
+
+            // 圖例
+            ctx.fillStyle = '#ff6b35';
+            ctx.fillRect(margin.left, height - 25, 15, 10);
+            ctx.fillStyle = '#e0e0e0';
+            ctx.textAlign = 'left';
+            ctx.fillText('關鍵因子 (80%)', margin.left + 20, height - 17);
+
+            ctx.fillStyle = '#4fc3f7';
+            ctx.fillRect(margin.left + 120, height - 25, 15, 10);
+            ctx.fillText('次要因子', margin.left + 140, height - 17);
+
+            ctx.strokeStyle = '#ffeb3b';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(margin.left + 220, height - 20);
+            ctx.lineTo(margin.left + 235, height - 20);
+            ctx.stroke();
+            ctx.fillText('累計百分比', margin.left + 240, height - 17);
+
+            document.getElementById('chart-message').style.display = 'none';
+        }
+
+        function clearAll() {
+            defectsData = [];
+            updateTable();
+            
+            const canvas = document.getElementById('chart-canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            document.getElementById('chart-message').style.display = 'block';
+        }
+
+        // 按 Enter 鍵新增缺陷
+        document.getElementById('defect-count').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addDefect();
+            }
+        });
+    </script>
+</body>
+</html>
