@@ -51,6 +51,11 @@ class MarketCountdown {
     startCountdown() {
         if (this.isRunning) return;
         
+        // 確保音效上下文可以使用
+        if (this.audioContext && this.audioContext.state === 'suspended') {
+            this.audioContext.resume();
+        }
+        
         this.isRunning = true;
         this.startBtn.style.display = 'none';
         this.resetBtn.style.display = 'inline-block';
@@ -214,14 +219,17 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
+// 全域變數存放實例，供音效恢復使用
+let marketCountdownInstance = null;
+
 // 等待DOM載入完成
 document.addEventListener('DOMContentLoaded', () => {
-    new MarketCountdown();
+    marketCountdownInstance = new MarketCountdown();
 });
 
 // 點擊任何地方恢復音效上下文（某些瀏覽器需要）
 document.addEventListener('click', () => {
-    if (window.audioContext && window.audioContext.state === 'suspended') {
-        window.audioContext.resume();
+    if (marketCountdownInstance && marketCountdownInstance.audioContext && marketCountdownInstance.audioContext.state === 'suspended') {
+        marketCountdownInstance.audioContext.resume();
     }
 }, { once: true });
