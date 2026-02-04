@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FPC 製程監控儀表板</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+            min-height: 100vh;
+            overflow-x: auto;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(-5px);
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .card h3 {
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            color: #ffffff;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 10px;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .metric-name {
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .gauge {
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+            position: relative;
+        }
+
+        .gauge-bg {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(
+                from 0deg,
+                #ff4444 0% 20%,
+                #ffaa00 20% 40%,
+                #00ff44 40% 60%,
+                #ffaa00 60% 80%,
+                #ff4444 80% 100%
+            );
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gauge-inner {
+            width: 80%;
+            height: 80%;
+            background: rgba(30, 60, 114, 0.9);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gauge-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: white;
+        }
+
+        .gauge-unit {
+            font-size: 0.9rem;
+            color: #cccccc;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-good { background: #00ff44; }
+        .status-warning { background: #ffaa00; }
+        .status-error { background: #ff4444; }
+
+        .chart-container {
+            height: 250px;
+            position: relative;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .chart {
+            width: 100%;
+            height: 100%;
+        }
+
+        .alert-box {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 5px solid #ff4444;
+        }
+
+        .alert-warning {
+            background: linear-gradient(135deg, #ffa726, #ff9800);
+            border-left: 5px solid #ffaa00;
+        }
+
+        .alert-info {
+            background: linear-gradient(135deg, #42a5f5, #1976d2);
+            border-left: 5px solid #2196f3;
+        }
+
+        .control-panel {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .control-btn.active {
+            background: #4caf50;
+        }
+
+        .process-flow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .process-step {
+            flex: 1;
+            text-align: center;
+            padding: 15px 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            min-width: 120px;
+            position: relative;
+        }
+
+        .process-step::after {
+            content: '→';
+            position: absolute;
+            right: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            color: #ffffff;
+        }
+
+        .process-step:last-child::after {
+            display: none;
+        }
+
+        .timestamp {
+            text-align: center;
+            margin-top: 30px;
+            color: #cccccc;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .process-flow {
+                flex-direction: column;
+            }
+            
+            .process-step::after {
+                content: '↓';
+                right: 50%;
+                top: 100%;
+                transform: translateX(50%);
+            }
+            
+            .process-step:last-child::after {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="../" class="back-link">← 返回首頁</a>
+        <h1>🏭 FPC 製程監控儀表板</h1>
+        <p>軟性印刷電路板製程即時監控系統</p>
+    </div>
+
+    <div class="dashboard">
+        <!-- 關鍵指標 -->
+        <div class="card">
+            <h3>📊 關鍵製程指標</h3>
+            <div class="metric">
+                <span class="metric-name">
+                    <span class="status-indicator status-good"></span>
+                    良率 (Yield Rate)
+                </span>
+                <span class="metric-value" style="color: #00ff44;" id="yield-rate">98.5%</span>
+            </div>
+            <div class="metric">
+                <span class="metric-name">
+                    <span class="status-indicator status-warning"></span>
+                    週期時間 (Cycle Time)
+                </span>
+                <span class="metric-value" style="color: #ffaa00;" id="cycle-time">4.2 min</span>
+            </div>
+            <div class="metric">
+                <span class="metric-name">
+                    <span class="status-indicator status-good"></span>
+                    設備稼動率 (OEE)
+                </span>
+                <span class="metric-value" style="color: #00ff44;" id="oee">92.3%</span>
+            </div>
+            <div class="metric">
+                <span class="metric-name">
+                    <span class="status-indicator status-good"></span>
+                    日產量
+                </span>
+                <span class="metric-value" style="color: #00ff44;" id="production">1,847 pcs</span>
+            </div>
+        </div>
+
+        <!-- 製程參數監控 -->
+        <div class="card">
+            <h3>🌡️ 製程參數監控</h3>
+            
+            <div class="gauge">
+                <div class="gauge-bg">
+                    <div class="gauge-inner">
+                        <div class="gauge-value" id="temperature">185</div>
+                        <div class="gauge-unit">°C</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="metric">
+                <span class="metric-name">壓合壓力</span>
+                <span class="metric-value" style="color: #00ff44;" id="pressure">2.8 MPa</span>
+            </div>
+            <div class="metric">
+                <span class="metric-name">蝕刻速率</span>
+                <span class="metric-value" style="color: #ffaa00;" id="etch-rate">45 μm/min</span>
+            </div>
+            <div class="metric">
+                <span class="metric-name">阻抗值</span>
+                <span class="metric-value" style="color: #00ff44;" id="impedance">50.2 Ω</span>
+            </div>
+        </div>
+
+        <!-- 製程流程狀態 -->
+        <div class="card">
+            <h3>⚙️ 製程流程狀態</h3>
+            <div class="process-flow">
+                <div class="process-step">
+                    <div style="font-size: 1.5rem;">📋</div>
+                    <div>基材準備</div>
+                    <div style="color: #00ff44;">正常</div>
+                </div>
+                <div class="process-step">
+                    <div style="font-size: 1.5rem;">⚡</div>
+                    <div>蝕刻製程</div>
+                    <div style="color: #00ff44;">運行中</div>
+                </div>
+                <div class="process-step">
+                    <div style="font-size: 1.5rem;">🔥</div>
+                    <div>壓合作業</div>
+                    <div style="color: #ffaa00;">待機</div>
+                </div>
+                <div class="process-step">
+                    <div style="font-size: 1.5rem;">🔍</div>
+                    <div>品質檢測</div>
+                    <div style="color: #cccccc;">停機</div>
+                </div>
+            </div>
+            
+            <div class="control-panel">
+                <button class="control-btn active" onclick="toggleProcess('auto')">自動模式</button>
+                <button class="control-btn" onclick="toggleProcess('manual')">手動模式</button>
+                <button class="control-btn" onclick="emergencyStop()">緊急停止</button>
+                <button class="control-btn" onclick="resetAlarms()">重置警報</button>
+            </div>
+        </div>
+
+        <!-- 品質趨勢圖 -->
+        <div class="card">
+            <h3>📈 品質趨勢分析</h3>
+            <div class="chart-container">
+                <canvas id="qualityChart" class="chart"></canvas>
+            </div>
+            <div class="metric">
+                <span class="metric-name">Cpk 值</span>
+                <span class="metric-value" style="color: #00ff44;" id="cpk">1.67</span>
+            </div>
+            <div class="metric">
+                <span class="metric-name">標準差 (σ)</span>
+                <span class="metric-value" style="color: #00ff44;" id="sigma">0.023</span>
+            </div>
+        </div>
+
+        <!-- 警報系統 -->
+        <div class="card">
+            <h3>🚨 警報系統</h3>
+            <div class="alert-box alert-info">
+                <strong>資訊:</strong> 設備預防保養將於明日執行
+            </div>
+            <div class="alert-box alert-warning">
+                <strong>警告:</strong> 蝕刻槽液位偏低，建議補充
+            </div>
+            
+            <div class="metric">
+                <span class="metric-name">今日警報數</span>
+                <span class="metric-value" style="color: #ffaa00;" id="alert-count">3</span>
+            </div>
+            <div class="metric">
+                <span class="metric-name">系統狀態</span>
+                <span class="metric-value" style="color: #00ff44;" id="system-status">正常運行</span>
+            </div>
+        </div>
+
+        <!-- 生產統計 -->
+        <div class="card">
+            <h3>📦 生產統計</h3>
+            <div class="chart-container">
+                <canvas id="productionChart" class="chart"></canvas>
+            </div>
+            <div class="metric">
+                <span class="metric-name">本週產量</span>
+                <span class="metric-value" style="color: #00ff44;" id="weekly-production">12,450 pcs</span>
+            </div>
+            <div class="metric">
+                <span class="metric-name">目標達成率</span>
+                <span class="metric-value" style="color: #00ff44;" id="target-achievement">104.2%</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="timestamp">
+        最後更新: <span id="last-update"></span>
+    </div>
+
+    <script>
+        // 模擬數據更新
+        function updateMetrics() {
+            // 更新良率
+            const yieldRate = (95 + Math.random() * 5).toFixed(1);
+            document.getElementById('yield-rate').textContent = yieldRate + '%';
+            
+            // 更新溫度
+            const temperature = Math.floor(180 + Math.random() * 15);
+            document.getElementById('temperature').textContent = temperature;
+            
+            // 更新其他參數
+            const pressure = (2.5 + Math.random() * 0.6).toFixed(1);
+            document.getElementById('pressure').textContent = pressure + ' MPa';
+            
+            const etchRate = Math.floor(40 + Math.random() * 10);
+            document.getElementById('etch-rate').textContent = etchRate + ' μm/min';
+            
+            const impedance = (49 + Math.random() * 2).toFixed(1);
+            document.getElementById('impedance').textContent = impedance + ' Ω';
+            
+            const oee = (90 + Math.random() * 8).toFixed(1);
+            document.getElementById('oee').textContent = oee + '%';
+            
+            const production = Math.floor(1800 + Math.random() * 100);
+            document.getElementById('production').textContent = production.toLocaleString() + ' pcs';
+            
+            const cpk = (1.3 + Math.random() * 0.7).toFixed(2);
+            document.getElementById('cpk').textContent = cpk;
+            
+            // 更新時間戳
+            document.getElementById('last-update').textContent = new Date().toLocaleString('zh-TW');
+        }
+
+        // 控制面板功能
+        function toggleProcess(mode) {
+            const buttons = document.querySelectorAll('.control-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const alerts = document.querySelector('.card h3').parentElement;
+            if (mode === 'manual') {
+                showAlert('系統已切換至手動模式', 'warning');
+            } else {
+                showAlert('系統已切換至自動模式', 'info');
+            }
+        }
+
+        function emergencyStop() {
+            showAlert('緊急停止已啟動！所有設備停止運作', 'error');
+            document.getElementById('system-status').textContent = '緊急停止';
+            document.getElementById('system-status').style.color = '#ff4444';
+        }
+
+        function resetAlarms() {
+            showAlert('警報已重置', 'info');
+            document.getElementById('alert-count').textContent = '0';
+            document.getElementById('system-status').textContent = '正常運行';
+            document.getElementById('system-status').style.color = '#00ff44';
+        }
+
+        function showAlert(message, type) {
+            // 這裡可以實現更複雜的警報顯示邏輯
+            console.log(`${type}: ${message}`);
+        }
+
+        // 簡單的圖表繪製
+        function drawCharts() {
+            // 品質趨勢圖
+            const qualityCanvas = document.getElementById('qualityChart');
+            const qualityCtx = qualityCanvas.getContext('2d');
+            qualityCanvas.width = qualityCanvas.offsetWidth;
+            qualityCanvas.height = qualityCanvas.offsetHeight;
+            
+            qualityCtx.strokeStyle = '#00ff44';
+            qualityCtx.lineWidth = 3;
+            qualityCtx.beginPath();
+            
+            const points = 50;
+            for (let i = 0; i < points; i++) {
+                const x = (i / points) * qualityCanvas.width;
+                const y = qualityCanvas.height / 2 + Math.sin(i * 0.2) * 30 + (Math.random() - 0.5) * 20;
+                
+                if (i === 0) {
+                    qualityCtx.moveTo(x, y);
+                } else {
+                    qualityCtx.lineTo(x, y);
+                }
+            }
+            qualityCtx.stroke();
+
+            // 生產統計圖 (柱狀圖)
+            const productionCanvas = document.getElementById('productionChart');
+            const productionCtx = productionCanvas.getContext('2d');
+            productionCanvas.width = productionCanvas.offsetWidth;
+            productionCanvas.height = productionCanvas.offsetHeight;
+            
+            const barWidth = productionCanvas.width / 7;
+            const maxHeight = productionCanvas.height - 20;
+            
+            for (let i = 0; i < 7; i++) {
+                const height = Math.random() * maxHeight;
+                const x = i * barWidth + 10;
+                const y = productionCanvas.height - height;
+                
+                productionCtx.fillStyle = `hsl(${120 + i * 30}, 70%, 60%)`;
+                productionCtx.fillRect(x, y, barWidth - 5, height);
+            }
+        }
+
+        // 初始化
+        updateMetrics();
+        drawCharts();
+
+        // 定期更新數據
+        setInterval(updateMetrics, 3000);
+        setInterval(drawCharts, 10000);
+
+        // 添加一些隨機事件
+        setInterval(() => {
+            const events = [
+                '設備#3完成校準',
+                '批次#A247品檢通過',
+                '原料庫存補充完成',
+                '夜班交接作業開始'
+            ];
+            
+            const randomEvent = events[Math.floor(Math.random() * events.length)];
+            console.log('系統事件:', randomEvent);
+        }, 15000);
+    </script>
+</body>
+</html>
