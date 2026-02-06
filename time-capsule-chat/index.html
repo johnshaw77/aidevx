@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>時光膠囊聊天室 | Time Capsule Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 2s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+        }
+
+        .title {
+            font-size: 2.5rem;
+            color: #4a5568;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #718096;
+            margin-bottom: 40px;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            background: #e2e8f0;
+            border: none;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #4a5568;
+        }
+
+        .tab.active {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .tab:hover {
+            transform: translateY(-2px);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #4a5568;
+        }
+
+        .form-group textarea,
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            resize: vertical;
+        }
+
+        .form-group textarea:focus,
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .create-btn {
+            background: linear-gradient(45deg, #48bb78, #38b2ac);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .create-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(72, 187, 120, 0.4);
+        }
+
+        .create-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .capsules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .capsule {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .capsule:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .capsule.locked {
+            background: linear-gradient(135deg, #d6d6d6 0%, #a8a8a8 100%);
+            opacity: 0.7;
+        }
+
+        .capsule.opened {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        }
+
+        .capsule-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .capsule-status {
+            font-size: 1.2rem;
+        }
+
+        .capsule-time {
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: bold;
+        }
+
+        .capsule-message {
+            font-size: 1rem;
+            color: #444;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        .capsule-from {
+            font-size: 0.8rem;
+            color: #666;
+            font-style: italic;
+        }
+
+        .locked-content {
+            filter: blur(5px);
+            pointer-events: none;
+        }
+
+        .countdown {
+            font-weight: bold;
+            color: #e53e3e;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 10% auto;
+            padding: 40px;
+            border-radius: 20px;
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+            position: relative;
+            animation: modalOpen 0.5s ease;
+        }
+
+        @keyframes modalOpen {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .close {
+            color: #999;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .success-animation {
+            animation: bounce 1s ease;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-30px); }
+            60% { transform: translateY(-15px); }
+        }
+
+        .time-travel-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, transparent 20%, rgba(102, 126, 234, 0.1) 80%);
+            animation: timeTravel 3s ease;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        @keyframes timeTravel {
+            0% { opacity: 0; transform: scale(0); }
+            50% { opacity: 1; transform: scale(1.5); }
+            100% { opacity: 0; transform: scale(3); }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    
+    <div class="container">
+        <h1 class="title">🕰️ 時光膠囊聊天室</h1>
+        <p class="subtitle">寫給未來的自己，或是想對某個時刻說的話</p>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab(event, 'create')">✍️ 創建膠囊</button>
+            <button class="tab" onclick="switchTab(event, 'view')">📦 我的膠囊</button>
+        </div>
+        
+        <div id="create" class="tab-content active">
+            <form id="capsuleForm">
+                <div class="form-group">
+                    <label for="recipient">📮 收件人：</label>
+                    <input type="text" id="recipient" placeholder="未來的自己 / 好友的名字" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="message">💌 想說的話：</label>
+                    <textarea id="message" rows="5" placeholder="寫下你想對未來說的話..." required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="timeType">⏰ 開啟時間：</label>
+                    <select id="timeType" onchange="updateTimeInput()">
+                        <option value="minutes">幾分鐘後</option>
+                        <option value="hours">幾小時後</option>
+                        <option value="days">幾天後</option>
+                        <option value="months">幾個月後</option>
+                        <option value="custom">自定義時間</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="timeValue" id="timeLabel">分鐘數：</label>
+                    <input type="number" id="timeValue" min="1" value="10" required>
+                </div>
+                
+                <div class="form-group" id="customTimeGroup" style="display: none;">
+                    <label for="customTime">具體時間：</label>
+                    <input type="datetime-local" id="customTime">
+                </div>
+                
+                <button type="submit" class="create-btn">
+                    🚀 封存到時光膠囊
+                </button>
+            </form>
+        </div>
+        
+        <div id="view" class="tab-content">
+            <div id="capsulesContainer" class="capsules-grid">
+                <!-- 膠囊會動態加載到這裡 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 模態框 -->
+    <div id="capsuleModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <script>
+        let capsules = JSON.parse(localStorage.getItem('timeCapsules') || '[]');
+        let currentOpenCapsule = null;
+
+        // 創建星空背景
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 2 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // 切換標籤
+        function switchTab(event, tabName) {
+            // 移除所有活動狀態
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // 添加活動狀態
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+            
+            if (tabName === 'view') {
+                displayCapsules();
+            }
+        }
+
+        // 更新時間輸入
+        function updateTimeInput() {
+            const timeType = document.getElementById('timeType').value;
+            const timeLabel = document.getElementById('timeLabel');
+            const customTimeGroup = document.getElementById('customTimeGroup');
+            const timeValue = document.getElementById('timeValue');
+            
+            customTimeGroup.style.display = 'none';
+            timeValue.style.display = 'block';
+            
+            switch (timeType) {
+                case 'minutes':
+                    timeLabel.textContent = '分鐘數：';
+                    timeValue.min = '1';
+                    timeValue.max = '1440';
+                    timeValue.value = '10';
+                    break;
+                case 'hours':
+                    timeLabel.textContent = '小時數：';
+                    timeValue.min = '1';
+                    timeValue.max = '24';
+                    timeValue.value = '1';
+                    break;
+                case 'days':
+                    timeLabel.textContent = '天數：';
+                    timeValue.min = '1';
+                    timeValue.max = '365';
+                    timeValue.value = '1';
+                    break;
+                case 'months':
+                    timeLabel.textContent = '月數：';
+                    timeValue.min = '1';
+                    timeValue.max = '12';
+                    timeValue.value = '1';
+                    break;
+                case 'custom':
+                    customTimeGroup.style.display = 'block';
+                    timeValue.style.display = 'none';
+                    break;
+            }
+        }
+
+        // 創建膠囊
+        document.getElementById('capsuleForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const recipient = document.getElementById('recipient').value;
+            const message = document.getElementById('message').value;
+            const timeType = document.getElementById('timeType').value;
+            const timeValue = parseInt(document.getElementById('timeValue').value);
+            
+            let openTime;
+            const now = new Date();
+            
+            if (timeType === 'custom') {
+                const customTime = document.getElementById('customTime').value;
+                if (!customTime) {
+                    alert('請選擇開啟時間！');
+                    return;
+                }
+                openTime = new Date(customTime);
+            } else {
+                openTime = new Date(now);
+                switch (timeType) {
+                    case 'minutes':
+                        openTime.setMinutes(openTime.getMinutes() + timeValue);
+                        break;
+                    case 'hours':
+                        openTime.setHours(openTime.getHours() + timeValue);
+                        break;
+                    case 'days':
+                        openTime.setDate(openTime.getDate() + timeValue);
+                        break;
+                    case 'months':
+                        openTime.setMonth(openTime.getMonth() + timeValue);
+                        break;
+                }
+            }
+            
+            if (openTime <= now) {
+                alert('開啟時間必須是未來的時間！');
+                return;
+            }
+            
+            const capsule = {
+                id: Date.now(),
+                recipient,
+                message,
+                createdAt: now.toISOString(),
+                openAt: openTime.toISOString(),
+                opened: false
+            };
+            
+            capsules.push(capsule);
+            localStorage.setItem('timeCapsules', JSON.stringify(capsules));
+            
+            // 成功動畫
+            const btn = document.querySelector('.create-btn');
+            btn.classList.add('success-animation');
+            btn.innerHTML = '✅ 膠囊已封存！';
+            
+            setTimeout(() => {
+                btn.classList.remove('success-animation');
+                btn.innerHTML = '🚀 封存到時光膠囊';
+            }, 2000);
+            
+            // 重置表單
+            this.reset();
+            updateTimeInput();
+            
+            alert('時光膠囊創建成功！\n\n' + 
+                  '收件人：' + recipient + '\n' + 
+                  '開啟時間：' + openTime.toLocaleString('zh-TW'));
+        });
+
+        // 顯示膠囊
+        function displayCapsules() {
+            const container = document.getElementById('capsulesContainer');
+            
+            if (capsules.length === 0) {
+                container.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: #666; font-style: italic;">還沒有任何時光膠囊呢！</p>';
+                return;
+            }
+            
+            // 按創建時間排序（最新的在前）
+            const sortedCapsules = [...capsules].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            
+            container.innerHTML = sortedCapsules.map(capsule => {
+                const now = new Date();
+                const openTime = new Date(capsule.openAt);
+                const isLocked = !capsule.opened && now < openTime;
+                const canOpen = !capsule.opened && now >= openTime;
+                
+                let statusEmoji = '🔒';
+                let statusClass = 'locked';
+                
+                if (capsule.opened) {
+                    statusEmoji = '📖';
+                    statusClass = 'opened';
+                } else if (canOpen) {
+                    statusEmoji = '✨';
+                    statusClass = '';
+                }
+                
+                let timeDisplay = '';
+                if (isLocked) {
+                    const timeDiff = openTime - now;
+                    timeDisplay = `<div class="countdown">還有 ${formatTimeDiff(timeDiff)} 才能開啟</div>`;
+                } else if (canOpen) {
+                    timeDisplay = '<div style="color: #48bb78; font-weight: bold;">🎉 可以開啟了！</div>';
+                } else {
+                    timeDisplay = '<div style="color: #666;">已開啟</div>';
+                }
+                
+                return `
+                    <div class="capsule ${statusClass}" onclick="openCapsule(${capsule.id})">
+                        <div class="capsule-header">
+                            <span class="capsule-status">${statusEmoji}</span>
+                            <span class="capsule-time">${new Date(capsule.openAt).toLocaleString('zh-TW')}</span>
+                        </div>
+                        <div class="capsule-message ${isLocked ? 'locked-content' : ''}">
+                            ${capsule.opened || canOpen ? capsule.message : '神秘內容等待解鎖...'}
+                        </div>
+                        <div class="capsule-from">給 ${capsule.recipient}</div>
+                        ${timeDisplay}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 格式化時間差
+        function formatTimeDiff(timeDiff) {
+            const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+            
+            if (days > 0) return `${days}天 ${hours}小時`;
+            if (hours > 0) return `${hours}小時 ${minutes}分`;
+            if (minutes > 0) return `${minutes}分 ${seconds}秒`;
+            return `${seconds}秒`;
+        }
+
+        // 開啟膠囊
+        function openCapsule(id) {
+            const capsule = capsules.find(c => c.id === id);
+            const now = new Date();
+            const openTime = new Date(capsule.openAt);
+            
+            if (!capsule.opened && now < openTime) {
+                alert('時光膠囊尚未到開啟時間！\n\n還要等待：' + formatTimeDiff(openTime - now));
+                return;
+            }
+            
+            if (!capsule.opened && now >= openTime) {
+                // 首次開啟，添加時光旅行效果
+                const effect = document.createElement('div');
+                effect.className = 'time-travel-effect';
+                document.body.appendChild(effect);
+                
+                setTimeout(() => {
+                    document.body.removeChild(effect);
+                }, 3000);
+                
+                capsule.opened = true;
+                capsule.openedAt = now.toISOString();
+                localStorage.setItem('timeCapsules', JSON.stringify(capsules));
+            }
+            
+            currentOpenCapsule = capsule;
+            showCapsuleModal(capsule);
+        }
+
+        // 顯示膠囊模態框
+        function showCapsuleModal(capsule) {
+            const modal = document.getElementById('capsuleModal');
+            const modalContent = document.getElementById('modalContent');
+            
+            const createdDate = new Date(capsule.createdAt).toLocaleString('zh-TW');
+            const openedDate = capsule.openedAt ? new Date(capsule.openedAt).toLocaleString('zh-TW') : '未開啟';
+            
+            modalContent.innerHTML = `
+                <h2 style="color: #4a5568; margin-bottom: 20px;">📮 時光膠囊</h2>
+                <div style="text-align: left; margin-bottom: 20px;">
+                    <p><strong>收件人：</strong> ${capsule.recipient}</p>
+                    <p><strong>創建時間：</strong> ${createdDate}</p>
+                    <p><strong>開啟時間：</strong> ${new Date(capsule.openAt).toLocaleString('zh-TW')}</p>
+                    ${capsule.openedAt ? `<p><strong>實際開啟：</strong> ${openedDate}</p>` : ''}
+                </div>
+                <div style="background: #f7fafc; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <h3 style="color: #4a5568; margin-bottom: 10px;">💌 訊息內容：</h3>
+                    <p style="line-height: 1.6; color: #2d3748;">${capsule.message}</p>
+                </div>
+                <button onclick="closeCapsuleModal()" style="background: linear-gradient(45deg, #667eea, #764ba2); color: white; padding: 10px 20px; border: none; border-radius: 20px; cursor: pointer; font-weight: bold;">關閉</button>
+            `;
+            
+            modal.style.display = 'block';
+        }
+
+        // 關閉模態框
+        function closeCapsuleModal() {
+            document.getElementById('capsuleModal').style.display = 'none';
+            displayCapsules(); // 重新顯示膠囊（更新狀態）
+        }
+
+        // 模態框事件
+        document.querySelector('.close').onclick = closeCapsuleModal;
+        window.onclick = function(event) {
+            const modal = document.getElementById('capsuleModal');
+            if (event.target === modal) {
+                closeCapsuleModal();
+            }
+        };
+
+        // 定時器更新倒計時
+        setInterval(() => {
+            if (document.getElementById('view').classList.contains('active')) {
+                displayCapsules();
+            }
+        }, 1000);
+
+        // 初始化
+        createStars();
+        updateTimeInput();
+    </script>
+</body>
+</html>
