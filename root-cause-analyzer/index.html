@@ -1,0 +1,1605 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>異常根因分析追蹤器 | Root Cause Analyzer</title>
+<meta name="description" content="製造業異常事件根因分析工具，支援 5-Why 分析法、魚骨圖視覺化與改善行動追蹤">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg-primary: #0a0e1f;
+    --bg-secondary: #121828;
+    --bg-card: rgba(255,255,255,0.02);
+    --border: rgba(255,255,255,0.06);
+    --text-primary: #e8ecf2;
+    --text-secondary: #8b92a5;
+    --text-muted: #4b5563;
+    --accent-red: #ef4444;
+    --accent-orange: #f59e0b;
+    --accent-yellow: #fbbf24;
+    --accent-green: #10b981;
+    --accent-blue: #3b82f6;
+    --accent-purple: #8b5cf6;
+    --accent-cyan: #06b6d4;
+    --accent-pink: #ec4899;
+  }
+
+  body {
+    background: linear-gradient(135deg, var(--bg-primary) 0%, #1a1e2f 50%, var(--bg-primary) 100%);
+    color: var(--text-secondary);
+    font-family: 'Inter', 'Noto Sans TC', sans-serif;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* Background Effects */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+      linear-gradient(rgba(239, 68, 68, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(239, 68, 68, 0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+    animation: grid-pulse 8s ease-in-out infinite alternate;
+  }
+
+  @keyframes grid-pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+
+  .glow-orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .glow-1 {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(239, 68, 68, 0.08) 0%, transparent 70%);
+    top: -100px; right: -100px;
+    animation: float 10s ease-in-out infinite;
+  }
+
+  .glow-2 {
+    width: 350px; height: 350px;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.06) 0%, transparent 70%);
+    bottom: -100px; left: -100px;
+    animation: float 12s ease-in-out infinite reverse;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(30px, 20px); }
+  }
+
+  /* Layout */
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 24px;
+  }
+
+  /* Header */
+  .header {
+    margin-bottom: 32px;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.8rem;
+    margin-bottom: 16px;
+    transition: color 0.2s;
+  }
+
+  .back-link:hover { color: var(--text-secondary); }
+
+  .header-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .header-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(245, 158, 11, 0.1));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+  }
+
+  .header-text h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+  }
+
+  .header-text .tagline {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .tab {
+    padding: 10px 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .tab:hover {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.1);
+  }
+
+  .tab.active {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(245, 158, 11, 0.1));
+    border-color: rgba(239, 68, 68, 0.3);
+    color: var(--text-primary);
+  }
+
+  .tab-icon { font-size: 1rem; }
+
+  /* Panel */
+  .panel {
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .panel.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Cards */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+  }
+
+  .card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .card-title .emoji { font-size: 1.2rem; }
+
+  /* Form Elements */
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  .form-label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    outline: none;
+    border-color: rgba(239, 68, 68, 0.4);
+    background: rgba(0,0,0,0.3);
+  }
+
+  .form-textarea {
+    min-height: 80px;
+    resize: vertical;
+  }
+
+  .form-select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%238b92a5' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 40px;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+  }
+
+  /* Priority Tags */
+  .priority-select {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .priority-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+    background: rgba(0,0,0,0.2);
+    color: var(--text-secondary);
+  }
+
+  .priority-btn:hover { background: rgba(0,0,0,0.3); }
+
+  .priority-btn.selected {
+    color: #fff;
+  }
+
+  .priority-btn[data-priority="critical"].selected {
+    background: linear-gradient(135deg, #dc2626, #ef4444);
+    border-color: #ef4444;
+  }
+
+  .priority-btn[data-priority="high"].selected {
+    background: linear-gradient(135deg, #ea580c, #f97316);
+    border-color: #f97316;
+  }
+
+  .priority-btn[data-priority="medium"].selected {
+    background: linear-gradient(135deg, #d97706, #f59e0b);
+    border-color: #f59e0b;
+  }
+
+  .priority-btn[data-priority="low"].selected {
+    background: linear-gradient(135deg, #059669, #10b981);
+    border-color: #10b981;
+  }
+
+  /* 5-Why Section */
+  .why-chain {
+    position: relative;
+  }
+
+  .why-item {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    position: relative;
+  }
+
+  .why-number {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(245, 158, 11, 0.1));
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--accent-red);
+    flex-shrink: 0;
+  }
+
+  .why-content {
+    flex: 1;
+  }
+
+  .why-arrow {
+    position: absolute;
+    left: 17px;
+    top: 42px;
+    width: 2px;
+    height: calc(100% - 26px);
+    background: linear-gradient(180deg, rgba(239, 68, 68, 0.3), transparent);
+  }
+
+  .why-item:last-child .why-arrow { display: none; }
+
+  .add-why-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px;
+    background: rgba(0,0,0,0.2);
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .add-why-btn:hover {
+    background: rgba(0,0,0,0.3);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: var(--text-secondary);
+  }
+
+  /* Fishbone Diagram */
+  .fishbone-container {
+    position: relative;
+    padding: 40px 20px;
+    overflow-x: auto;
+  }
+
+  .fishbone {
+    min-width: 800px;
+    height: 400px;
+    position: relative;
+  }
+
+  .fishbone-spine {
+    position: absolute;
+    left: 80px;
+    right: 100px;
+    top: 50%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent-red), var(--accent-orange));
+    border-radius: 2px;
+    transform: translateY(-50%);
+  }
+
+  .fishbone-head {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(245, 158, 11, 0.15));
+    border: 2px solid var(--accent-red);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    text-align: center;
+    color: var(--text-primary);
+    font-weight: 600;
+    padding: 8px;
+    cursor: pointer;
+  }
+
+  .fishbone-category {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+
+  .fishbone-category:hover { transform: scale(1.05); }
+
+  .fishbone-category.top { bottom: 52%; }
+  .fishbone-category.bottom { top: 52%; }
+
+  .category-line {
+    width: 2px;
+    height: 80px;
+    background: linear-gradient(180deg, var(--accent-blue), transparent);
+  }
+
+  .fishbone-category.bottom .category-line {
+    background: linear-gradient(0deg, var(--accent-green), transparent);
+  }
+
+  .category-label {
+    padding: 8px 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap;
+  }
+
+  .fishbone-category.top .category-label { margin-bottom: 8px; order: -1; }
+  .fishbone-category.bottom .category-label { margin-top: 8px; }
+
+  .fishbone-category:nth-child(2) { left: 15%; }
+  .fishbone-category:nth-child(3) { left: 35%; }
+  .fishbone-category:nth-child(4) { left: 55%; }
+  .fishbone-category:nth-child(5) { left: 15%; }
+  .fishbone-category:nth-child(6) { left: 35%; }
+  .fishbone-category:nth-child(7) { left: 55%; }
+
+  .cause-list {
+    position: absolute;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    min-width: 200px;
+    display: none;
+    z-index: 10;
+  }
+
+  .cause-list.show { display: block; }
+
+  .cause-item {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .cause-item:last-child { border: none; }
+
+  .cause-item .remove-btn {
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+
+  .cause-item .remove-btn:hover {
+    color: var(--accent-red);
+    background: rgba(239, 68, 68, 0.1);
+  }
+
+  /* Action Items */
+  .action-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+
+  .action-table th, .action-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .action-table th {
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: rgba(0,0,0,0.2);
+  }
+
+  .action-table tr:hover td {
+    background: rgba(255,255,255,0.02);
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 500;
+  }
+
+  .status-badge.pending {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--accent-yellow);
+  }
+
+  .status-badge.in-progress {
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--accent-blue);
+  }
+
+  .status-badge.completed {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--accent-green);
+  }
+
+  .status-badge.overdue {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--accent-red);
+  }
+
+  /* Summary Stats */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    transition: all 0.2s;
+  }
+
+  .stat-card:hover {
+    background: rgba(255,255,255,0.04);
+    transform: translateY(-2px);
+  }
+
+  .stat-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .stat-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 4px;
+  }
+
+  .stat-card.critical .stat-value { color: var(--accent-red); }
+  .stat-card.high .stat-value { color: var(--accent-orange); }
+  .stat-card.in-progress .stat-value { color: var(--accent-blue); }
+  .stat-card.completed .stat-value { color: var(--accent-green); }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    font-family: inherit;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent-red), #dc2626);
+    color: #fff;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(239, 68, 68, 0.3);
+  }
+
+  .btn-secondary {
+    background: rgba(255,255,255,0.05);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.1);
+  }
+
+  .btn-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+
+  /* Issues List */
+  .issue-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .issue-card:hover {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.1);
+    transform: translateX(4px);
+  }
+
+  .issue-priority {
+    width: 4px;
+    border-radius: 2px;
+    align-self: stretch;
+  }
+
+  .issue-priority.critical { background: var(--accent-red); }
+  .issue-priority.high { background: var(--accent-orange); }
+  .issue-priority.medium { background: var(--accent-yellow); }
+  .issue-priority.low { background: var(--accent-green); }
+
+  .issue-content { flex: 1; }
+
+  .issue-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  .issue-meta {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .issue-meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .modal-overlay.show { display: flex; }
+
+  .modal {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: modalIn 0.3s ease;
+  }
+
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.95) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .modal-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .modal-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.05);
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.2s;
+  }
+
+  .modal-close:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--accent-red);
+  }
+
+  .modal-body { padding: 24px; }
+
+  .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+  }
+
+  .empty-state .icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    opacity: 0.5;
+  }
+
+  .empty-state p {
+    font-size: 0.9rem;
+    max-width: 300px;
+    margin: 0 auto;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .container { padding: 20px 16px; }
+    .header-content { flex-direction: column; align-items: flex-start; }
+    .fishbone-container { padding: 20px 10px; }
+    .form-row { grid-template-columns: 1fr; }
+    .action-table { font-size: 0.75rem; }
+    .action-table th, .action-table td { padding: 8px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="glow-orb glow-1"></div>
+<div class="glow-orb glow-2"></div>
+
+<div class="container">
+  <header class="header">
+    <a href="/" class="back-link">← 返回首頁</a>
+    <div class="header-content">
+      <div class="header-icon">🔍</div>
+      <div class="header-text">
+        <h1>異常根因分析追蹤器</h1>
+        <div class="tagline">Root Cause Analyzer — 5-Why / 魚骨圖 / 改善行動追蹤</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Stats Summary -->
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card">
+      <div class="stat-value" id="totalIssues">0</div>
+      <div class="stat-label">總異常數</div>
+    </div>
+    <div class="stat-card critical">
+      <div class="stat-value" id="criticalCount">0</div>
+      <div class="stat-label">緊急</div>
+    </div>
+    <div class="stat-card high">
+      <div class="stat-value" id="highCount">0</div>
+      <div class="stat-label">高優先</div>
+    </div>
+    <div class="stat-card in-progress">
+      <div class="stat-value" id="inProgressCount">0</div>
+      <div class="stat-label">處理中</div>
+    </div>
+    <div class="stat-card completed">
+      <div class="stat-value" id="completedCount">0</div>
+      <div class="stat-label">已結案</div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" data-tab="new">
+      <span class="tab-icon">➕</span>
+      <span>新增異常</span>
+    </button>
+    <button class="tab" data-tab="list">
+      <span class="tab-icon">📋</span>
+      <span>異常列表</span>
+    </button>
+    <button class="tab" data-tab="analysis">
+      <span class="tab-icon">🔬</span>
+      <span>根因分析</span>
+    </button>
+    <button class="tab" data-tab="actions">
+      <span class="tab-icon">✅</span>
+      <span>改善行動</span>
+    </button>
+  </div>
+
+  <!-- New Issue Panel -->
+  <div class="panel active" id="panel-new">
+    <div class="card">
+      <div class="card-title">
+        <span class="emoji">📝</span>
+        異常事件登錄
+      </div>
+      
+      <form id="issueForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">異常編號</label>
+            <input type="text" class="form-input" id="issueId" placeholder="自動產生" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label">發生日期</label>
+            <input type="date" class="form-input" id="issueDate" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">異常標題</label>
+          <input type="text" class="form-input" id="issueTitle" placeholder="例如：壓合站良率下降 5%" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">製程站點</label>
+            <select class="form-select" id="issueStation">
+              <option value="">選擇站點</option>
+              <option value="裁切">裁切</option>
+              <option value="曝光">曝光</option>
+              <option value="顯影">顯影</option>
+              <option value="蝕刻">蝕刻</option>
+              <option value="壓合">壓合</option>
+              <option value="鑽孔">鑽孔</option>
+              <option value="電鍍">電鍍</option>
+              <option value="防焊">防焊</option>
+              <option value="成型">成型</option>
+              <option value="檢驗">檢驗</option>
+              <option value="其他">其他</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">產品型號</label>
+            <input type="text" class="form-input" id="issueProduct" placeholder="例如：FPC-2024A">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">優先等級</label>
+          <div class="priority-select">
+            <button type="button" class="priority-btn" data-priority="critical">🔴 緊急</button>
+            <button type="button" class="priority-btn selected" data-priority="high">🟠 高</button>
+            <button type="button" class="priority-btn" data-priority="medium">🟡 中</button>
+            <button type="button" class="priority-btn" data-priority="low">🟢 低</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">問題描述</label>
+          <textarea class="form-textarea" id="issueDesc" placeholder="詳細描述異常現象、影響範圍與初步觀察..." rows="4"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">影響批次數</label>
+            <input type="number" class="form-input" id="affectedLots" placeholder="0" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">影響數量 (pcs)</label>
+            <input type="number" class="form-input" id="affectedQty" placeholder="0" min="0">
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button type="submit" class="btn btn-primary">
+            <span>💾</span> 儲存異常
+          </button>
+          <button type="reset" class="btn btn-secondary">
+            <span>🔄</span> 清除表單
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Issues List Panel -->
+  <div class="panel" id="panel-list">
+    <div class="card">
+      <div class="card-title">
+        <span class="emoji">📋</span>
+        異常事件列表
+      </div>
+      
+      <div id="issuesList">
+        <div class="empty-state">
+          <div class="icon">📭</div>
+          <p>尚無異常事件記錄，點擊「新增異常」開始追蹤</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Analysis Panel -->
+  <div class="panel" id="panel-analysis">
+    <div class="card">
+      <div class="card-title">
+        <span class="emoji">❓</span>
+        5-Why 根因分析
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">選擇異常事件</label>
+        <select class="form-select" id="analysisIssueSelect">
+          <option value="">-- 選擇要分析的異常 --</option>
+        </select>
+      </div>
+
+      <div id="whyAnalysis" style="display: none;">
+        <div class="why-chain" id="whyChain">
+          <div class="why-item">
+            <div class="why-number">1</div>
+            <div class="why-content">
+              <input type="text" class="form-input" placeholder="為什麼會發生這個問題？" data-why="1">
+            </div>
+            <div class="why-arrow"></div>
+          </div>
+        </div>
+        
+        <button type="button" class="add-why-btn" id="addWhyBtn">
+          <span>➕</span> 追問下一個為什麼
+        </button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span class="emoji">🐟</span>
+        魚骨圖分析 (6M)
+      </div>
+      
+      <div class="fishbone-container">
+        <div class="fishbone">
+          <div class="fishbone-spine"></div>
+          <div class="fishbone-head" id="fishboneHead">問題結果</div>
+          
+          <div class="fishbone-category top" data-category="man" style="left: 15%">
+            <div class="category-label">👤 人員 Man</div>
+            <div class="category-line"></div>
+          </div>
+          
+          <div class="fishbone-category top" data-category="machine" style="left: 40%">
+            <div class="category-label">⚙️ 機器 Machine</div>
+            <div class="category-line"></div>
+          </div>
+          
+          <div class="fishbone-category top" data-category="material" style="left: 65%">
+            <div class="category-label">📦 材料 Material</div>
+            <div class="category-line"></div>
+          </div>
+          
+          <div class="fishbone-category bottom" data-category="method" style="left: 15%">
+            <div class="category-line"></div>
+            <div class="category-label">📋 方法 Method</div>
+          </div>
+          
+          <div class="fishbone-category bottom" data-category="measurement" style="left: 40%">
+            <div class="category-line"></div>
+            <div class="category-label">📏 量測 Measurement</div>
+          </div>
+          
+          <div class="fishbone-category bottom" data-category="environment" style="left: 65%">
+            <div class="category-line"></div>
+            <div class="category-label">🌡️ 環境 Environment</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="btn-group">
+        <button type="button" class="btn btn-secondary" id="addCauseBtn">
+          <span>➕</span> 新增原因
+        </button>
+        <button type="button" class="btn btn-secondary" id="saveFishboneBtn">
+          <span>💾</span> 儲存分析
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions Panel -->
+  <div class="panel" id="panel-actions">
+    <div class="card">
+      <div class="card-title">
+        <span class="emoji">✅</span>
+        改善行動追蹤
+      </div>
+      
+      <div style="overflow-x: auto;">
+        <table class="action-table" id="actionsTable">
+          <thead>
+            <tr>
+              <th>編號</th>
+              <th>改善項目</th>
+              <th>負責人</th>
+              <th>目標日期</th>
+              <th>狀態</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="actionsList">
+            <tr>
+              <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                尚無改善行動，點擊下方按鈕新增
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="btn-group">
+        <button type="button" class="btn btn-primary" id="addActionBtn">
+          <span>➕</span> 新增改善行動
+        </button>
+        <button type="button" class="btn btn-secondary" id="exportBtn">
+          <span>📊</span> 匯出報告
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Cause Modal -->
+<div class="modal-overlay" id="causeModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">新增原因</div>
+      <button class="modal-close" onclick="closeCauseModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">原因類別 (6M)</label>
+        <select class="form-select" id="causeCategory">
+          <option value="man">👤 人員 Man</option>
+          <option value="machine">⚙️ 機器 Machine</option>
+          <option value="material">📦 材料 Material</option>
+          <option value="method">📋 方法 Method</option>
+          <option value="measurement">📏 量測 Measurement</option>
+          <option value="environment">🌡️ 環境 Environment</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">原因描述</label>
+        <input type="text" class="form-input" id="causeDesc" placeholder="例如：作業員未依 SOP 操作">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeCauseModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveCause()">確定新增</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Action Modal -->
+<div class="modal-overlay" id="actionModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">新增改善行動</div>
+      <button class="modal-close" onclick="closeActionModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">關聯異常事件</label>
+        <select class="form-select" id="actionIssueSelect">
+          <option value="">-- 選擇異常 --</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">改善項目</label>
+        <textarea class="form-textarea" id="actionItem" placeholder="描述改善措施..." rows="3"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">負責人</label>
+          <input type="text" class="form-input" id="actionOwner" placeholder="姓名">
+        </div>
+        <div class="form-group">
+          <label class="form-label">目標完成日</label>
+          <input type="date" class="form-input" id="actionDueDate">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeActionModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveAction()">確定新增</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Data Store
+let issues = JSON.parse(localStorage.getItem('rca_issues') || '[]');
+let actions = JSON.parse(localStorage.getItem('rca_actions') || '[]');
+let fishboneCauses = JSON.parse(localStorage.getItem('rca_fishbone') || '{}');
+let whyAnalyses = JSON.parse(localStorage.getItem('rca_why') || '{}');
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+  initDate();
+  initTabs();
+  initPriorityButtons();
+  initForm();
+  updateStats();
+  renderIssuesList();
+  updateIssueSelects();
+  renderActions();
+  
+  document.getElementById('addWhyBtn').addEventListener('click', addWhyStep);
+  document.getElementById('addCauseBtn').addEventListener('click', () => openCauseModal());
+  document.getElementById('addActionBtn').addEventListener('click', () => openActionModal());
+  document.getElementById('analysisIssueSelect').addEventListener('change', loadAnalysis);
+  document.getElementById('exportBtn').addEventListener('click', exportReport);
+});
+
+function initDate() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('issueDate').value = today;
+  document.getElementById('issueId').value = 'RCA-' + Date.now().toString(36).toUpperCase();
+}
+
+function initTabs() {
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+    });
+  });
+}
+
+function initPriorityButtons() {
+  document.querySelectorAll('.priority-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.priority-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    });
+  });
+}
+
+function initForm() {
+  document.getElementById('issueForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    saveIssue();
+  });
+  
+  document.getElementById('issueForm').addEventListener('reset', () => {
+    setTimeout(() => {
+      initDate();
+      document.querySelector('.priority-btn[data-priority="high"]').classList.add('selected');
+    }, 10);
+  });
+}
+
+function saveIssue() {
+  const priority = document.querySelector('.priority-btn.selected').dataset.priority;
+  
+  const issue = {
+    id: document.getElementById('issueId').value,
+    date: document.getElementById('issueDate').value,
+    title: document.getElementById('issueTitle').value,
+    station: document.getElementById('issueStation').value,
+    product: document.getElementById('issueProduct').value,
+    priority: priority,
+    description: document.getElementById('issueDesc').value,
+    affectedLots: parseInt(document.getElementById('affectedLots').value) || 0,
+    affectedQty: parseInt(document.getElementById('affectedQty').value) || 0,
+    status: 'open',
+    createdAt: new Date().toISOString()
+  };
+  
+  issues.unshift(issue);
+  localStorage.setItem('rca_issues', JSON.stringify(issues));
+  
+  document.getElementById('issueForm').reset();
+  updateStats();
+  renderIssuesList();
+  updateIssueSelects();
+  
+  showToast('✅ 異常事件已儲存');
+  
+  // Switch to list view
+  document.querySelector('.tab[data-tab="list"]').click();
+}
+
+function updateStats() {
+  document.getElementById('totalIssues').textContent = issues.length;
+  document.getElementById('criticalCount').textContent = issues.filter(i => i.priority === 'critical').length;
+  document.getElementById('highCount').textContent = issues.filter(i => i.priority === 'high').length;
+  document.getElementById('inProgressCount').textContent = issues.filter(i => i.status === 'in-progress').length;
+  document.getElementById('completedCount').textContent = issues.filter(i => i.status === 'closed').length;
+}
+
+function renderIssuesList() {
+  const container = document.getElementById('issuesList');
+  
+  if (issues.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">📭</div>
+        <p>尚無異常事件記錄，點擊「新增異常」開始追蹤</p>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = issues.map(issue => `
+    <div class="issue-card" onclick="viewIssue('${issue.id}')">
+      <div class="issue-priority ${issue.priority}"></div>
+      <div class="issue-content">
+        <div class="issue-title">${issue.title}</div>
+        <div class="issue-meta">
+          <span>📅 ${issue.date}</span>
+          <span>🏭 ${issue.station || '未指定'}</span>
+          <span>📦 ${issue.product || '未指定'}</span>
+          <span>${getStatusBadge(issue.status)}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function getStatusBadge(status) {
+  const badges = {
+    'open': '<span class="status-badge pending">⏳ 待處理</span>',
+    'in-progress': '<span class="status-badge in-progress">🔄 處理中</span>',
+    'closed': '<span class="status-badge completed">✅ 已結案</span>'
+  };
+  return badges[status] || badges['open'];
+}
+
+function updateIssueSelects() {
+  const selects = [
+    document.getElementById('analysisIssueSelect'),
+    document.getElementById('actionIssueSelect')
+  ];
+  
+  selects.forEach(select => {
+    const currentValue = select.value;
+    select.innerHTML = '<option value="">-- 選擇異常 --</option>' + 
+      issues.map(i => `<option value="${i.id}">${i.id} - ${i.title}</option>`).join('');
+    select.value = currentValue;
+  });
+}
+
+function viewIssue(id) {
+  const issue = issues.find(i => i.id === id);
+  if (!issue) return;
+  
+  // Switch to analysis tab and select the issue
+  document.querySelector('.tab[data-tab="analysis"]').click();
+  document.getElementById('analysisIssueSelect').value = id;
+  loadAnalysis();
+}
+
+function loadAnalysis() {
+  const issueId = document.getElementById('analysisIssueSelect').value;
+  const analysisSection = document.getElementById('whyAnalysis');
+  
+  if (!issueId) {
+    analysisSection.style.display = 'none';
+    return;
+  }
+  
+  analysisSection.style.display = 'block';
+  
+  // Load 5-Why analysis
+  const whyData = whyAnalyses[issueId] || [''];
+  const whyChain = document.getElementById('whyChain');
+  whyChain.innerHTML = whyData.map((why, idx) => `
+    <div class="why-item">
+      <div class="why-number">${idx + 1}</div>
+      <div class="why-content">
+        <input type="text" class="form-input" placeholder="為什麼？" data-why="${idx + 1}" value="${why}" onchange="saveWhyAnalysis()">
+      </div>
+      <div class="why-arrow"></div>
+    </div>
+  `).join('');
+  
+  // Update fishbone head
+  const issue = issues.find(i => i.id === issueId);
+  if (issue) {
+    document.getElementById('fishboneHead').textContent = issue.title.substring(0, 20) + (issue.title.length > 20 ? '...' : '');
+  }
+}
+
+function addWhyStep() {
+  const whyChain = document.getElementById('whyChain');
+  const currentCount = whyChain.querySelectorAll('.why-item').length;
+  
+  if (currentCount >= 7) {
+    showToast('⚠️ 最多追問 7 個為什麼');
+    return;
+  }
+  
+  const newItem = document.createElement('div');
+  newItem.className = 'why-item';
+  newItem.innerHTML = `
+    <div class="why-number">${currentCount + 1}</div>
+    <div class="why-content">
+      <input type="text" class="form-input" placeholder="為什麼？" data-why="${currentCount + 1}" onchange="saveWhyAnalysis()">
+    </div>
+    <div class="why-arrow"></div>
+  `;
+  whyChain.appendChild(newItem);
+}
+
+function saveWhyAnalysis() {
+  const issueId = document.getElementById('analysisIssueSelect').value;
+  if (!issueId) return;
+  
+  const inputs = document.querySelectorAll('#whyChain input[data-why]');
+  const whyData = Array.from(inputs).map(input => input.value);
+  
+  whyAnalyses[issueId] = whyData;
+  localStorage.setItem('rca_why', JSON.stringify(whyAnalyses));
+}
+
+function openCauseModal() {
+  document.getElementById('causeModal').classList.add('show');
+  document.getElementById('causeDesc').value = '';
+}
+
+function closeCauseModal() {
+  document.getElementById('causeModal').classList.remove('show');
+}
+
+function saveCause() {
+  const issueId = document.getElementById('analysisIssueSelect').value;
+  if (!issueId) {
+    showToast('⚠️ 請先選擇異常事件');
+    closeCauseModal();
+    return;
+  }
+  
+  const category = document.getElementById('causeCategory').value;
+  const desc = document.getElementById('causeDesc').value.trim();
+  
+  if (!desc) {
+    showToast('⚠️ 請輸入原因描述');
+    return;
+  }
+  
+  if (!fishboneCauses[issueId]) {
+    fishboneCauses[issueId] = {};
+  }
+  if (!fishboneCauses[issueId][category]) {
+    fishboneCauses[issueId][category] = [];
+  }
+  
+  fishboneCauses[issueId][category].push(desc);
+  localStorage.setItem('rca_fishbone', JSON.stringify(fishboneCauses));
+  
+  closeCauseModal();
+  showToast('✅ 原因已新增');
+}
+
+function openActionModal() {
+  document.getElementById('actionModal').classList.add('show');
+  document.getElementById('actionItem').value = '';
+  document.getElementById('actionOwner').value = '';
+  document.getElementById('actionDueDate').value = '';
+}
+
+function closeActionModal() {
+  document.getElementById('actionModal').classList.remove('show');
+}
+
+function saveAction() {
+  const issueId = document.getElementById('actionIssueSelect').value;
+  const item = document.getElementById('actionItem').value.trim();
+  const owner = document.getElementById('actionOwner').value.trim();
+  const dueDate = document.getElementById('actionDueDate').value;
+  
+  if (!item) {
+    showToast('⚠️ 請輸入改善項目');
+    return;
+  }
+  
+  const action = {
+    id: 'ACT-' + Date.now().toString(36).toUpperCase(),
+    issueId: issueId,
+    item: item,
+    owner: owner || '待指派',
+    dueDate: dueDate,
+    status: 'pending',
+    createdAt: new Date().toISOString()
+  };
+  
+  actions.unshift(action);
+  localStorage.setItem('rca_actions', JSON.stringify(actions));
+  
+  closeActionModal();
+  renderActions();
+  showToast('✅ 改善行動已新增');
+}
+
+function renderActions() {
+  const tbody = document.getElementById('actionsList');
+  
+  if (actions.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">
+          尚無改善行動，點擊下方按鈕新增
+        </td>
+      </tr>
+    `;
+    return;
+  }
+  
+  tbody.innerHTML = actions.map(action => {
+    const statusClass = getActionStatusClass(action);
+    const statusText = getActionStatusText(action);
+    
+    return `
+      <tr>
+        <td style="color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;">${action.id}</td>
+        <td style="color: var(--text-primary);">${action.item}</td>
+        <td>${action.owner}</td>
+        <td>${action.dueDate || '-'}</td>
+        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+        <td>
+          <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;" onclick="toggleActionStatus('${action.id}')">
+            ${action.status === 'completed' ? '↩️' : '✓'}
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function getActionStatusClass(action) {
+  if (action.status === 'completed') return 'completed';
+  if (action.status === 'in-progress') return 'in-progress';
+  if (action.dueDate && new Date(action.dueDate) < new Date()) return 'overdue';
+  return 'pending';
+}
+
+function getActionStatusText(action) {
+  if (action.status === 'completed') return '✅ 完成';
+  if (action.status === 'in-progress') return '🔄 進行中';
+  if (action.dueDate && new Date(action.dueDate) < new Date()) return '⚠️ 逾期';
+  return '⏳ 待處理';
+}
+
+function toggleActionStatus(id) {
+  const action = actions.find(a => a.id === id);
+  if (!action) return;
+  
+  const statusCycle = ['pending', 'in-progress', 'completed'];
+  const currentIdx = statusCycle.indexOf(action.status);
+  action.status = statusCycle[(currentIdx + 1) % statusCycle.length];
+  
+  localStorage.setItem('rca_actions', JSON.stringify(actions));
+  renderActions();
+}
+
+function exportReport() {
+  let report = '# 異常根因分析報告\n\n';
+  report += `匯出時間: ${new Date().toLocaleString('zh-TW')}\n\n`;
+  
+  report += '## 異常事件列表\n\n';
+  issues.forEach(issue => {
+    report += `### ${issue.id} - ${issue.title}\n`;
+    report += `- 日期: ${issue.date}\n`;
+    report += `- 站點: ${issue.station || '未指定'}\n`;
+    report += `- 優先級: ${issue.priority}\n`;
+    report += `- 描述: ${issue.description || '無'}\n\n`;
+  });
+  
+  report += '## 改善行動\n\n';
+  actions.forEach(action => {
+    report += `- [${action.status}] ${action.item} (${action.owner}, ${action.dueDate || '無期限'})\n`;
+  });
+  
+  const blob = new Blob([report], { type: 'text/markdown' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `RCA-Report-${new Date().toISOString().split('T')[0]}.md`;
+  a.click();
+  URL.revokeObjectURL(url);
+  
+  showToast('📊 報告已匯出');
+}
+
+function showToast(message) {
+  const toast = document.createElement('div');
+  toast.style.cssText = `
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    padding: 12px 24px;
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    z-index: 1000;
+    animation: slideUp 0.3s ease;
+  `;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.style.animation = 'fadeOut 0.3s ease forwards';
+    setTimeout(() => toast.remove(), 300);
+  }, 2000);
+}
+
+// Add CSS for toast animation
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes slideUp {
+    from { opacity: 0; transform: translate(-50%, 20px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+  }
+  @keyframes fadeOut {
+    to { opacity: 0; transform: translate(-50%, -10px); }
+  }
+`;
+document.head.appendChild(style);
+</script>
+
+</body>
+</html>
