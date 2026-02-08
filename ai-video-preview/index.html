@@ -50,6 +50,79 @@
             margin-bottom: 20px;
         }
         
+        .video-section {
+            margin-bottom: 50px;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .video-section h2 {
+            color: #10b981;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+        
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .video-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .video-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(16, 185, 129, 0.2);
+        }
+        
+        .video-item video {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+        }
+        
+        .video-info {
+            padding: 20px;
+        }
+        
+        .video-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #10b981;
+            margin-bottom: 10px;
+        }
+        
+        .video-desc {
+            color: #94a3b8;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .video-specs {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .spec-tag {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        
         .stats {
             display: flex;
             justify-content: center;
@@ -99,52 +172,52 @@
         
         .scene img {
             width: 100%;
-            height: 250px;
+            height: 200px;
             object-fit: cover;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .scene-info {
-            padding: 20px;
+            padding: 15px;
         }
         
         .scene-title {
-            font-size: 1.2rem;
+            font-size: 1rem;
             font-weight: 600;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             color: #00d4ff;
         }
         
         .scene-time {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: #7c3aed;
             font-weight: 500;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
         
         .scene-desc {
-            font-size: 0.9rem;
-            line-height: 1.6;
+            font-size: 0.8rem;
+            line-height: 1.5;
             color: #94a3b8;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
         
         .scene-tech {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 6px;
         }
         
         .tech-tag {
             background: rgba(124, 58, 237, 0.2);
             color: #a78bfa;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 15px;
+            font-size: 0.7rem;
             border: 1px solid rgba(124, 58, 237, 0.3);
         }
         
-        .next-steps {
+        .download-section {
             margin-top: 50px;
             text-align: center;
             background: rgba(255, 255, 255, 0.02);
@@ -153,12 +226,12 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
-        .next-steps h3 {
+        .download-section h3 {
             color: #10b981;
             margin-bottom: 15px;
         }
         
-        .next-steps p {
+        .download-section p {
             color: #94a3b8;
             margin-bottom: 20px;
         }
@@ -184,7 +257,7 @@
         }
         
         @media (max-width: 768px) {
-            .stats {
+            .stats, .video-grid {
                 flex-direction: column;
                 align-items: center;
             }
@@ -196,6 +269,10 @@
             .scenes {
                 grid-template-columns: 1fr;
             }
+            
+            .video-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -203,8 +280,51 @@
     <div class="container">
         <div class="header">
             <h1>🎬 FPC 製程 AI 影片完整版</h1>
-            <div class="completion-badge">✅ 全部 9 個場景生成完成</div>
-            <p>Gemini + ComfyUI + RTX 4090 打造的專業 60 秒製程視覺化</p>
+            <div class="completion-badge">🎉 影片製作完成！</div>
+            <p>Gemini + ComfyUI + RTX 4090 + FFmpeg 完整製作流程</p>
+        </div>
+        
+        <div class="video-section">
+            <h2>📹 完成影片版本</h2>
+            <div class="video-grid">
+                <div class="video-item">
+                    <video controls poster="video_scene_00001_.png">
+                        <source src="fpc_crossfade.mp4" type="video/mp4">
+                        您的瀏覽器不支援影片播放。
+                    </video>
+                    <div class="video-info">
+                        <div class="video-title">✨ 進階版：淡入淡出轉場</div>
+                        <div class="video-desc">
+                            專業級轉場效果，場景間流暢淡入淡出，視覺體驗更加順滑。推薦用於正式宣傳使用。
+                        </div>
+                        <div class="video-specs">
+                            <span class="spec-tag">1920×1080</span>
+                            <span class="spec-tag">~60秒</span>
+                            <span class="spec-tag">6.9MB</span>
+                            <span class="spec-tag">H.264</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="video-item">
+                    <video controls poster="video_scene_00002_.png">
+                        <source src="fpc_slideshow.mp4" type="video/mp4">
+                        您的瀏覽器不支援影片播放。
+                    </video>
+                    <div class="video-info">
+                        <div class="video-title">📱 標準版：幻燈片式</div>
+                        <div class="video-desc">
+                            簡潔明快的場景切換，文件較小，適合網路傳輸和社群媒體分享。
+                        </div>
+                        <div class="video-specs">
+                            <span class="spec-tag">1920×1080</span>
+                            <span class="spec-tag">~60秒</span>
+                            <span class="spec-tag">2.8MB</span>
+                            <span class="spec-tag">H.264</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <div class="stats">
@@ -217,14 +337,16 @@
                 <div class="stat-label">影片總長度</div>
             </div>
             <div class="stat-item">
-                <div class="stat-number">1024×768</div>
-                <div class="stat-label">高清解析度</div>
+                <div class="stat-number">1920×1080</div>
+                <div class="stat-label">Full HD 解析度</div>
             </div>
             <div class="stat-item">
-                <div class="stat-number">3min</div>
+                <div class="stat-number">5min</div>
                 <div class="stat-label">總製作時間</div>
             </div>
         </div>
+        
+        <h3 style="color: #00d4ff; text-align: center; margin-bottom: 30px;">🎨 場景分解圖</h3>
         
         <div class="scenes">
             <div class="scene">
@@ -233,12 +355,11 @@
                     <div class="scene-title">🚗 場景1：科技產品開場</div>
                     <div class="scene-time">[00:00-00:07]</div>
                     <div class="scene-desc">
-                        從智慧汽車駕駛艙視角出發，展現未來科技生活場景。城市夜景與先進車載顯示系統完美融合，為整支影片奠定高科技基調。
+                        智慧汽車駕駛艙視角，展現未來科技生活場景
                     </div>
                     <div class="scene-tech">
                         <span class="tech-tag">未來感</span>
                         <span class="tech-tag">智慧車載</span>
-                        <span class="tech-tag">城市科技</span>
                     </div>
                 </div>
             </div>
@@ -249,10 +370,9 @@
                     <div class="scene-title">🤖 場景2：CAD設計與自動化</div>
                     <div class="scene-time">[00:07-00:13]</div>
                     <div class="scene-desc">
-                        現代化無塵室環境中，精密機械手臂處理發光的FPC基材。多螢幕顯示CAD設計圖，完美詮釋工業4.0智慧製造概念。
+                        精密機械手臂處理FPC基材，工業4.0智慧製造
                     </div>
                     <div class="scene-tech">
-                        <span class="tech-tag">工業4.0</span>
                         <span class="tech-tag">機械手臂</span>
                         <span class="tech-tag">CAD設計</span>
                     </div>
@@ -265,11 +385,10 @@
                     <div class="scene-title">⚡ 場景3：UV雷射曝光</div>
                     <div class="scene-time">[00:13-00:20]</div>
                     <div class="scene-desc">
-                        高精度UV雷射束精準照射FPC基材，產生絢爛的藍紫色光芒效果。科幻級的視覺呈現完美展現先進曝光技術的精密工藝。
+                        高精度UV雷射束精準照射，絢爛光芒特效
                     </div>
                     <div class="scene-tech">
                         <span class="tech-tag">UV雷射</span>
-                        <span class="tech-tag">高精度</span>
                         <span class="tech-tag">光刻技術</span>
                     </div>
                 </div>
@@ -278,15 +397,14 @@
             <div class="scene">
                 <img src="video_scene_00004_.png" alt="場景4：化學蝕刻製程">
                 <div class="scene-info">
-                    <div class="scene-title">🧪 場景4：化學蝕刻製程</div>
+                    <div class="scene-title">🧪 場景4：化學蝕刻</div>
                     <div class="scene-time">[00:20-00:26]</div>
                     <div class="scene-desc">
-                        FPC基材在多個透明處理槽中移動，不同顏色的化學液體進行精密蝕刻。微觀視角展現多餘銅箔溶解，細緻電路紋路清晰浮現的過程。
+                        透明處理槽與微觀蝕刻過程視覺化
                     </div>
                     <div class="scene-tech">
                         <span class="tech-tag">化學蝕刻</span>
                         <span class="tech-tag">微觀製程</span>
-                        <span class="tech-tag">精密清洗</span>
                     </div>
                 </div>
             </div>
@@ -294,15 +412,14 @@
             <div class="scene">
                 <img src="video_scene_00005_.png" alt="場景5：電鍍與多層壓合">
                 <div class="scene-info">
-                    <div class="scene-title">⚡ 場景5：電鍍與多層壓合</div>
+                    <div class="scene-title">⚡ 場景5：電鍍壓合</div>
                     <div class="scene-time">[00:26-00:33]</div>
                     <div class="scene-desc">
-                        FPC在電鍍槽中進行精密電鍍，電極發出微弱藍光，銅離子附著形成金屬光澤。隨後自動化設備進行多層材料精準壓合。
+                        藍光電極電鍍，金屬光澤多層壓合
                     </div>
                     <div class="scene-tech">
                         <span class="tech-tag">電鍍工藝</span>
                         <span class="tech-tag">多層壓合</span>
-                        <span class="tech-tag">金屬光澤</span>
                     </div>
                 </div>
             </div>
@@ -310,15 +427,14 @@
             <div class="scene">
                 <img src="video_scene_00006_.png" alt="場景6：防焊油墨與保護層">
                 <div class="scene-info">
-                    <div class="scene-title">🎨 場景6：防焊油墨與保護層</div>
+                    <div class="scene-title">🎨 場景6：防焊保護</div>
                     <div class="scene-time">[00:33-00:39]</div>
                     <div class="scene-desc">
-                        機械手臂精準噴塗綠色防焊油墨，UV燈固化形成保護層。另一機械手臂放置柔韌覆蓋膜，為FPC穿上堅固防護外衣。
+                        UV固化防焊油墨，覆蓋膜保護層
                     </div>
                     <div class="scene-tech">
                         <span class="tech-tag">防焊油墨</span>
                         <span class="tech-tag">UV固化</span>
-                        <span class="tech-tag">保護層</span>
                     </div>
                 </div>
             </div>
@@ -326,14 +442,13 @@
             <div class="scene">
                 <img src="video_scene_00007_.png" alt="場景7：雷射切割與鑽孔">
                 <div class="scene-info">
-                    <div class="scene-title">🔥 場景7：雷射切割與鑽孔</div>
+                    <div class="scene-title">🔥 場景7：雷射切割</div>
                     <div class="scene-time">[00:39-00:46]</div>
                     <div class="scene-desc">
-                        高速雷射切割機以閃電般速度精準切割複雜形狀，切割線閃爍微小光點。多軸鑽孔機高速鑽頭創造精密孔徑，伴隨輕煙效果。
+                        高速雷射切割，精密孔徑加工特效
                     </div>
                     <div class="scene-tech">
                         <span class="tech-tag">雷射切割</span>
-                        <span class="tech-tag">高速鑽孔</span>
                         <span class="tech-tag">精密成型</span>
                     </div>
                 </div>
@@ -342,14 +457,13 @@
             <div class="scene">
                 <img src="video_scene_00008_.png" alt="場景8：自動光學檢測">
                 <div class="scene-info">
-                    <div class="scene-title">🔍 場景8：自動光學檢測</div>
+                    <div class="scene-title">🔍 場景8：品質檢測</div>
                     <div class="scene-time">[00:46-00:53]</div>
                     <div class="scene-desc">
-                        AOI自動光學檢測機高速掃描，螢幕顯示檢測結果。多探針測試機進行電性測試，確保零缺陷品質標準。
+                        AOI檢測與電性測試，零缺陷品質保證
                     </div>
                     <div class="scene-tech">
                         <span class="tech-tag">AOI檢測</span>
-                        <span class="tech-tag">電性測試</span>
                         <span class="tech-tag">品質保證</span>
                     </div>
                 </div>
@@ -358,25 +472,24 @@
             <div class="scene">
                 <img src="video_scene_00009_.png" alt="場景9：多元應用展示">
                 <div class="scene-info">
-                    <div class="scene-title">🌟 場景9：多元應用展示</div>
+                    <div class="scene-title">🌟 場景9：應用展示</div>
                     <div class="scene-time">[00:53-01:00]</div>
                     <div class="scene-desc">
-                        展現台郡FPC在多種終端產品中的應用：彎曲智慧手機螢幕、穿戴裝置、醫療設備、車用顯示等，充滿未來科技感。
+                        多元終端產品應用，未來科技願景
                     </div>
                     <div class="scene-tech">
                         <span class="tech-tag">多元應用</span>
                         <span class="tech-tag">智慧生活</span>
-                        <span class="tech-tag">未來科技</span>
                     </div>
                 </div>
             </div>
         </div>
         
-        <div class="next-steps">
-            <h3>🎉 製作完成！下一步動作</h3>
-            <p>所有場景圖片已生成完成，準備整合成專業短影片</p>
-            <a href="#" class="btn" onclick="alert('準備整合成 MP4 影片！')">整合成影片</a>
-            <a href="#" class="btn secondary" onclick="alert('添加 Kling 動畫效果！')">加入動畫</a>
+        <div class="download-section">
+            <h3>🚀 影片下載與分享</h3>
+            <p>兩個版本都可用於不同用途，歡迎下載分享！</p>
+            <a href="fpc_crossfade.mp4" class="btn" download="FPC製程影片-進階版.mp4">下載進階版</a>
+            <a href="fpc_slideshow.mp4" class="btn secondary" download="FPC製程影片-標準版.mp4">下載標準版</a>
         </div>
     </div>
 </body>
