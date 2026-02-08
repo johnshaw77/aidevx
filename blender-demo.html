@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blender AI 材質示範</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: white;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 800px;
+            text-align: center;
+        }
+        h1 {
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+        .demo-info {
+            background: #333;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .render-image {
+            max-width: 100%;
+            border: 2px solid #4CAF50;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 4px 20px rgba(76, 175, 80, 0.3);
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .stat-item {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .highlight {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Blender AI 材質示範</h1>
+        
+        <div class="demo-info">
+            <h2>📋 示範說明</h2>
+            <p>這是使用 <strong>Blender 4.2.3 LTS</strong> + <strong>Dream Textures</strong> 插件創建的 AI 材質示範。</p>
+            <p>展示了程序化木紋材質的生成效果，這是 AI 材質生成的基礎技術。</p>
+        </div>
+
+        <img src="assets/ai_material_demo.png" alt="Blender AI 材質示範" class="render-image">
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="highlight">渲染引擎</div>
+                <div>Cycles (GPU)</div>
+            </div>
+            <div class="stat-item">
+                <div class="highlight">硬體</div>
+                <div>RTX 4090</div>
+            </div>
+            <div class="stat-item">
+                <div class="highlight">解析度</div>
+                <div>800 × 600</div>
+            </div>
+            <div class="stat-item">
+                <div class="highlight">渲染時間</div>
+                <div>1.16 秒</div>
+            </div>
+        </div>
+
+        <div class="demo-info">
+            <h3>🎯 材質特色</h3>
+            <ul>
+                <li><strong>頂面</strong>：淺米色調，磨砂質感</li>
+                <li><strong>側面</strong>：深棕色，皮革/木材質感</li>
+                <li><strong>紋理</strong>：程序化噪點紋理</li>
+                <li><strong>光影</strong>：三點式照明 + 環境遮蔽</li>
+            </ul>
+        </div>
+
+        <div class="demo-info">
+            <h3>🚀 完整安裝清單</h3>
+            <ul>
+                <li>✅ Blender 4.2.3 LTS</li>
+                <li>✅ Dream Textures AI 插件</li>
+                <li>✅ PyTorch 2.10.0 + CUDA</li>
+                <li>✅ RTX 4090 GPU 支援</li>
+                <li>✅ 完整的 AI 依賴庫</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
