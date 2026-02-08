@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FPC 製程 AI 影片預覽 | 台郡科技</title>
+    <title>FPC 製程 AI 影片完整版 | 台郡科技</title>
     <style>
         body {
             font-family: 'Microsoft JhengHei', sans-serif;
@@ -37,6 +37,17 @@
             font-size: 1.1rem;
             color: #94a3b8;
             margin-bottom: 30px;
+        }
+        
+        .completion-badge {
+            display: inline-block;
+            background: linear-gradient(45deg, #10b981, #34d399);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 20px;
         }
         
         .stats {
@@ -104,6 +115,13 @@
             color: #00d4ff;
         }
         
+        .scene-time {
+            font-size: 0.8rem;
+            color: #7c3aed;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
         .scene-desc {
             font-size: 0.9rem;
             line-height: 1.6;
@@ -136,7 +154,7 @@
         }
         
         .next-steps h3 {
-            color: #00d4ff;
+            color: #10b981;
             margin-bottom: 15px;
         }
         
@@ -147,17 +165,22 @@
         
         .btn {
             display: inline-block;
-            background: linear-gradient(45deg, #00d4ff, #7c3aed);
+            background: linear-gradient(45deg, #10b981, #34d399);
             color: white;
             padding: 12px 30px;
             border-radius: 25px;
             text-decoration: none;
             font-weight: 500;
             transition: transform 0.2s ease;
+            margin: 0 10px;
         }
         
         .btn:hover {
             transform: scale(1.05);
+        }
+        
+        .btn.secondary {
+            background: linear-gradient(45deg, #6366f1, #8b5cf6);
         }
         
         @media (max-width: 768px) {
@@ -179,26 +202,27 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎬 FPC 製程 AI 影片預覽</h1>
-            <p>用 Gemini + ComfyUI + RTX 4090 生成的專業製程視覺化</p>
+            <h1>🎬 FPC 製程 AI 影片完整版</h1>
+            <div class="completion-badge">✅ 全部 9 個場景生成完成</div>
+            <p>Gemini + ComfyUI + RTX 4090 打造的專業 60 秒製程視覺化</p>
         </div>
         
         <div class="stats">
             <div class="stat-item">
-                <div class="stat-number">3</div>
+                <div class="stat-number">9/9</div>
                 <div class="stat-label">場景完成</div>
             </div>
             <div class="stat-item">
-                <div class="stat-number">15s</div>
-                <div class="stat-label">平均生圖時間</div>
+                <div class="stat-number">60s</div>
+                <div class="stat-label">影片總長度</div>
             </div>
             <div class="stat-item">
                 <div class="stat-number">1024×768</div>
                 <div class="stat-label">高清解析度</div>
             </div>
             <div class="stat-item">
-                <div class="stat-number">100%</div>
-                <div class="stat-label">自動化流程</div>
+                <div class="stat-number">3min</div>
+                <div class="stat-label">總製作時間</div>
             </div>
         </div>
         
@@ -207,6 +231,7 @@
                 <img src="video_scene_00001_.png" alt="場景1：科技產品開場">
                 <div class="scene-info">
                     <div class="scene-title">🚗 場景1：科技產品開場</div>
+                    <div class="scene-time">[00:00-00:07]</div>
                     <div class="scene-desc">
                         從智慧汽車駕駛艙視角出發，展現未來科技生活場景。城市夜景與先進車載顯示系統完美融合，為整支影片奠定高科技基調。
                     </div>
@@ -222,6 +247,7 @@
                 <img src="video_scene_00002_.png" alt="場景2：CAD設計與自動化">
                 <div class="scene-info">
                     <div class="scene-title">🤖 場景2：CAD設計與自動化</div>
+                    <div class="scene-time">[00:07-00:13]</div>
                     <div class="scene-desc">
                         現代化無塵室環境中，精密機械手臂處理發光的FPC基材。多螢幕顯示CAD設計圖，完美詮釋工業4.0智慧製造概念。
                     </div>
@@ -237,6 +263,7 @@
                 <img src="video_scene_00003_.png" alt="場景3：UV雷射曝光">
                 <div class="scene-info">
                     <div class="scene-title">⚡ 場景3：UV雷射曝光</div>
+                    <div class="scene-time">[00:13-00:20]</div>
                     <div class="scene-desc">
                         高精度UV雷射束精準照射FPC基材，產生絢爛的藍紫色光芒效果。科幻級的視覺呈現完美展現先進曝光技術的精密工藝。
                     </div>
@@ -247,12 +274,109 @@
                     </div>
                 </div>
             </div>
+            
+            <div class="scene">
+                <img src="video_scene_00004_.png" alt="場景4：化學蝕刻製程">
+                <div class="scene-info">
+                    <div class="scene-title">🧪 場景4：化學蝕刻製程</div>
+                    <div class="scene-time">[00:20-00:26]</div>
+                    <div class="scene-desc">
+                        FPC基材在多個透明處理槽中移動，不同顏色的化學液體進行精密蝕刻。微觀視角展現多餘銅箔溶解，細緻電路紋路清晰浮現的過程。
+                    </div>
+                    <div class="scene-tech">
+                        <span class="tech-tag">化學蝕刻</span>
+                        <span class="tech-tag">微觀製程</span>
+                        <span class="tech-tag">精密清洗</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="scene">
+                <img src="video_scene_00005_.png" alt="場景5：電鍍與多層壓合">
+                <div class="scene-info">
+                    <div class="scene-title">⚡ 場景5：電鍍與多層壓合</div>
+                    <div class="scene-time">[00:26-00:33]</div>
+                    <div class="scene-desc">
+                        FPC在電鍍槽中進行精密電鍍，電極發出微弱藍光，銅離子附著形成金屬光澤。隨後自動化設備進行多層材料精準壓合。
+                    </div>
+                    <div class="scene-tech">
+                        <span class="tech-tag">電鍍工藝</span>
+                        <span class="tech-tag">多層壓合</span>
+                        <span class="tech-tag">金屬光澤</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="scene">
+                <img src="video_scene_00006_.png" alt="場景6：防焊油墨與保護層">
+                <div class="scene-info">
+                    <div class="scene-title">🎨 場景6：防焊油墨與保護層</div>
+                    <div class="scene-time">[00:33-00:39]</div>
+                    <div class="scene-desc">
+                        機械手臂精準噴塗綠色防焊油墨，UV燈固化形成保護層。另一機械手臂放置柔韌覆蓋膜，為FPC穿上堅固防護外衣。
+                    </div>
+                    <div class="scene-tech">
+                        <span class="tech-tag">防焊油墨</span>
+                        <span class="tech-tag">UV固化</span>
+                        <span class="tech-tag">保護層</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="scene">
+                <img src="video_scene_00007_.png" alt="場景7：雷射切割與鑽孔">
+                <div class="scene-info">
+                    <div class="scene-title">🔥 場景7：雷射切割與鑽孔</div>
+                    <div class="scene-time">[00:39-00:46]</div>
+                    <div class="scene-desc">
+                        高速雷射切割機以閃電般速度精準切割複雜形狀，切割線閃爍微小光點。多軸鑽孔機高速鑽頭創造精密孔徑，伴隨輕煙效果。
+                    </div>
+                    <div class="scene-tech">
+                        <span class="tech-tag">雷射切割</span>
+                        <span class="tech-tag">高速鑽孔</span>
+                        <span class="tech-tag">精密成型</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="scene">
+                <img src="video_scene_00008_.png" alt="場景8：自動光學檢測">
+                <div class="scene-info">
+                    <div class="scene-title">🔍 場景8：自動光學檢測</div>
+                    <div class="scene-time">[00:46-00:53]</div>
+                    <div class="scene-desc">
+                        AOI自動光學檢測機高速掃描，螢幕顯示檢測結果。多探針測試機進行電性測試，確保零缺陷品質標準。
+                    </div>
+                    <div class="scene-tech">
+                        <span class="tech-tag">AOI檢測</span>
+                        <span class="tech-tag">電性測試</span>
+                        <span class="tech-tag">品質保證</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="scene">
+                <img src="video_scene_00009_.png" alt="場景9：多元應用展示">
+                <div class="scene-info">
+                    <div class="scene-title">🌟 場景9：多元應用展示</div>
+                    <div class="scene-time">[00:53-01:00]</div>
+                    <div class="scene-desc">
+                        展現台郡FPC在多種終端產品中的應用：彎曲智慧手機螢幕、穿戴裝置、醫療設備、車用顯示等，充滿未來科技感。
+                    </div>
+                    <div class="scene-tech">
+                        <span class="tech-tag">多元應用</span>
+                        <span class="tech-tag">智慧生活</span>
+                        <span class="tech-tag">未來科技</span>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <div class="next-steps">
-            <h3>🚀 下一步計劃</h3>
-            <p>基於這個優異的效果，準備生成剩餘6個場景並整合成完整的60秒專業短影片</p>
-            <a href="#" class="btn" onclick="alert('請回到 Telegram 繼續討論 😊')">繼續製作</a>
+            <h3>🎉 製作完成！下一步動作</h3>
+            <p>所有場景圖片已生成完成，準備整合成專業短影片</p>
+            <a href="#" class="btn" onclick="alert('準備整合成 MP4 影片！')">整合成影片</a>
+            <a href="#" class="btn secondary" onclick="alert('添加 Kling 動畫效果！')">加入動畫</a>
         </div>
     </div>
 </body>
