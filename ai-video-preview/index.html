@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FPC 製程 AI 影片預覽 | 台郡科技</title>
+    <style>
+        body {
+            font-family: 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
+            color: white;
+            margin: 0;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #00d4ff, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            margin-bottom: 30px;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 50px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-top: 5px;
+        }
+        
+        .scenes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+        }
+        
+        .scene {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .scene:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 212, 255, 0.2);
+        }
+        
+        .scene img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .scene-info {
+            padding: 20px;
+        }
+        
+        .scene-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #00d4ff;
+        }
+        
+        .scene-desc {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #94a3b8;
+            margin-bottom: 15px;
+        }
+        
+        .scene-tech {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .tech-tag {
+            background: rgba(124, 58, 237, 0.2);
+            color: #a78bfa;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            border: 1px solid rgba(124, 58, 237, 0.3);
+        }
+        
+        .next-steps {
+            margin-top: 50px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .next-steps h3 {
+            color: #00d4ff;
+            margin-bottom: 15px;
+        }
+        
+        .next-steps p {
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: linear-gradient(45deg, #00d4ff, #7c3aed);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: transform 0.2s ease;
+        }
+        
+        .btn:hover {
+            transform: scale(1.05);
+        }
+        
+        @media (max-width: 768px) {
+            .stats {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .scenes {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 FPC 製程 AI 影片預覽</h1>
+            <p>用 Gemini + ComfyUI + RTX 4090 生成的專業製程視覺化</p>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number">3</div>
+                <div class="stat-label">場景完成</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">15s</div>
+                <div class="stat-label">平均生圖時間</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">1024×768</div>
+                <div class="stat-label">高清解析度</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">自動化流程</div>
+            </div>
+        </div>
+        
+        <div class="scenes">
+            <div class="scene">
+                <img src="video_scene_00001_.png" alt="場景1：科技產品開場">
+                <div class="scene-info">
+                    <div class="scene-title">🚗 場景1：科技產品開場</div>
+                    <div class="scene-desc">
+                        從智慧汽車駕駛艙視角出發，展現未來科技生活場景。城市夜景與先進車載顯示系統完美融合，為整支影片奠定高科技基調。
+                    </div>
+                    <div class="scene-tech">
+                        <span class="tech-tag">未來感</span>
+                        <span class="tech-tag">智慧車載</span>
+                        <span class="tech-tag">城市科技</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="scene">
+                <img src="video_scene_00002_.png" alt="場景2：CAD設計與自動化">
+                <div class="scene-info">
+                    <div class="scene-title">🤖 場景2：CAD設計與自動化</div>
+                    <div class="scene-desc">
+                        現代化無塵室環境中，精密機械手臂處理發光的FPC基材。多螢幕顯示CAD設計圖，完美詮釋工業4.0智慧製造概念。
+                    </div>
+                    <div class="scene-tech">
+                        <span class="tech-tag">工業4.0</span>
+                        <span class="tech-tag">機械手臂</span>
+                        <span class="tech-tag">CAD設計</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="scene">
+                <img src="video_scene_00003_.png" alt="場景3：UV雷射曝光">
+                <div class="scene-info">
+                    <div class="scene-title">⚡ 場景3：UV雷射曝光</div>
+                    <div class="scene-desc">
+                        高精度UV雷射束精準照射FPC基材，產生絢爛的藍紫色光芒效果。科幻級的視覺呈現完美展現先進曝光技術的精密工藝。
+                    </div>
+                    <div class="scene-tech">
+                        <span class="tech-tag">UV雷射</span>
+                        <span class="tech-tag">高精度</span>
+                        <span class="tech-tag">光刻技術</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="next-steps">
+            <h3>🚀 下一步計劃</h3>
+            <p>基於這個優異的效果，準備生成剩餘6個場景並整合成完整的60秒專業短影片</p>
+            <a href="#" class="btn" onclick="alert('請回到 Telegram 繼續討論 😊')">繼續製作</a>
+        </div>
+    </div>
+</body>
+</html>
