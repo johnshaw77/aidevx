@@ -73,29 +73,14 @@
             transform: translateY(-10px);
         }
 
-        .animation-container {
-            position: relative;
+        .animation-gif {
             width: 100%;
-            height: 200px;
-            margin: 20px 0;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        }
-
-        .animation-frame {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            max-width: 400px;
+            height: 250px;
             object-fit: cover;
-            opacity: 0;
-            transition: opacity 0.8s ease-in-out;
-        }
-
-        .animation-frame.active {
-            opacity: 1;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            margin: 20px 0;
         }
 
         .features {
@@ -117,27 +102,6 @@
             font-size: 1.5rem;
             margin-bottom: 15px;
             color: #87CEEB;
-        }
-
-        .controls {
-            text-align: center;
-            margin: 40px 0;
-        }
-
-        .btn {
-            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
-            border: none;
-            padding: 15px 30px;
-            border-radius: 25px;
-            color: white;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-            margin: 10px;
-        }
-
-        .btn:hover {
-            transform: scale(1.05);
         }
 
         .tech-specs {
@@ -164,6 +128,41 @@
             font-size: 2rem;
             font-weight: bold;
             color: #87CEEB;
+        }
+
+        .download-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .download-btn {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            color: white;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            margin: 10px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .download-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .file-info {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
         }
 
         .footer {
@@ -194,38 +193,36 @@
         <div class="animation-grid">
             <div class="animation-card">
                 <h3>🔧 精密組裝線</h3>
-                <div class="animation-container">
-                    <img src="fpc_scene_01_00001_.png" alt="組裝 1" class="animation-frame active">
-                    <img src="fpc_scene_01_00008_.png" alt="組裝 2" class="animation-frame">
-                    <img src="fpc_scene_01_00016_.png" alt="組裝 3" class="animation-frame">
-                </div>
+                <img src="fpc_scene_01_animation.gif" alt="精密組裝動畫" class="animation-gif">
                 <p>自動化組裝流程，機械手臂精確放置元件</p>
             </div>
 
             <div class="animation-card">
                 <h3>🔍 品質檢測</h3>
-                <div class="animation-container">
-                    <img src="fpc_scene_02_00001_.png" alt="檢測 1" class="animation-frame active">
-                    <img src="fpc_scene_02_00008_.png" alt="檢測 2" class="animation-frame">
-                    <img src="fpc_scene_02_00016_.png" alt="檢測 3" class="animation-frame">
-                </div>
+                <img src="fpc_scene_02_animation.gif" alt="品質檢測動畫" class="animation-gif">
                 <p>光學檢測系統，確保每片 FPC 品質</p>
             </div>
 
             <div class="animation-card">
                 <h3>📦 包裝出貨</h3>
-                <div class="animation-container">
-                    <img src="fpc_scene_03_00001_.png" alt="包裝 1" class="animation-frame active">
-                    <img src="fpc_scene_03_00008_.png" alt="包裝 2" class="animation-frame">
-                    <img src="fpc_scene_03_00016_.png" alt="包裝 3" class="animation-frame">
-                </div>
+                <img src="fpc_scene_03_animation.gif" alt="包裝出貨動畫" class="animation-gif">
                 <p>自動化包裝線，準備交付客戶</p>
             </div>
         </div>
 
-        <div class="controls">
-            <button class="btn" onclick="toggleAnimations()">暫停/播放動畫</button>
-            <button class="btn" onclick="resetAnimations()">重新播放</button>
+        <div class="download-section">
+            <h3 style="margin-bottom: 20px;">📥 下載動畫文件</h3>
+            <a href="fpc_scene_01_animation.gif" download class="download-btn">下載組裝動畫</a>
+            <a href="fpc_scene_02_animation.gif" download class="download-btn">下載檢測動畫</a>
+            <a href="fpc_scene_03_animation.gif" download class="download-btn">下載包裝動畫</a>
+            
+            <div class="file-info">
+                📁 本機位置：<br>
+                /home/kw60user/docker/ComfyUI/output/<br>
+                fpc_scene_01_animation.gif (542KB)<br>
+                fpc_scene_02_animation.gif (574KB)<br>
+                fpc_scene_03_animation.gif (504KB)
+            </div>
         </div>
 
         <div class="features">
@@ -259,93 +256,20 @@
                     <div>圖像解析度</div>
                 </div>
                 <div class="spec-item">
-                    <div class="spec-value">25 Steps</div>
-                    <div>AI 推論步數</div>
+                    <div class="spec-value">8 幀</div>
+                    <div>動畫幀數</div>
                 </div>
                 <div class="spec-item">
-                    <div class="spec-value">3 秒</div>
-                    <div>單張生成時間</div>
+                    <div class="spec-value">500ms</div>
+                    <div>幀間隔</div>
                 </div>
             </div>
         </div>
 
         <div class="footer">
             <p>🔮 由吉普賽哥哥 AI 助手製作 | 台郡科技智慧工廠數據分析部</p>
-            <p>ComfyUI + majicmixRealistic_v7 + RTX 4090</p>
+            <p>ComfyUI + majicmixRealistic_v7 + RTX 4090 + Python PIL</p>
         </div>
     </div>
-
-    <script>
-        let animationsRunning = true;
-        let animationIntervals = [];
-
-        function startAnimations() {
-            const containers = document.querySelectorAll('.animation-container');
-            
-            containers.forEach((container, containerIndex) => {
-                const frames = container.querySelectorAll('.animation-frame');
-                let currentFrame = 0;
-                
-                const interval = setInterval(() => {
-                    if (!animationsRunning) return;
-                    
-                    frames[currentFrame].classList.remove('active');
-                    currentFrame = (currentFrame + 1) % frames.length;
-                    frames[currentFrame].classList.add('active');
-                }, 2000 + containerIndex * 500); // 錯開動畫時間
-                
-                animationIntervals.push(interval);
-            });
-        }
-
-        function toggleAnimations() {
-            animationsRunning = !animationsRunning;
-        }
-
-        function resetAnimations() {
-            // 清除所有動畫
-            animationIntervals.forEach(interval => clearInterval(interval));
-            animationIntervals = [];
-            
-            // 重設到第一幀
-            const frames = document.querySelectorAll('.animation-frame');
-            frames.forEach((frame, index) => {
-                frame.classList.remove('active');
-                if (index % 3 === 0) { // 每個容器的第一幀
-                    frame.classList.add('active');
-                }
-            });
-            
-            animationsRunning = true;
-            setTimeout(startAnimations, 500);
-        }
-
-        // 頁面加載時啟動動畫
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(startAnimations, 1000);
-        });
-
-        // 滾動動畫效果
-        window.addEventListener('scroll', () => {
-            const cards = document.querySelectorAll('.animation-card, .feature');
-            cards.forEach(card => {
-                const rect = card.getBoundingClientRect();
-                if (rect.top < window.innerHeight * 0.8) {
-                    card.style.opacity = '1';
-                    card.style.transform = 'translateY(0)';
-                }
-            });
-        });
-
-        // 初始隱藏卡片，等待滾動觸發
-        document.addEventListener('DOMContentLoaded', () => {
-            const cards = document.querySelectorAll('.animation-card, .feature');
-            cards.forEach(card => {
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(30px)';
-                card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-            });
-        });
-    </script>
 </body>
 </html>
