@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>虛擬煙火秀 - Virtual Fireworks Show</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #16213e 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: crosshair;
+        }
+
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .info {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-size: 18px;
+            text-align: center;
+            z-index: 10;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+            pointer-events: none;
+        }
+
+        .title {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-size: 36px;
+            font-weight: bold;
+            text-align: center;
+            z-index: 10;
+            text-shadow: 0 0 20px rgba(255, 0, 255, 0.8), 0 0 40px rgba(0, 255, 255, 0.6);
+            pointer-events: none;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #aaa;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        .stats {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 15px;
+            border-radius: 5px;
+            z-index: 10;
+            text-shadow: 0 0 10px #0f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <canvas id="fireworksCanvas"></canvas>
+        
+        <div class="title">
+            🎆 虛擬煙火秀 🎆
+            <div class="subtitle">Virtual Fireworks Show</div>
+        </div>
+
+        <div class="info">
+            💫 點擊螢幕任意位置產生煙火 | Click anywhere to create fireworks 💫
+        </div>
+
+        <div class="stats">
+            <div>粒子數 | Particles: <span id="particleCount">0</span></div>
+            <div>FPS: <span id="fps">0</span></div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('fireworksCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let particles = [];
+        let lastTime = Date.now();
+        let frameCount = 0;
+        let fps = 0;
+
+        class Particle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                
+                // 隨機方向和速度
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 8 + 3;
+                
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                
+                // 顏色 - 生成夢幻的煙火顏色
+                const hue = Math.random() * 360;
+                const saturation = Math.random() * 40 + 60;
+                const lightness = Math.random() * 30 + 50;
+                
+                this.color = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+                
+                // 生命周期
+                this.life = 1;
+                this.maxLife = Math.random() * 0.8 + 0.5;
+                this.decay = Math.random() * 0.02 + 0.01;
+                
+                // 粒子大小
+                this.radius = Math.random() * 4 + 2;
+                this.mass = Math.random() * 0.5 + 0.3;
+            }
+
+            update(gravity = 0.3) {
+                // 重力
+                this.vy += gravity * this.mass;
+                
+                // 空氣阻力
+                this.vx *= 0.98;
+                this.vy *= 0.98;
+                
+                // 位置更新
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                // 生命衰減
+                this.life -= this.decay;
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, this.life);
+                
+                // 光暈效果
+                const gradient = ctx.createRadialGradient(
+                    this.x, this.y, 0,
+                    this.x, this.y, this.radius * 2
+                );
+                gradient.addColorStop(0, this.color);
+                gradient.addColorStop(1, `hsla(${this.color.match(/\d+/)[0]}, 100%, 50%, 0)`);
+                
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius * 2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 核心
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.restore();
+            }
+
+            isDead() {
+                return this.life <= 0;
+            }
+        }
+
+        function createFireworks(x, y) {
+            // 創建一個煙火爆炸
+            const particleCount = Math.random() * 100 + 80;
+            
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle(x, y));
+            }
+            
+            // 聲音視覺反饋（使用多層粒子效果）
+            for (let i = 0; i < 20; i++) {
+                const p = new Particle(x, y);
+                p.radius *= 1.5;
+                p.life = 0.3;
+                p.maxLife = 0.3;
+                particles.push(p);
+            }
+        }
+
+        function update() {
+            particles = particles.filter(p => !p.isDead());
+            
+            particles.forEach(p => p.update());
+        }
+
+        function draw() {
+            // 半透明清屏效果（拖影）
+            ctx.fillStyle = 'rgba(10, 14, 39, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 繪製所有粒子
+            particles.forEach(p => p.draw(ctx));
+            
+            // 更新統計信息
+            document.getElementById('particleCount').textContent = particles.length;
+        }
+
+        function animate() {
+            update();
+            draw();
+            
+            // 計算 FPS
+            frameCount++;
+            const now = Date.now();
+            if (now - lastTime >= 1000) {
+                fps = frameCount;
+                frameCount = 0;
+                lastTime = now;
+                document.getElementById('fps').textContent = fps;
+            }
+            
+            requestAnimationFrame(animate);
+        }
+
+        // 滑鼠點擊事件
+        document.addEventListener('click', (e) => {
+            createFireworks(e.clientX, e.clientY);
+        });
+
+        // 觸摸事件（支援手機）
+        document.addEventListener('touchstart', (e) => {
+            const touch = e.touches[0];
+            createFireworks(touch.clientX, touch.clientY);
+        });
+
+        // 滑鼠移動持續煙火模式
+        let lastFireworkTime = 0;
+        document.addEventListener('mousemove', (e) => {
+            if (Math.random() > 0.98) {
+                createFireworks(e.clientX, e.clientY);
+            }
+        });
+
+        // 視窗大小改變
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // 啟動動畫
+        animate();
+
+        // 自動煙火（可選，每秒隨機位置產生煙火）
+        setInterval(() => {
+            if (Math.random() > 0.7) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height * 0.6;
+                createFireworks(x, y);
+            }
+        }, 500);
+    </script>
+</body>
+</html>
