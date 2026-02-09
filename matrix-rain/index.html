@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix 數字雨 | Digital Rain</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #0f0;
+            overflow: hidden;
+            cursor: none;
+        }
+
+        .controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #0f0;
+            backdrop-filter: blur(10px);
+            z-index: 10;
+            min-width: 250px;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .controls.show {
+            transform: translateX(0);
+        }
+
+        .controls h3 {
+            color: #0f0;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 1rem;
+            text-shadow: 0 0 10px #0f0;
+        }
+
+        .control-group {
+            margin-bottom: 12px;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: #0a0;
+            margin-bottom: 4px;
+            text-shadow: 0 0 5px #0f0;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            background: #000;
+            outline: none;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        input[type="range"]:hover {
+            opacity: 1;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            background: #0f0;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px #0f0;
+        }
+
+        input[type="range"]::-webkit-slider-track {
+            width: 100%;
+            height: 3px;
+            background: #333;
+            border-radius: 2px;
+        }
+
+        select, button {
+            width: 100%;
+            padding: 5px;
+            background: #000;
+            color: #0f0;
+            border: 1px solid #0f0;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 5px #0f0;
+            margin-bottom: 8px;
+        }
+
+        button {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: #0f0;
+            color: #000;
+            box-shadow: 0 0 15px #0f0;
+        }
+
+        select option {
+            background: #000;
+            color: #0f0;
+        }
+
+        .range-value {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #0a0;
+            margin-top: 2px;
+        }
+
+        .color-themes {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .theme-btn {
+            width: 100%;
+            height: 25px;
+            border: 1px solid #333;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .theme-btn.active {
+            border-color: #fff;
+            box-shadow: 0 0 10px currentColor;
+        }
+
+        .theme-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .info-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #0f0;
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
+
+        .info-panel h3 {
+            color: #0f0;
+            margin-bottom: 8px;
+            text-shadow: 0 0 10px #0f0;
+        }
+
+        .info-panel p {
+            font-size: 0.8rem;
+            color: #0a0;
+            margin-bottom: 3px;
+            text-shadow: 0 0 5px #0f0;
+        }
+
+        .toggle-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #0f0;
+            color: #0f0;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 20;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 5px #0f0;
+        }
+
+        .toggle-controls:hover {
+            background: #0f0;
+            color: #000;
+        }
+
+        .home-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #0f0;
+            color: #0f0;
+            padding: 8px 16px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 5px #0f0;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        .home-btn:hover {
+            background: #0f0;
+            color: #000;
+            box-shadow: 0 0 15px #0f0;
+        }
+
+        .cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border: 1px solid #0f0;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1000;
+            box-shadow: 0 0 10px #0f0;
+            transition: all 0.1s ease;
+        }
+
+        @keyframes glitch {
+            0%, 100% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+        }
+
+        .glitch {
+            animation: glitch 0.3s ease-in-out;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                width: 90vw;
+                right: 5vw;
+            }
+            
+            .info-panel {
+                bottom: 10px;
+                left: 10px;
+                right: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="home-btn">← 離開母體</a>
+    
+    <div class="cursor" id="cursor"></div>
+    
+    <div class="toggle-controls" onclick="toggleControls()">⚙️ 控制面板</div>
+    
+    <div class="controls" id="controls">
+        <h3>🕶️ MATRIX 控制台</h3>
+        
+        <div class="control-group">
+            <label>下降速度</label>
+            <input type="range" id="speed" min="1" max="10" value="5">
+            <div class="range-value" id="speedValue">5</div>
+        </div>
+        
+        <div class="control-group">
+            <label>字符大小</label>
+            <input type="range" id="fontSize" min="8" max="24" value="14">
+            <div class="range-value" id="fontSizeValue">14px</div>
+        </div>
+        
+        <div class="control-group">
+            <label>雨滴密度</label>
+            <input type="range" id="density" min="10" max="100" value="40">
+            <div class="range-value" id="densityValue">40</div>
+        </div>
+        
+        <div class="control-group">
+            <label>字符集</label>
+            <select id="charSet">
+                <option value="matrix">經典 Matrix</option>
+                <option value="katakana">日文片假名</option>
+                <option value="numbers">數字</option>
+                <option value="binary">二進制</option>
+                <option value="chinese">中文字符</option>
+                <option value="symbols">特殊符號</option>
+                <option value="mixed">混合模式</option>
+            </select>
+        </div>
+        
+        <div class="control-group">
+            <label>色彩主題</label>
+            <div class="color-themes">
+                <div class="theme-btn active" style="background: linear-gradient(45deg, #0f0, #0a0)" onclick="setTheme('classic')"></div>
+                <div class="theme-btn" style="background: linear-gradient(45deg, #f00, #a00)" onclick="setTheme('red')"></div>
+                <div class="theme-btn" style="background: linear-gradient(45deg, #00f, #00a)" onclick="setTheme('blue')"></div>
+                <div class="theme-btn" style="background: linear-gradient(45deg, #ff0, #aa0)" onclick="setTheme('gold')"></div>
+                <div class="theme-btn" style="background: linear-gradient(45deg, #f0f, #a0a)" onclick="setTheme('purple')"></div>
+                <div class="theme-btn" style="background: linear-gradient(45deg, #0ff, #0aa)" onclick="setTheme('cyan')"></div>
+            </div>
+        </div>
+        
+        <button onclick="resetMatrix()">🔄 重置母體</button>
+        <button onclick="saveFrame()">📸 截取畫面</button>
+        <button onclick="toggleFullscreen()">🖥️ 全屏模式</button>
+    </div>
+    
+    <div class="info-panel">
+        <h3>📊 系統狀態</h3>
+        <p>FPS: <span id="fps">--</span></p>
+        <p>雨滴數: <span id="dropCount">--</span></p>
+        <p>字符/秒: <span id="charRate">--</span></p>
+        <p>滑鼠: <span id="mousePos">--</span></p>
+    </div>
+
+    <script>
+        // 全域變數
+        let drops = [];
+        let font, fontSize = 14;
+        let charSet = [];
+        let currentTheme = 'classic';
+        let controlsVisible = false;
+        let mouseInfluence = true;
+        let charCount = 0;
+        let lastCharCount = 0;
+        let lastTime = 0;
+
+        // 字符集定義
+        const characterSets = {
+            matrix: 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789',
+            katakana: 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン',
+            numbers: '0123456789',
+            binary: '01',
+            chinese: '代碼駭客矩陣數字雨電腦程式設計算法資料網路虛擬現實人工智慧',
+            symbols: '!@#$%^&*()_+-=[]{}|;:,.<>?',
+            mixed: 'アイウエオ0123456789!@#$%ABCDEF代碼駭客'
+        };
+
+        // 色彩主題
+        const themes = {
+            classic: { bg: [0, 0, 0], primary: [0, 255, 0], secondary: [0, 100, 0] },
+            red: { bg: [10, 0, 0], primary: [255, 0, 0], secondary: [100, 0, 0] },
+            blue: { bg: [0, 0, 10], primary: [0, 100, 255], secondary: [0, 50, 100] },
+            gold: { bg: [10, 10, 0], primary: [255, 215, 0], secondary: [150, 100, 0] },
+            purple: { bg: [10, 0, 10], primary: [255, 0, 255], secondary: [100, 0, 100] },
+            cyan: { bg: [0, 10, 10], primary: [0, 255, 255], secondary: [0, 100, 100] }
+        };
+
+        // 設置參數
+        let settings = {
+            speed: 5,
+            fontSize: 14,
+            density: 40,
+            charSet: 'matrix'
+        };
+
+        // 雨滴類別
+        class MatrixDrop {
+            constructor(x) {
+                this.x = x;
+                this.y = random(-500, -50);
+                this.speed = random(1, 3) * settings.speed;
+                this.chars = [];
+                this.length = random(10, 30);
+                this.opacity = random(0.5, 1);
+                
+                // 生成字符串
+                for (let i = 0; i < this.length; i++) {
+                    this.chars.push({
+                        char: random(charSet),
+                        brightness: map(i, 0, this.length - 1, 1, 0.1),
+                        changeTime: random(0, 60)
+                    });
+                }
+            }
+            
+            update() {
+                this.y += this.speed;
+                
+                // 更新字符（隨機變化）
+                for (let i = 0; i < this.chars.length; i++) {
+                    this.chars[i].changeTime--;
+                    if (this.chars[i].changeTime <= 0) {
+                        this.chars[i].char = random(charSet);
+                        this.chars[i].changeTime = random(30, 120);
+                    }
+                }
+                
+                // 滑鼠影響
+                if (mouseInfluence) {
+                    const mouseDistance = dist(mouseX, mouseY, this.x, this.y);
+                    if (mouseDistance < 100) {
+                        const influence = map(mouseDistance, 0, 100, 2, 1);
+                        this.speed *= influence;
+                        
+                        // 字符加速變化
+                        for (let char of this.chars) {
+                            if (random() < 0.3) {
+                                char.char = random(charSet);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            draw() {
+                const theme = themes[currentTheme];
+                
+                for (let i = 0; i < this.chars.length; i++) {
+                    const charY = this.y + i * settings.fontSize;
+                    const charData = this.chars[i];
+                    
+                    // 計算顏色
+                    let brightness = charData.brightness * this.opacity;
+                    
+                    // 頭部字符特別亮
+                    if (i === 0) {
+                        brightness = 1;
+                        fill(255, 255, 255);
+                    } else {
+                        const r = theme.primary[0] * brightness;
+                        const g = theme.primary[1] * brightness;
+                        const b = theme.primary[2] * brightness;
+                        fill(r, g, b);
+                    }
+                    
+                    // 繪製字符
+                    text(charData.char, this.x, charY);
+                    charCount++;
+                }
+            }
+            
+            isOffScreen() {
+                return this.y > height + this.length * settings.fontSize;
+            }
+        }
+
+        // p5.js 主要函數
+        function setup() {
+            createCanvas(windowWidth, windowHeight);
+            
+            // 載入字符集
+            charSet = characterSets[settings.charSet].split('');
+            
+            // 創建雨滴
+            createDrops();
+            
+            // 初始化控制器
+            updateRangeDisplays();
+            updateCustomCursor();
+            
+            textAlign(LEFT, TOP);
+        }
+
+        function draw() {
+            // 背景
+            const theme = themes[currentTheme];
+            background(theme.bg[0], theme.bg[1], theme.bg[2], 30);
+            
+            // 設置字體
+            textSize(settings.fontSize);
+            
+            // 重置字符計數
+            charCount = 0;
+            
+            // 更新和繪製雨滴
+            for (let i = drops.length - 1; i >= 0; i--) {
+                drops[i].update();
+                drops[i].draw();
+                
+                if (drops[i].isOffScreen()) {
+                    drops.splice(i, 1);
+                }
+            }
+            
+            // 添加新雨滴
+            while (drops.length < settings.density) {
+                drops.push(new MatrixDrop(random(0, width)));
+            }
+            
+            // 更新顯示信息
+            updateDisplayInfo();
+        }
+
+        function createDrops() {
+            drops = [];
+            for (let i = 0; i < settings.density; i++) {
+                drops.push(new MatrixDrop(random(0, width)));
+            }
+        }
+
+        function updateDisplayInfo() {
+            if (frameCount % 30 === 0) { // 每半秒更新
+                document.getElementById('fps').textContent = Math.round(frameRate());
+                document.getElementById('dropCount').textContent = drops.length;
+                
+                // 計算字符率
+                const currentTime = millis();
+                const deltaTime = currentTime - lastTime;
+                const deltaChars = charCount - lastCharCount;
+                const charRate = Math.round((deltaChars / deltaTime) * 1000);
+                
+                document.getElementById('charRate').textContent = charRate;
+                
+                lastCharCount = charCount;
+                lastTime = currentTime;
+                
+                document.getElementById('mousePos').textContent = `${mouseX}, ${mouseY}`;
+            }
+        }
+
+        function updateRangeDisplays() {
+            // 速度
+            document.getElementById('speed').addEventListener('input', function() {
+                settings.speed = parseInt(this.value);
+                document.getElementById('speedValue').textContent = this.value;
+            });
+            
+            // 字體大小
+            document.getElementById('fontSize').addEventListener('input', function() {
+                settings.fontSize = parseInt(this.value);
+                document.getElementById('fontSizeValue').textContent = this.value + 'px';
+            });
+            
+            // 密度
+            document.getElementById('density').addEventListener('input', function() {
+                settings.density = parseInt(this.value);
+                document.getElementById('densityValue').textContent = this.value;
+            });
+            
+            // 字符集
+            document.getElementById('charSet').addEventListener('change', function() {
+                settings.charSet = this.value;
+                charSet = characterSets[settings.charSet].split('');
+            });
+        }
+
+        function updateCustomCursor() {
+            document.addEventListener('mousemove', function(e) {
+                const cursor = document.getElementById('cursor');
+                cursor.style.left = e.clientX - 10 + 'px';
+                cursor.style.top = e.clientY - 10 + 'px';
+                
+                // 滑鼠附近的特效
+                if (random() < 0.1) {
+                    cursor.classList.add('glitch');
+                    setTimeout(() => cursor.classList.remove('glitch'), 300);
+                }
+            });
+        }
+
+        function setTheme(themeName) {
+            currentTheme = themeName;
+            
+            // 更新UI
+            document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // 更新頁面樣式
+            const theme = themes[themeName];
+            const primaryColor = `rgb(${theme.primary.join(',')})`;
+            document.documentElement.style.setProperty('--primary-color', primaryColor);
+        }
+
+        function toggleControls() {
+            controlsVisible = !controlsVisible;
+            const controls = document.getElementById('controls');
+            controls.classList.toggle('show', controlsVisible);
+        }
+
+        function resetMatrix() {
+            createDrops();
+        }
+
+        function saveFrame() {
+            const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+            save(`Matrix_Rain_${timestamp}.png`);
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+        }
+
+        // 鍵盤快捷鍵
+        function keyPressed() {
+            switch (key.toLowerCase()) {
+                case ' ':
+                    toggleControls();
+                    break;
+                case 'r':
+                    resetMatrix();
+                    break;
+                case 's':
+                    saveFrame();
+                    break;
+                case 'f':
+                    toggleFullscreen();
+                    break;
+                case 'm':
+                    mouseInfluence = !mouseInfluence;
+                    break;
+                case '1':
+                    setThemeByIndex(0);
+                    break;
+                case '2':
+                    setThemeByIndex(1);
+                    break;
+                case '3':
+                    setThemeByIndex(2);
+                    break;
+                case '4':
+                    setThemeByIndex(3);
+                    break;
+                case '5':
+                    setThemeByIndex(4);
+                    break;
+                case '6':
+                    setThemeByIndex(5);
+                    break;
+            }
+        }
+
+        function setThemeByIndex(index) {
+            const themeNames = Object.keys(themes);
+            if (index < themeNames.length) {
+                setTheme(themeNames[index]);
+                document.querySelectorAll('.theme-btn')[index].click();
+            }
+        }
+
+        // 滑鼠點擊效果
+        function mousePressed() {
+            // 在滑鼠位置創建爆炸效果
+            for (let i = 0; i < 5; i++) {
+                const x = mouseX + random(-50, 50);
+                drops.push(new MatrixDrop(x));
+            }
+        }
+    </script>
+</body>
+</html>
