@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>製程流美學 | Process Flow Aesthetics</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0a0e1f, #1a1e2f, #2d1b69);
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 350px;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 25px;
+            overflow-y: auto;
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 10;
+        }
+
+        .main-canvas {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 1.6rem;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #ffd93d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            line-height: 1.5;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section h3 {
+            color: #4ecdc4;
+            font-size: 0.95rem;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-group {
+            margin-bottom: 12px;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: #ccc;
+            margin-bottom: 4px;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        button {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
+        }
+
+        button.secondary {
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+        }
+
+        .process-stages {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .stage-btn {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            color: #ccc;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.75rem;
+            text-align: center;
+        }
+
+        .stage-btn.active {
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            color: #fff;
+            border-color: #4ecdc4;
+        }
+
+        .stage-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .range-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .range-container input[type="range"] {
+            flex: 1;
+        }
+
+        .range-value {
+            min-width: 35px;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+
+        .process-info {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 15px;
+        }
+
+        .process-info h4 {
+            color: #4ecdc4;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .process-data {
+            font-size: 0.75rem;
+            line-height: 1.4;
+        }
+
+        .canvas-overlay {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            z-index: 5;
+            min-width: 200px;
+        }
+
+        .canvas-overlay h3 {
+            color: #4ecdc4;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .canvas-overlay p {
+            font-size: 0.75rem;
+            margin-bottom: 3px;
+            opacity: 0.8;
+        }
+
+        .stage-indicator {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 20px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+            z-index: 5;
+        }
+
+        .stage-indicator h3 {
+            color: #4ecdc4;
+            font-size: 1rem;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .stage-indicator p {
+            color: #ccc;
+            font-size: 0.8rem;
+            text-align: center;
+            opacity: 0.7;
+        }
+
+        .home-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 25px;
+            padding: 8px 16px;
+            color: #fff;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            z-index: 100;
+            font-size: 0.8rem;
+        }
+
+        .home-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                padding: 15px;
+                max-height: 40vh;
+            }
+            
+            .main-canvas {
+                height: 60vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="home-btn">← 返回首頁</a>
+    
+    <div class="container">
+        <div class="sidebar">
+            <div class="header">
+                <h1>🏭✨ 製程流美學</h1>
+                <p>將 FPC 軟板製程轉化為抽象藝術，感受工業流程中的詩意之美</p>
+            </div>
+
+            <div class="section">
+                <h3>⚙️ 製程階段</h3>
+                <div class="process-stages">
+                    <div class="stage-btn active" onclick="setProcessStage('substrate')" data-stage="substrate">
+                        🧱 基材準備
+                    </div>
+                    <div class="stage-btn" onclick="setProcessStage('exposure')" data-stage="exposure">
+                        💡 曝光顯影
+                    </div>
+                    <div class="stage-btn" onclick="setProcessStage('etching')" data-stage="etching">
+                        🧪 蝕刻清洗
+                    </div>
+                    <div class="stage-btn" onclick="setProcessStage('lamination')" data-stage="lamination">
+                        🔥 壓合熱壓
+                    </div>
+                    <div class="stage-btn" onclick="setProcessStage('drilling')" data-stage="drilling">
+                        🔺 鑽孔成型
+                    </div>
+                    <div class="stage-btn" onclick="setProcessStage('inspection')" data-stage="inspection">
+                        🔍 品質檢驗
+                    </div>
+                </div>
+                <button onclick="startAutoFlow()">🎬 自動流程演示</button>
+            </div>
+
+            <div class="section">
+                <h3>🎨 視覺參數</h3>
+                
+                <div class="control-group">
+                    <label>粒子密度</label>
+                    <div class="range-container">
+                        <input type="range" id="particleDensity" min="200" max="1500" value="600">
+                        <span class="range-value" id="particleDensityValue">600</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>流動速度</label>
+                    <div class="range-container">
+                        <input type="range" id="flowSpeed" min="0.5" max="4" step="0.1" value="1.5">
+                        <span class="range-value" id="flowSpeedValue">1.5</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>溫度影響</label>
+                    <div class="range-container">
+                        <input type="range" id="temperature" min="50" max="300" value="150">
+                        <span class="range-value" id="temperatureValue">150°C</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>壓力強度</label>
+                    <div class="range-container">
+                        <input type="range" id="pressure" min="0.1" max="5" step="0.1" value="2.5">
+                        <span class="range-value" id="pressureValue">2.5 MPa</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>🛠️ 控制操作</h3>
+                <button onclick="resetFlow()" class="secondary">🔄 重置流場</button>
+                <button onclick="pauseFlow()" class="secondary" id="pauseBtn">⏸️ 暫停流動</button>
+                <button onclick="saveSnapshot()" class="secondary">📸 保存快照</button>
+                <button onclick="exportVideo()" class="secondary">🎥 匯出動畫</button>
+            </div>
+
+            <div id="processInfo" class="process-info">
+                <h4>📊 製程參數</h4>
+                <div class="process-data" id="processData">
+                    <strong>階段:</strong> 基材準備<br>
+                    <strong>溫度:</strong> 150°C<br>
+                    <strong>壓力:</strong> 2.5 MPa<br>
+                    <strong>效率:</strong> 95.2%<br>
+                    <strong>良率:</strong> 98.1%
+                </div>
+            </div>
+        </div>
+
+        <div class="main-canvas">
+            <div id="p5-container"></div>
+            
+            <div class="canvas-overlay">
+                <h3>🔬 即時監控</h3>
+                <p>FPS: <span id="fps">--</span></p>
+                <p>粒子數: <span id="particleCount">--</span></p>
+                <p>流場強度: <span id="fieldStrength">--</span></p>
+                <p>製程進度: <span id="processProgress">--</span>%</p>
+            </div>
+            
+            <div class="stage-indicator">
+                <h3 id="currentStage">🧱 基材準備</h3>
+                <p id="stageDescription">將聚醯亞胺薄膜進行表面處理，準備後續製程</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全域變數
+        let particles = [];
+        let flowField = [];
+        let currentStage = 'substrate';
+        let isPaused = false;
+        let autoFlowMode = false;
+        let stageTimer = 0;
+        let autoStageIndex = 0;
+        let frameCounter = 0;
+
+        // 製程階段定義
+        const processStages = {
+            substrate: {
+                name: '🧱 基材準備',
+                description: '將聚醯亞胺薄膜進行表面處理，準備後續製程',
+                colors: [[255, 193, 7], [255, 235, 59], [255, 183, 77]],
+                flowPattern: 'linear',
+                temperature: 150,
+                pressure: 2.5,
+                speed: 1.2
+            },
+            exposure: {
+                name: '💡 曝光顯影',
+                description: 'UV光照射光阻，形成線路圖案',
+                colors: [[138, 43, 226], [147, 112, 219], [186, 85, 211]],
+                flowPattern: 'radial',
+                temperature: 80,
+                pressure: 1.0,
+                speed: 0.8
+            },
+            etching: {
+                name: '🧪 蝕刻清洗',
+                description: '化學蝕刻去除多餘銅箔，形成線路',
+                colors: [[0, 255, 127], [46, 204, 113], [39, 174, 96]],
+                flowPattern: 'turbulent',
+                temperature: 45,
+                pressure: 0.5,
+                speed: 2.5
+            },
+            lamination: {
+                name: '🔥 壓合熱壓',
+                description: '高溫高壓將多層材料壓合成型',
+                colors: [[255, 69, 0], [255, 140, 0], [255, 165, 0]],
+                flowPattern: 'compression',
+                temperature: 280,
+                pressure: 4.5,
+                speed: 0.5
+            },
+            drilling: {
+                name: '🔺 鑽孔成型',
+                description: '精密鑽孔形成過孔，裁切成型',
+                colors: [[70, 130, 180], [100, 149, 237], [135, 206, 235]],
+                flowPattern: 'spiral',
+                temperature: 120,
+                pressure: 3.0,
+                speed: 1.8
+            },
+            inspection: {
+                name: '🔍 品質檢驗',
+                description: '光學檢測確保產品品質符合規格',
+                colors: [[255, 255, 255], [240, 240, 240], [220, 220, 220]],
+                flowPattern: 'scanning',
+                temperature: 25,
+                pressure: 0.1,
+                speed: 1.0
+            }
+        };
+
+        // 設置參數
+        let settings = {
+            particleDensity: 600,
+            flowSpeed: 1.5,
+            temperature: 150,
+            pressure: 2.5,
+            fieldResolution: 20,
+            canvasWidth: 0,
+            canvasHeight: 0
+        };
+
+        // 粒子類別
+        class ProcessParticle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.px = x; // 前一幀位置
+                this.py = y;
+                this.vx = 0;
+                this.vy = 0;
+                this.life = 1.0;
+                this.maxLife = 1.0;
+                this.size = random(1, 4);
+                this.opacity = 255;
+                
+                // 製程相關屬性
+                this.temperature = random(0.5, 1.5);
+                this.pressure = random(0.8, 1.2);
+                this.quality = random(0.9, 1.0);
+                
+                this.trail = [];
+                this.maxTrailLength = 20;
+            }
+            
+            update() {
+                if (isPaused) return;
+                
+                this.px = this.x;
+                this.py = this.y;
+                
+                // 根據製程階段更新運動
+                const stage = processStages[currentStage];
+                this.updateByProcessStage(stage);
+                
+                // 應用流場影響
+                this.applyFlowField();
+                
+                // 邊界處理
+                this.handleBoundaries();
+                
+                // 更新軌跡
+                this.updateTrail();
+                
+                // 更新生命週期
+                this.updateLifeCycle();
+            }
+            
+            updateByProcessStage(stage) {
+                const centerX = width / 2;
+                const centerY = height / 2;
+                const time = frameCount * 0.01 * settings.flowSpeed;
+                
+                switch (stage.flowPattern) {
+                    case 'linear':
+                        this.updateLinearFlow(time);
+                        break;
+                    case 'radial':
+                        this.updateRadialFlow(centerX, centerY, time);
+                        break;
+                    case 'turbulent':
+                        this.updateTurbulentFlow(time);
+                        break;
+                    case 'compression':
+                        this.updateCompressionFlow(centerX, centerY, time);
+                        break;
+                    case 'spiral':
+                        this.updateSpiralFlow(centerX, centerY, time);
+                        break;
+                    case 'scanning':
+                        this.updateScanningFlow(time);
+                        break;
+                }
+            }
+            
+            updateLinearFlow(time) {
+                // 線性流動 - 基材準備
+                const waveHeight = 30;
+                const noiseVal = noise(this.x * 0.01, time);
+                this.vy = sin(this.x * 0.02 + time) * waveHeight * 0.1;
+                this.vx = 1 + noiseVal;
+            }
+            
+            updateRadialFlow(centerX, centerY, time) {
+                // 徑向流動 - 曝光顯影
+                const dx = this.x - centerX;
+                const dy = this.y - centerY;
+                const distance = sqrt(dx * dx + dy * dy);
+                const angle = atan2(dy, dx);
+                
+                this.vx = cos(angle + time * 0.5) * (200 - distance) * 0.005;
+                this.vy = sin(angle + time * 0.5) * (200 - distance) * 0.005;
+            }
+            
+            updateTurbulentFlow(time) {
+                // 湍流 - 蝕刻清洗
+                const turbulence = settings.pressure / 5;
+                this.vx = (noise(this.x * 0.01, this.y * 0.01, time) - 0.5) * 4 * turbulence;
+                this.vy = (noise(this.x * 0.01 + 1000, this.y * 0.01, time) - 0.5) * 4 * turbulence;
+            }
+            
+            updateCompressionFlow(centerX, centerY, time) {
+                // 壓縮流動 - 壓合熱壓
+                const dx = this.x - centerX;
+                const dy = this.y - centerY;
+                const compressionForce = settings.pressure / 10;
+                
+                this.vx = -dx * compressionForce * 0.01;
+                this.vy = -dy * compressionForce * 0.01;
+            }
+            
+            updateSpiralFlow(centerX, centerY, time) {
+                // 螺旋流動 - 鑽孔成型
+                const dx = this.x - centerX;
+                const dy = this.y - centerY;
+                const distance = sqrt(dx * dx + dy * dy);
+                const angle = atan2(dy, dx) + time * 0.02;
+                
+                this.vx = cos(angle) * distance * 0.002;
+                this.vy = sin(angle) * distance * 0.002;
+            }
+            
+            updateScanningFlow(time) {
+                // 掃描流動 - 品質檢驗
+                const scanSpeed = settings.flowSpeed * 2;
+                const scanLine = (time * scanSpeed) % width;
+                
+                if (abs(this.x - scanLine) < 50) {
+                    this.vx = 0;
+                    this.vy = sin(time + this.x * 0.1) * 2;
+                } else {
+                    this.vx = random(-0.5, 0.5);
+                    this.vy = random(-0.5, 0.5);
+                }
+            }
+            
+            applyFlowField() {
+                // 從流場獲取力場影響
+                const col = Math.floor(this.x / settings.fieldResolution);
+                const row = Math.floor(this.y / settings.fieldResolution);
+                
+                if (col >= 0 && col < flowField[0].length && row >= 0 && row < flowField.length) {
+                    const fieldVector = flowField[row][col];
+                    this.vx += fieldVector.x * 0.5;
+                    this.vy += fieldVector.y * 0.5;
+                }
+            }
+            
+            handleBoundaries() {
+                // 位置更新
+                this.x += this.vx * settings.flowSpeed;
+                this.y += this.vy * settings.flowSpeed;
+                
+                // 邊界處理
+                if (this.x < 0) {
+                    this.x = width;
+                    this.px = width;
+                }
+                if (this.x > width) {
+                    this.x = 0;
+                    this.px = 0;
+                }
+                if (this.y < 0) {
+                    this.y = height;
+                    this.py = height;
+                }
+                if (this.y > height) {
+                    this.y = 0;
+                    this.py = 0;
+                }
+            }
+            
+            updateTrail() {
+                this.trail.push({ x: this.x, y: this.y });
+                if (this.trail.length > this.maxTrailLength) {
+                    this.trail.shift();
+                }
+            }
+            
+            updateLifeCycle() {
+                this.life -= 0.005;
+                if (this.life <= 0) {
+                    this.life = this.maxLife;
+                    this.x = random(width);
+                    this.y = random(height);
+                }
+            }
+            
+            draw() {
+                const stage = processStages[currentStage];
+                const colors = stage.colors;
+                
+                // 根據製程參數選擇顏色
+                let colorIndex = Math.floor(map(settings.temperature, 0, 300, 0, colors.length - 1));
+                colorIndex = constrain(colorIndex, 0, colors.length - 1);
+                
+                const color = colors[colorIndex];
+                const alpha = map(this.life, 0, 1, 50, 200);
+                
+                // 繪製軌跡
+                for (let i = 1; i < this.trail.length; i++) {
+                    const trailAlpha = map(i, 0, this.trail.length, 0, alpha * 0.6);
+                    stroke(color[0], color[1], color[2], trailAlpha);
+                    strokeWeight(0.5);
+                    line(this.trail[i-1].x, this.trail[i-1].y, this.trail[i].x, this.trail[i].y);
+                }
+                
+                // 繪製粒子
+                fill(color[0], color[1], color[2], alpha);
+                noStroke();
+                
+                const displaySize = this.size * map(settings.pressure, 0, 5, 0.5, 2);
+                circle(this.x, this.y, displaySize);
+                
+                // 特殊效果
+                if (currentStage === 'exposure') {
+                    // 曝光階段的光暈效果
+                    fill(color[0], color[1], color[2], alpha * 0.3);
+                    circle(this.x, this.y, displaySize * 2);
+                }
+            }
+        }
+
+        // p5.js 主要函數
+        function setup() {
+            const canvas = createCanvas(windowWidth - 350, windowHeight);
+            canvas.parent('p5-container');
+            
+            settings.canvasWidth = width;
+            settings.canvasHeight = height;
+            
+            initializeFlowField();
+            createParticles();
+            updateRangeDisplays();
+        }
+
+        function draw() {
+            // 背景
+            const stage = processStages[currentStage];
+            const bgColor = stage.colors[0];
+            background(bgColor[0] * 0.05, bgColor[1] * 0.05, bgColor[2] * 0.05, 30);
+            
+            // 更新流場
+            updateFlowField();
+            
+            // 更新和繪製粒子
+            for (let particle of particles) {
+                particle.update();
+                particle.draw();
+            }
+            
+            // 自動流程模式
+            if (autoFlowMode) {
+                updateAutoFlow();
+            }
+            
+            // 更新UI顯示
+            updateDisplayInfo();
+        }
+
+        function initializeFlowField() {
+            const cols = Math.ceil(width / settings.fieldResolution);
+            const rows = Math.ceil(height / settings.fieldResolution);
+            
+            flowField = [];
+            for (let row = 0; row < rows; row++) {
+                flowField[row] = [];
+                for (let col = 0; col < cols; col++) {
+                    flowField[row][col] = { x: 0, y: 0 };
+                }
+            }
+        }
+
+        function updateFlowField() {
+            const time = frameCount * 0.01;
+            
+            for (let row = 0; row < flowField.length; row++) {
+                for (let col = 0; col < flowField[row].length; col++) {
+                    const x = col * settings.fieldResolution;
+                    const y = row * settings.fieldResolution;
+                    
+                    const angle = noise(x * 0.01, y * 0.01, time) * TWO_PI;
+                    const magnitude = settings.temperature / 100;
+                    
+                    flowField[row][col].x = cos(angle) * magnitude;
+                    flowField[row][col].y = sin(angle) * magnitude;
+                }
+            }
+        }
+
+        function createParticles() {
+            particles = [];
+            for (let i = 0; i < settings.particleDensity; i++) {
+                particles.push(new ProcessParticle(random(width), random(height)));
+            }
+        }
+
+        function setProcessStage(stage) {
+            currentStage = stage;
+            
+            // 更新UI
+            document.querySelectorAll('.stage-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[data-stage="${stage}"]`).classList.add('active');
+            
+            // 更新製程資訊
+            updateProcessInfo();
+            updateStageIndicator();
+        }
+
+        function updateProcessInfo() {
+            const stage = processStages[currentStage];
+            const efficiency = 90 + random(0, 10);
+            const yieldRate = 95 + random(0, 5);
+            
+            const html = `
+                <strong>階段:</strong> ${stage.name}<br>
+                <strong>溫度:</strong> ${Math.round(stage.temperature)}°C<br>
+                <strong>壓力:</strong> ${stage.pressure} MPa<br>
+                <strong>效率:</strong> ${efficiency.toFixed(1)}%<br>
+                <strong>良率:</strong> ${yieldRate.toFixed(1)}%
+            `;
+            
+            document.getElementById('processData').innerHTML = html;
+        }
+
+        function updateStageIndicator() {
+            const stage = processStages[currentStage];
+            document.getElementById('currentStage').textContent = stage.name;
+            document.getElementById('stageDescription').textContent = stage.description;
+        }
+
+        function startAutoFlow() {
+            autoFlowMode = !autoFlowMode;
+            autoStageIndex = 0;
+            stageTimer = 0;
+            
+            const btn = event.target;
+            btn.textContent = autoFlowMode ? '⏹️ 停止演示' : '🎬 自動流程演示';
+        }
+
+        function updateAutoFlow() {
+            const stageNames = Object.keys(processStages);
+            const stageDuration = 300; // 每個階段5秒 (60fps)
+            
+            stageTimer++;
+            if (stageTimer >= stageDuration) {
+                autoStageIndex = (autoStageIndex + 1) % stageNames.length;
+                setProcessStage(stageNames[autoStageIndex]);
+                stageTimer = 0;
+            }
+        }
+
+        function updateDisplayInfo() {
+            frameCounter++;
+            if (frameCounter % 30 === 0) { // 每半秒更新一次
+                document.getElementById('fps').textContent = Math.round(frameRate());
+                document.getElementById('particleCount').textContent = particles.length;
+                document.getElementById('fieldStrength').textContent = (settings.temperature / 10).toFixed(1);
+                
+                const progress = autoFlowMode ? (stageTimer / 300 * 100).toFixed(0) : '100';
+                document.getElementById('processProgress').textContent = progress;
+            }
+        }
+
+        function updateRangeDisplays() {
+            // 粒子密度
+            document.getElementById('particleDensity').addEventListener('input', function() {
+                settings.particleDensity = parseInt(this.value);
+                document.getElementById('particleDensityValue').textContent = this.value;
+                createParticles();
+            });
+            
+            // 流動速度
+            document.getElementById('flowSpeed').addEventListener('input', function() {
+                settings.flowSpeed = parseFloat(this.value);
+                document.getElementById('flowSpeedValue').textContent = this.value;
+            });
+            
+            // 溫度
+            document.getElementById('temperature').addEventListener('input', function() {
+                settings.temperature = parseInt(this.value);
+                document.getElementById('temperatureValue').textContent = this.value + '°C';
+            });
+            
+            // 壓力
+            document.getElementById('pressure').addEventListener('input', function() {
+                settings.pressure = parseFloat(this.value);
+                document.getElementById('pressureValue').textContent = this.value + ' MPa';
+            });
+        }
+
+        function resetFlow() {
+            createParticles();
+            stageTimer = 0;
+        }
+
+        function pauseFlow() {
+            isPaused = !isPaused;
+            const btn = document.getElementById('pauseBtn');
+            btn.textContent = isPaused ? '▶️ 繼續流動' : '⏸️ 暫停流動';
+        }
+
+        function saveSnapshot() {
+            const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+            const filename = `製程流美學_${currentStage}_${timestamp}.png`;
+            save(filename);
+        }
+
+        function exportVideo() {
+            // 簡化版本：連續保存多張圖片
+            alert('將連續保存30張圖片，可用於製作動畫\n按確定開始...');
+            
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    save(`製程流動畫_${String(i).padStart(3, '0')}.png`);
+                }, i * 100);
+            }
+        }
+
+        function windowResized() {
+            resizeCanvas(windowWidth - 350, windowHeight);
+            settings.canvasWidth = width;
+            settings.canvasHeight = height;
+            initializeFlowField();
+        }
+
+        // 鍵盤快捷鍵
+        function keyPressed() {
+            switch (key.toLowerCase()) {
+                case 'r':
+                    resetFlow();
+                    break;
+                case ' ':
+                    pauseFlow();
+                    break;
+                case 's':
+                    saveSnapshot();
+                    break;
+                case 'a':
+                    startAutoFlow();
+                    break;
+                case '1':
+                    setProcessStage('substrate');
+                    break;
+                case '2':
+                    setProcessStage('exposure');
+                    break;
+                case '3':
+                    setProcessStage('etching');
+                    break;
+                case '4':
+                    setProcessStage('lamination');
+                    break;
+                case '5':
+                    setProcessStage('drilling');
+                    break;
+                case '6':
+                    setProcessStage('inspection');
+                    break;
+            }
+        }
+    </script>
+</body>
+</html>
