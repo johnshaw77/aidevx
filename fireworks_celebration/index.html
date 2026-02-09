@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>點擊煙火秀 - Fireworks Celebration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            background: #0a0e27;
+        }
+        
+        #canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+        
+        .info {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 10;
+            backdrop-filter: blur(5px);
+        }
+        
+        .info h2 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #ffcc00;
+        }
+        
+        .info p {
+            margin: 4px 0;
+            color: #ddd;
+        }
+        
+        .title {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            color: #fff;
+            text-align: right;
+            z-index: 10;
+        }
+        
+        .title h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+            background: linear-gradient(135deg, #ff6b6b, #ffcc00, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .title p {
+            font-size: 12px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        <h2>🎆 點擊煙火秀</h2>
+        <p>點擊畫面任何位置</p>
+        <p>建立奪目的煙火效果</p>
+    </div>
+    
+    <div class="title">
+        <h1>Fireworks</h1>
+        <p>Powered by p5.js</p>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <script>
+        // 粒子類別
+        class Particle {
+            constructor(x, y, vx, vy, color, lifespan) {
+                this.position = createVector(x, y);
+                this.velocity = createVector(vx, vy);
+                this.acceleration = createVector(0, 0.1); // 重力
+                this.color = color;
+                this.alpha = 255;
+                this.lifespan = lifespan;
+                this.maxLifespan = lifespan;
+            }
+            
+            update() {
+                this.velocity.add(this.acceleration);
+                this.position.add(this.velocity);
+                this.lifespan -= 4;
+                this.alpha = map(this.lifespan, 0, this.maxLifespan, 0, 255);
+            }
+            
+            display() {
+                push();
+                noStroke();
+                fill(this.color[0], this.color[1], this.color[2], this.alpha);
+                circle(this.position.x, this.position.y, 4);
+                pop();
+            }
+            
+            isDead() {
+                return this.lifespan <= 0;
+            }
+        }
+        
+        // 煙火類別
+        class Firework {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.particles = [];
+                this.createExplosion();
+            }
+            
+            createExplosion() {
+                const colors = [
+                    [255, 0, 127],      // 粉紅
+                    [255, 100, 0],      // 橙色
+                    [255, 200, 0],      // 金黃
+                    [0, 255, 150],      // 青綠
+                    [100, 150, 255],    // 天藍
+                    [255, 0, 200],      // 紫紅
+                    [0, 255, 255],      // 青色
+                    [255, 255, 100]     // 淺黃
+                ];
+                
+                const particleCount = random(80, 150);
+                const selectedColor = random(colors);
+                
+                for (let i = 0; i < particleCount; i++) {
+                    const angle = random(TWO_PI);
+                    const speed = random(2, 8);
+                    const vx = cos(angle) * speed;
+                    const vy = sin(angle) * speed;
+                    
+                    // 加入一些顏色變化
+                    const colorVariation = [
+                        selectedColor[0] + random(-30, 30),
+                        selectedColor[1] + random(-30, 30),
+                        selectedColor[2] + random(-30, 30)
+                    ];
+                    
+                    const colorFinal = [
+                        constrain(colorVariation[0], 0, 255),
+                        constrain(colorVariation[1], 0, 255),
+                        constrain(colorVariation[2], 0, 255)
+                    ];
+                    
+                    this.particles.push(
+                        new Particle(this.x, this.y, vx, vy, colorFinal, random(300, 500))
+                    );
+                }
+            }
+            
+            update() {
+                for (let p of this.particles) {
+                    p.update();
+                }
+            }
+            
+            display() {
+                for (let p of this.particles) {
+                    p.display();
+                }
+            }
+            
+            isFinished() {
+                return this.particles.every(p => p.isDead());
+            }
+        }
+        
+        let fireworks = [];
+        
+        function setup() {
+            createCanvas(windowWidth, windowHeight);
+            background(10, 14, 39);
+        }
+        
+        function draw() {
+            // 半透明背景，製造尾跡效果
+            background(10, 14, 39, 50);
+            
+            // 更新和顯示煙火
+            for (let i = fireworks.length - 1; i >= 0; i--) {
+                fireworks[i].update();
+                fireworks[i].display();
+                
+                if (fireworks[i].isFinished()) {
+                    fireworks.splice(i, 1);
+                }
+            }
+        }
+        
+        function mousePressed() {
+            // 點擊位置建立煙火
+            fireworks.push(new Firework(mouseX, mouseY));
+            
+            // 30% 機率同時建立另一個位置的煙火（更炫）
+            if (random() < 0.3) {
+                const offsetX = random(-50, 50);
+                const offsetY = random(-50, 50);
+                fireworks.push(new Firework(mouseX + offsetX, mouseY + offsetY));
+            }
+        }
+        
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+        }
+    </script>
+</body>
+</html>
