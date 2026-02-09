@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>股市數據藝術生成器 | Stock Data Art Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0a0e1f, #1a1e2f, #2d1b69);
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 320px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 30px;
+            overflow-y: auto;
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .main-canvas {
+            flex: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            line-height: 1.6;
+        }
+
+        .control-section {
+            margin-bottom: 25px;
+        }
+
+        .control-section h3 {
+            color: #4ecdc4;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: #ccc;
+            margin-bottom: 5px;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4ecdc4;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        select option {
+            background: #1a1e2f;
+            color: #fff;
+        }
+
+        button {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
+        }
+
+        button.secondary {
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+        }
+
+        button.secondary:hover {
+            box-shadow: 0 10px 25px rgba(78, 205, 196, 0.3);
+        }
+
+        .range-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .range-container input[type="range"] {
+            flex: 1;
+        }
+
+        .range-value {
+            min-width: 40px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+
+        .color-picker {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .color-option {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .color-option.active {
+            border-color: #fff;
+            transform: scale(1.1);
+        }
+
+        .stock-info {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .stock-info h4 {
+            color: #4ecdc4;
+            margin-bottom: 8px;
+        }
+
+        .stock-data {
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+
+        .canvas-info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
+
+        .canvas-info h3 {
+            color: #4ecdc4;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .canvas-info p {
+            font-size: 0.8rem;
+            margin-bottom: 4px;
+            opacity: 0.8;
+        }
+
+        .home-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 25px;
+            padding: 10px 20px;
+            color: #fff;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .home-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .loading {
+            text-align: center;
+            color: #4ecdc4;
+            font-size: 1.1rem;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                padding: 20px;
+            }
+            
+            .main-canvas {
+                height: 70vh;
+            }
+            
+            .canvas-info {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="home-btn">← 返回首頁</a>
+    
+    <div class="container">
+        <div class="sidebar">
+            <div class="header">
+                <h1>📈🎨 股市數據藝術</h1>
+                <p>將股市K線轉化為抽象藝術作品，讓數據展現美學之美</p>
+            </div>
+
+            <div class="control-section">
+                <h3>📊 股票選擇</h3>
+                <div class="control-group">
+                    <label>股票代號</label>
+                    <select id="stockCode">
+                        <option value="2330">2330 台積電</option>
+                        <option value="2317">2317 鴻海</option>
+                        <option value="2454">2454 聯發科</option>
+                        <option value="2881">2881 富邦金</option>
+                        <option value="2412">2412 中華電</option>
+                        <option value="1301">1301 台塑</option>
+                        <option value="2303">2303 聯電</option>
+                        <option value="3711">3711 日月光投控</option>
+                        <option value="2382">2382 廣達</option>
+                        <option value="6505">6505 台塑化</option>
+                    </select>
+                </div>
+                <button onclick="generateNewData()">🎲 生成新數據</button>
+            </div>
+
+            <div class="control-section">
+                <h3>🎨 藝術風格</h3>
+                <div class="control-group">
+                    <label>視覺化模式</label>
+                    <select id="artMode">
+                        <option value="particles">粒子流場</option>
+                        <option value="waves">波浪圖案</option>
+                        <option value="spiral">螺旋軌跡</option>
+                        <option value="network">網絡節點</option>
+                        <option value="mandala">曼陀羅</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label>色彩主題</label>
+                    <div class="color-picker">
+                        <div class="color-option active" style="background: linear-gradient(45deg, #ff6b6b, #4ecdc4)" onclick="setColorTheme('gradient')"></div>
+                        <div class="color-option" style="background: linear-gradient(45deg, #ff4757, #ff3838)" onclick="setColorTheme('hot')"></div>
+                        <div class="color-option" style="background: linear-gradient(45deg, #3742fa, #70a1ff)" onclick="setColorTheme('cool')"></div>
+                        <div class="color-option" style="background: linear-gradient(45deg, #2f3542, #57606f)" onclick="setColorTheme('mono')"></div>
+                        <div class="color-option" style="background: linear-gradient(45deg, #ffa726, #ffcc02)" onclick="setColorTheme('gold')"></div>
+                        <div class="color-option" style="background: linear-gradient(45deg, #a55eea, #fd79a8)" onclick="setColorTheme('purple')"></div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>粒子密度</label>
+                    <div class="range-container">
+                        <input type="range" id="particleCount" min="100" max="2000" value="800">
+                        <span class="range-value" id="particleCountValue">800</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>動態速度</label>
+                    <div class="range-container">
+                        <input type="range" id="animationSpeed" min="0.1" max="3" step="0.1" value="1">
+                        <span class="range-value" id="animationSpeedValue">1.0</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>噪聲強度</label>
+                    <div class="range-container">
+                        <input type="range" id="noiseStrength" min="0.1" max="5" step="0.1" value="2">
+                        <span class="range-value" id="noiseStrengthValue">2.0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>🛠️ 控制</h3>
+                <button onclick="regenerateArt()" class="secondary">🔄 重新生成</button>
+                <button onclick="pauseAnimation()" class="secondary" id="pauseBtn">⏸️ 暫停動畫</button>
+                <button onclick="saveArtwork()" class="secondary">💾 保存作品</button>
+                <button onclick="resetView()" class="secondary">🎯 重置視角</button>
+            </div>
+
+            <div id="stockInfo" class="stock-info" style="display: none;">
+                <h4>📊 股票資訊</h4>
+                <div class="stock-data" id="stockData">
+                    <!-- 股票數據將動態載入 -->
+                </div>
+            </div>
+        </div>
+
+        <div class="main-canvas">
+            <div id="p5-container"></div>
+            
+            <div class="canvas-info">
+                <h3>✨ 即時生成中</h3>
+                <p id="frameInfo">FPS: <span id="fps">--</span></p>
+                <p id="particleInfo">粒子數量: <span id="particleNum">--</span></p>
+                <p id="priceInfo">價格變化: <span id="priceChange">--</span></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全域變數
+        let particles = [];
+        let stockData = [];
+        let currentStockCode = '2330';
+        let artMode = 'particles';
+        let colorTheme = 'gradient';
+        let isPaused = false;
+        let frameCounter = 0;
+        let lastFpsUpdate = 0;
+
+        // 設置參數
+        let settings = {
+            particleCount: 800,
+            animationSpeed: 1.0,
+            noiseStrength: 2.0,
+            canvasWidth: 0,
+            canvasHeight: 0
+        };
+
+        // 色彩主題
+        const colorThemes = {
+            gradient: [
+                [255, 107, 107], [78, 205, 196], [69, 183, 209],
+                [255, 142, 83], [161, 196, 253]
+            ],
+            hot: [
+                [255, 71, 87], [255, 56, 56], [255, 159, 67],
+                [255, 107, 107], [255, 77, 77]
+            ],
+            cool: [
+                [55, 66, 250], [112, 161, 255], [116, 185, 255],
+                [47, 128, 237], [74, 144, 226]
+            ],
+            mono: [
+                [47, 53, 66], [87, 96, 111], [116, 125, 140],
+                [149, 165, 166], [223, 230, 233]
+            ],
+            gold: [
+                [255, 167, 38], [255, 204, 2], [255, 193, 7],
+                [255, 152, 0], [230, 126, 34]
+            ],
+            purple: [
+                [165, 94, 234], [253, 121, 168], [184, 59, 94],
+                [202, 81, 127], [225, 112, 85]
+            ]
+        };
+
+        // 模擬股市數據
+        function generateStockData(symbol) {
+            const data = [];
+            let price = 100 + Math.random() * 400; // 基準價 100-500
+            
+            for (let i = 0; i < 252; i++) { // 一年交易日
+                const volatility = 0.02 + Math.random() * 0.03; // 2-5% 波動
+                const change = (Math.random() - 0.5) * volatility * price;
+                
+                price += change;
+                price = Math.max(10, price); // 最低價10元
+                
+                const volume = Math.floor(Math.random() * 50000 + 10000); // 1萬-6萬張
+                
+                data.push({
+                    date: new Date(2024, 0, 1 + i),
+                    price: Math.round(price * 100) / 100,
+                    volume: volume,
+                    change: Math.round(change * 100) / 100,
+                    changePercent: Math.round((change / (price - change)) * 10000) / 100
+                });
+            }
+            
+            return data;
+        }
+
+        // 粒子類別
+        class Particle {
+            constructor(x, y, dataIndex) {
+                this.x = x;
+                this.y = y;
+                this.dataIndex = dataIndex;
+                this.trail = [];
+                this.maxTrailLength = 50;
+                
+                const data = stockData[dataIndex];
+                this.price = data.price;
+                this.volume = data.volume;
+                this.change = data.change;
+                
+                // 根據股價變化設定顏色
+                this.colorIndex = this.change > 0 ? 0 : (this.change < 0 ? 1 : 2);
+                this.alpha = map(Math.abs(this.volume), 10000, 60000, 50, 255);
+            }
+            
+            update() {
+                if (isPaused) return;
+                
+                // 根據藝術模式更新位置
+                const time = frameCount * 0.01 * settings.animationSpeed;
+                const noiseScale = 0.005;
+                
+                switch (artMode) {
+                    case 'particles':
+                        this.updateParticleFlow(time, noiseScale);
+                        break;
+                    case 'waves':
+                        this.updateWavePattern(time);
+                        break;
+                    case 'spiral':
+                        this.updateSpiralPattern(time);
+                        break;
+                    case 'network':
+                        this.updateNetworkPattern(time);
+                        break;
+                    case 'mandala':
+                        this.updateMandalaPattern(time);
+                        break;
+                }
+                
+                // 記錄軌跡
+                this.trail.push({ x: this.x, y: this.y });
+                if (this.trail.length > this.maxTrailLength) {
+                    this.trail.shift();
+                }
+                
+                // 邊界檢查
+                if (this.x < 0) this.x = width;
+                if (this.x > width) this.x = 0;
+                if (this.y < 0) this.y = height;
+                if (this.y > height) this.y = 0;
+            }
+            
+            updateParticleFlow(time, noiseScale) {
+                const noiseValue = noise(this.x * noiseScale, this.y * noiseScale, time);
+                const angle = noiseValue * TWO_PI * settings.noiseStrength;
+                
+                // 價格變化影響移動速度
+                const speed = map(Math.abs(this.change), 0, 10, 0.5, 3);
+                
+                this.x += cos(angle) * speed;
+                this.y += sin(angle) * speed;
+            }
+            
+            updateWavePattern(time) {
+                const waveHeight = height * 0.3;
+                const frequency = this.dataIndex * 0.1;
+                this.y = height/2 + sin(time + frequency) * waveHeight * (this.change / 10);
+                this.x += settings.animationSpeed * 0.5;
+            }
+            
+            updateSpiralPattern(time) {
+                const centerX = width / 2;
+                const centerY = height / 2;
+                const radius = map(this.price, 50, 500, 50, 200);
+                const angle = time + this.dataIndex * 0.1;
+                
+                this.x = centerX + cos(angle) * radius;
+                this.y = centerY + sin(angle) * radius;
+            }
+            
+            updateNetworkPattern(time) {
+                // 網絡節點模式，粒子之間有連線
+                this.x += (noise(time + this.dataIndex) - 0.5) * 2;
+                this.y += (noise(time + this.dataIndex + 1000) - 0.5) * 2;
+            }
+            
+            updateMandalaPattern(time) {
+                const centerX = width / 2;
+                const centerY = height / 2;
+                const layers = 8;
+                const layer = this.dataIndex % layers;
+                const radius = map(layer, 0, layers, 50, 300);
+                const angle = time + (this.dataIndex / layers) * TWO_PI;
+                
+                this.x = centerX + cos(angle) * radius;
+                this.y = centerY + sin(angle) * radius;
+            }
+            
+            draw() {
+                const colors = colorThemes[colorTheme];
+                let color;
+                
+                if (this.change > 0) {
+                    color = colors[0]; // 上漲 - 紅色系
+                } else if (this.change < 0) {
+                    color = colors[1]; // 下跌 - 綠色系
+                } else {
+                    color = colors[2]; // 平盤 - 中性色
+                }
+                
+                // 繪製軌跡
+                for (let i = 1; i < this.trail.length; i++) {
+                    const alpha = map(i, 0, this.trail.length, 0, this.alpha);
+                    stroke(color[0], color[1], color[2], alpha);
+                    strokeWeight(map(this.volume, 10000, 60000, 0.5, 2));
+                    
+                    line(this.trail[i-1].x, this.trail[i-1].y, 
+                         this.trail[i].x, this.trail[i].y);
+                }
+                
+                // 繪製粒子
+                fill(color[0], color[1], color[2], this.alpha);
+                noStroke();
+                const size = map(this.volume, 10000, 60000, 2, 8);
+                circle(this.x, this.y, size);
+                
+                // 在網絡模式下繪製連線
+                if (artMode === 'network') {
+                    this.drawConnections();
+                }
+            }
+            
+            drawConnections() {
+                const maxDistance = 80;
+                const colors = colorThemes[colorTheme];
+                
+                for (let other of particles) {
+                    if (other === this) continue;
+                    
+                    const distance = dist(this.x, this.y, other.x, other.y);
+                    if (distance < maxDistance) {
+                        const alpha = map(distance, 0, maxDistance, 30, 0);
+                        stroke(colors[3][0], colors[3][1], colors[3][2], alpha);
+                        strokeWeight(0.5);
+                        line(this.x, this.y, other.x, other.y);
+                    }
+                }
+            }
+        }
+
+        // p5.js 主要函數
+        function setup() {
+            const canvas = createCanvas(windowWidth - 320, windowHeight);
+            canvas.parent('p5-container');
+            
+            settings.canvasWidth = width;
+            settings.canvasHeight = height;
+            
+            // 生成初始數據和粒子
+            generateNewData();
+            updateRangeDisplays();
+        }
+
+        function draw() {
+            // 背景
+            background(10, 15, 35, 30);
+            
+            // 更新和繪製粒子
+            for (let particle of particles) {
+                particle.update();
+                particle.draw();
+            }
+            
+            // 更新 FPS 顯示
+            frameCounter++;
+            if (millis() - lastFpsUpdate > 1000) {
+                document.getElementById('fps').textContent = Math.round(frameRate());
+                lastFpsUpdate = millis();
+                frameCounter = 0;
+            }
+            
+            // 更新資訊顯示
+            document.getElementById('particleNum').textContent = particles.length;
+            if (stockData.length > 0) {
+                const avgChange = stockData.reduce((sum, d) => sum + Math.abs(d.change), 0) / stockData.length;
+                document.getElementById('priceChange').textContent = avgChange.toFixed(2) + '%';
+            }
+        }
+
+        function windowResized() {
+            resizeCanvas(windowWidth - 320, windowHeight);
+            settings.canvasWidth = width;
+            settings.canvasHeight = height;
+        }
+
+        // 控制函數
+        function generateNewData() {
+            currentStockCode = document.getElementById('stockCode').value;
+            stockData = generateStockData(currentStockCode);
+            createParticles();
+            updateStockInfo();
+        }
+
+        function createParticles() {
+            particles = [];
+            const count = settings.particleCount;
+            
+            for (let i = 0; i < count; i++) {
+                const dataIndex = Math.floor(map(i, 0, count, 0, stockData.length));
+                const x = random(width);
+                const y = random(height);
+                
+                particles.push(new Particle(x, y, dataIndex));
+            }
+        }
+
+        function setColorTheme(theme) {
+            colorTheme = theme;
+            
+            // 更新UI
+            document.querySelectorAll('.color-option').forEach(el => el.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function regenerateArt() {
+            createParticles();
+        }
+
+        function pauseAnimation() {
+            isPaused = !isPaused;
+            const btn = document.getElementById('pauseBtn');
+            btn.textContent = isPaused ? '▶️ 繼續動畫' : '⏸️ 暫停動畫';
+        }
+
+        function saveArtwork() {
+            const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+            const filename = `股市藝術_${currentStockCode}_${timestamp}.png`;
+            save(filename);
+        }
+
+        function resetView() {
+            createParticles();
+            frameCount = 0;
+        }
+
+        function updateStockInfo() {
+            if (stockData.length === 0) return;
+            
+            const latest = stockData[stockData.length - 1];
+            const first = stockData[0];
+            const totalReturn = ((latest.price - first.price) / first.price * 100).toFixed(2);
+            
+            const html = `
+                <strong>代號:</strong> ${currentStockCode}<br>
+                <strong>期間:</strong> ${stockData.length} 個交易日<br>
+                <strong>起始價:</strong> $${first.price.toFixed(2)}<br>
+                <strong>最終價:</strong> $${latest.price.toFixed(2)}<br>
+                <strong>總報酬:</strong> ${totalReturn > 0 ? '+' : ''}${totalReturn}%<br>
+                <strong>最高價:</strong> $${Math.max(...stockData.map(d => d.price)).toFixed(2)}<br>
+                <strong>最低價:</strong> $${Math.min(...stockData.map(d => d.price)).toFixed(2)}
+            `;
+            
+            document.getElementById('stockData').innerHTML = html;
+            document.getElementById('stockInfo').style.display = 'block';
+        }
+
+        function updateRangeDisplays() {
+            // 粒子數量
+            document.getElementById('particleCount').addEventListener('input', function() {
+                settings.particleCount = parseInt(this.value);
+                document.getElementById('particleCountValue').textContent = this.value;
+                createParticles();
+            });
+            
+            // 動畫速度
+            document.getElementById('animationSpeed').addEventListener('input', function() {
+                settings.animationSpeed = parseFloat(this.value);
+                document.getElementById('animationSpeedValue').textContent = this.value;
+            });
+            
+            // 噪聲強度
+            document.getElementById('noiseStrength').addEventListener('input', function() {
+                settings.noiseStrength = parseFloat(this.value);
+                document.getElementById('noiseStrengthValue').textContent = this.value;
+            });
+            
+            // 藝術模式
+            document.getElementById('artMode').addEventListener('change', function() {
+                artMode = this.value;
+                createParticles();
+            });
+        }
+
+        // 鍵盤快捷鍵
+        function keyPressed() {
+            switch (key.toLowerCase()) {
+                case 'r':
+                    regenerateArt();
+                    break;
+                case ' ':
+                    pauseAnimation();
+                    break;
+                case 's':
+                    saveArtwork();
+                    break;
+            }
+        }
+    </script>
+</body>
+</html>
