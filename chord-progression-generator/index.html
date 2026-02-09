@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>和弦進行生成器 | Chord Progression Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e1e2e, #2d1b69);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+        
+        .controls {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .control-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        label {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #4ecdc4;
+        }
+        
+        select, input[type="range"] {
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 16px;
+        }
+        
+        select option {
+            background: #1e1e2e;
+            color: #fff;
+        }
+        
+        .range-value {
+            text-align: center;
+            margin-top: 5px;
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .result {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+        }
+        
+        .chord-display {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .chord-progression {
+            font-size: 2rem;
+            font-weight: bold;
+            letter-spacing: 3px;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .chord-numbers {
+            font-size: 1.2rem;
+            color: #45b7d1;
+            margin-bottom: 10px;
+        }
+        
+        .analysis {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .analysis h3 {
+            color: #4ecdc4;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .analysis-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+        }
+        
+        .analysis-item h4 {
+            color: #ff6b6b;
+            margin-bottom: 8px;
+        }
+        
+        .chord-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .chord-btn {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .chord-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+        
+        .chord-btn.playing {
+            background: #ff6b6b;
+            animation: pulse 0.5s ease-in-out;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .home-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50px;
+            padding: 10px 20px;
+            color: #fff;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .home-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .control-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .chord-progression {
+                font-size: 1.5rem;
+            }
+            
+            .analysis-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="home-btn">← 返回首頁</a>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🎵 和弦進行生成器</h1>
+            <p>創造美妙的音樂和弦序列，支援多種風格與即時播放</p>
+        </div>
+        
+        <div class="controls">
+            <div class="control-row">
+                <div class="control-group">
+                    <label for="style">🎨 音樂風格</label>
+                    <select id="style">
+                        <option value="pop">流行 Pop</option>
+                        <option value="jazz">爵士 Jazz</option>
+                        <option value="rock">搖滾 Rock</option>
+                        <option value="blues">藍調 Blues</option>
+                        <option value="classical">古典 Classical</option>
+                        <option value="funk">放克 Funk</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="key">🎼 調性</label>
+                    <select id="key">
+                        <option value="C">C 大調</option>
+                        <option value="G">G 大調</option>
+                        <option value="D">D 大調</option>
+                        <option value="A">A 大調</option>
+                        <option value="E">E 大調</option>
+                        <option value="B">B 大調</option>
+                        <option value="F#">F# 大調</option>
+                        <option value="F">F 大調</option>
+                        <option value="Bb">Bb 大調</option>
+                        <option value="Eb">Eb 大調</option>
+                        <option value="Ab">Ab 大調</option>
+                        <option value="Db">Db 大調</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="length">🎵 和弦數量</label>
+                    <input type="range" id="length" min="4" max="8" value="4">
+                    <div class="range-value" id="lengthValue">4 個和弦</div>
+                </div>
+            </div>
+            
+            <div class="buttons">
+                <button class="btn btn-primary" onclick="generateProgression()">🎲 生成和弦進行</button>
+                <button class="btn btn-secondary" onclick="playProgression()">▶️ 播放整段</button>
+                <button class="btn btn-secondary" onclick="stopPlaying()">⏹️ 停止播放</button>
+            </div>
+        </div>
+        
+        <div class="result" id="result" style="display: none;">
+            <div class="chord-display">
+                <div class="chord-progression" id="chordProgression"></div>
+                <div class="chord-numbers" id="chordNumbers"></div>
+            </div>
+            
+            <div class="chord-buttons" id="chordButtons"></div>
+            
+            <div class="analysis" id="analysis"></div>
+        </div>
+    </div>
+    
+    <script>
+        // 音樂理論資料
+        const keys = {
+            'C': ['C', 'Dm', 'Em', 'F', 'G', 'Am', 'Bdim'],
+            'G': ['G', 'Am', 'Bm', 'C', 'D', 'Em', 'F#dim'],
+            'D': ['D', 'Em', 'F#m', 'G', 'A', 'Bm', 'C#dim'],
+            'A': ['A', 'Bm', 'C#m', 'D', 'E', 'F#m', 'G#dim'],
+            'E': ['E', 'F#m', 'G#m', 'A', 'B', 'C#m', 'D#dim'],
+            'B': ['B', 'C#m', 'D#m', 'E', 'F#', 'G#m', 'A#dim'],
+            'F#': ['F#', 'G#m', 'A#m', 'B', 'C#', 'D#m', 'E#dim'],
+            'F': ['F', 'Gm', 'Am', 'Bb', 'C', 'Dm', 'Edim'],
+            'Bb': ['Bb', 'Cm', 'Dm', 'Eb', 'F', 'Gm', 'Adim'],
+            'Eb': ['Eb', 'Fm', 'Gm', 'Ab', 'Bb', 'Cm', 'Ddim'],
+            'Ab': ['Ab', 'Bbm', 'Cm', 'Db', 'Eb', 'Fm', 'Gdim'],
+            'Db': ['Db', 'Ebm', 'Fm', 'Gb', 'Ab', 'Bbm', 'Cdim']
+        };
+        
+        const progressionTemplates = {
+            pop: [
+                [0, 3, 5, 4], // I-IV-vi-V
+                [0, 5, 3, 4], // I-vi-IV-V
+                [5, 3, 0, 4], // vi-IV-I-V
+                [0, 4, 5, 3, 0, 4, 5, 4], // I-V-vi-IV-I-V-vi-V
+            ],
+            jazz: [
+                [0, 5, 1, 4], // Imaj7-vi7-ii7-V7
+                [0, 0, 1, 4, 0], // Imaj7-Imaj7-ii7-V7-Imaj7
+                [0, 6, 1, 4], // I-vii°-ii-V
+                [2, 4, 0], // iii-V-I
+            ],
+            rock: [
+                [0, 6, 3, 4], // I-♭VII-IV-V
+                [0, 3, 4, 0], // I-IV-V-I
+                [5, 3, 0, 4], // vi-IV-I-V
+                [0, 2, 3, 4], // I-iii-IV-V
+            ],
+            blues: [
+                [0, 0, 0, 0, 3, 3, 0, 0, 4, 3, 0, 4], // 12-bar blues
+                [0, 3, 0, 4], // I-IV-I-V
+                [0, 3, 4, 0], // I-IV-V-I
+            ],
+            classical: [
+                [0, 4, 0, 4, 0], // I-V-I-V-I
+                [0, 1, 4, 0], // I-ii-V-I
+                [0, 3, 1, 4, 0], // I-IV-ii-V-I
+                [0, 5, 3, 4, 0], // I-vi-IV-V-I
+            ],
+            funk: [
+                [0, 6, 3, 1], // I-♭VII-IV-ii
+                [0, 3, 0, 6], // I-IV-I-♭VII
+                [5, 3, 1, 4], // vi-IV-ii-V
+                [0, 1, 0, 1], // I-ii-I-ii
+            ]
+        };
+        
+        const styleDescriptions = {
+            pop: "明亮、朗朗上口的流行音樂感，適合主流音樂創作",
+            jazz: "複雜、成熟的和聲色彩，充滿即興與變化",
+            rock: "強勁有力的搖滾風格，適合節奏明快的歌曲",
+            blues: "憂鬱深情的藍調色彩，表達豐富的情感",
+            classical: "優雅莊嚴的古典和聲，結構完整平衡",
+            funk: "節奏感強烈的放克風格，適合律動豐富的音樂"
+        };
+        
+        let currentProgression = [];
+        let audioContext = null;
+        let isPlaying = false;
+        
+        // 初始化 Web Audio API
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+        
+        // 和弦頻率對照表 (簡化版)
+        const noteFrequencies = {
+            'C': 261.63, 'C#': 277.18, 'Db': 277.18, 'D': 293.66, 'D#': 311.13, 'Eb': 311.13,
+            'E': 329.63, 'F': 349.23, 'F#': 369.99, 'Gb': 369.99, 'G': 392.00, 'G#': 415.30,
+            'Ab': 415.30, 'A': 440.00, 'A#': 466.16, 'Bb': 466.16, 'B': 493.88
+        };
+        
+        // 播放和弦
+        function playChord(chordName, duration = 1.0) {
+            if (!audioContext) return;
+            
+            const now = audioContext.currentTime;
+            const gainNode = audioContext.createGain();
+            gainNode.connect(audioContext.destination);
+            gainNode.gain.setValueAtTime(0.1, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, now + duration);
+            
+            // 簡化的和弦構成
+            const root = chordName.replace(/[^A-G#b]/g, '');
+            const rootFreq = noteFrequencies[root] || 261.63;
+            
+            // 播放根音、三度、五度
+            [1, 1.25, 1.5].forEach((ratio, index) => {
+                const oscillator = audioContext.createOscillator();
+                oscillator.frequency.setValueAtTime(rootFreq * ratio, now);
+                oscillator.type = 'sine';
+                oscillator.connect(gainNode);
+                oscillator.start(now);
+                oscillator.stop(now + duration);
+            });
+        }
+        
+        // 更新滑桿顯示
+        document.getElementById('length').addEventListener('input', function() {
+            document.getElementById('lengthValue').textContent = this.value + ' 個和弦';
+        });
+        
+        // 生成和弦進行
+        function generateProgression() {
+            const style = document.getElementById('style').value;
+            const key = document.getElementById('key').value;
+            const length = parseInt(document.getElementById('length').value);
+            
+            const keyChords = keys[key];
+            const templates = progressionTemplates[style];
+            const template = templates[Math.floor(Math.random() * templates.length)];
+            
+            // 調整模板長度
+            let progression = [];
+            if (template.length >= length) {
+                progression = template.slice(0, length);
+            } else {
+                progression = template;
+                while (progression.length < length) {
+                    progression.push(template[Math.floor(Math.random() * template.length)]);
+                }
+            }
+            
+            currentProgression = progression.map(index => keyChords[index]);
+            
+            displayProgression(key, style);
+        }
+        
+        // 顯示和弦進行
+        function displayProgression(key, style) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            
+            // 顯示和弦
+            document.getElementById('chordProgression').textContent = currentProgression.join(' - ');
+            
+            // 顯示級數
+            const romanNumerals = ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii°'];
+            const numbers = currentProgression.map(chord => {
+                const index = keys[key].indexOf(chord);
+                return romanNumerals[index] || chord;
+            });
+            document.getElementById('chordNumbers').textContent = '級數: ' + numbers.join(' - ');
+            
+            // 創建和弦按鈕
+            const buttonsHtml = currentProgression.map((chord, index) => 
+                `<button class="chord-btn" onclick="playChordButton('${chord}', ${index})">${chord}</button>`
+            ).join('');
+            document.getElementById('chordButtons').innerHTML = buttonsHtml;
+            
+            // 顯示分析
+            displayAnalysis(key, style);
+        }
+        
+        // 顯示樂理分析
+        function displayAnalysis(key, style) {
+            const analysisHtml = `
+                <h3>🎼 樂理分析</h3>
+                <div class="analysis-grid">
+                    <div class="analysis-item">
+                        <h4>調性</h4>
+                        <p>${key} 大調 (${key} Major)</p>
+                    </div>
+                    <div class="analysis-item">
+                        <h4>風格特色</h4>
+                        <p>${styleDescriptions[style]}</p>
+                    </div>
+                    <div class="analysis-item">
+                        <h4>和弦功能</h4>
+                        <p>主和弦: ${keys[key][0]} | 屬和弦: ${keys[key][4]} | 下屬和弦: ${keys[key][3]}</p>
+                    </div>
+                    <div class="analysis-item">
+                        <h4>創作建議</h4>
+                        <p>${getCreativeSuggestion(style)}</p>
+                    </div>
+                </div>
+            `;
+            document.getElementById('analysis').innerHTML = analysisHtml;
+        }
+        
+        // 獲取創作建議
+        function getCreativeSuggestion(style) {
+            const suggestions = {
+                pop: "可以在第二和第四拍加入節奏吉他，使用明亮的音色",
+                jazz: "嘗試加入七和弦的延伸音，如 9th, 11th, 13th",
+                rock: "使用破音吉他演奏，搭配強勁的鼓點",
+                blues: "可以加入藍調音階的旋律線，增添憂鬱感",
+                classical: "適合用鋼琴或弦樂演奏，注意聲部的流動",
+                funk: "強調節拍的切分音，突出律動感"
+            };
+            return suggestions[style] || "發揮創意，加入自己的音樂想法！";
+        }
+        
+        // 播放單個和弦
+        function playChordButton(chordName, index) {
+            initAudio();
+            playChord(chordName);
+            
+            // 視覺回饋
+            const buttons = document.querySelectorAll('.chord-btn');
+            buttons[index].classList.add('playing');
+            setTimeout(() => {
+                buttons[index].classList.remove('playing');
+            }, 500);
+        }
+        
+        // 播放整段和弦進行
+        function playProgression() {
+            if (currentProgression.length === 0) {
+                alert('請先生成和弦進行！');
+                return;
+            }
+            
+            initAudio();
+            isPlaying = true;
+            
+            currentProgression.forEach((chord, index) => {
+                setTimeout(() => {
+                    if (isPlaying) {
+                        playChordButton(chord, index);
+                    }
+                }, index * 1000); // 每秒一個和弦
+            });
+            
+            // 播放結束後重置狀態
+            setTimeout(() => {
+                isPlaying = false;
+            }, currentProgression.length * 1000);
+        }
+        
+        // 停止播放
+        function stopPlaying() {
+            isPlaying = false;
+        }
+        
+        // 初始化
+        window.onload = function() {
+            // 生成一個默認和弦進行
+            generateProgression();
+        };
+    </script>
+</body>
+</html>
