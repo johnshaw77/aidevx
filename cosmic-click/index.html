@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cosmic Click - 宇宙點擊生成器</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 100%;
+      height: 100vh;
+      background: linear-gradient(135deg, #0a0e27 0%, #1a1a3a 25%, #0f1428 50%, #1a0a2e 75%, #0a0e27 100%);
+      overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      cursor: crosshair;
+      position: relative;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(ellipse at center, rgba(30, 20, 60, 0.8) 0%, rgba(10, 8, 20, 0.95) 100%);
+    }
+
+    .ui-container {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 100;
+      background: rgba(10, 14, 39, 0.7);
+      backdrop-filter: blur(10px);
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid rgba(100, 200, 255, 0.2);
+      max-width: 300px;
+    }
+
+    .ui-container h1 {
+      color: #00d9ff;
+      font-size: 1.3rem;
+      margin-bottom: 10px;
+      text-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+    }
+
+    .ui-container p {
+      color: #8899cc;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      margin-bottom: 15px;
+    }
+
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .control-group label {
+      color: #6699dd;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .control-group input {
+      padding: 6px 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(100, 200, 255, 0.3);
+      border-radius: 6px;
+      color: #00d9ff;
+      font-size: 0.85rem;
+      width: 100%;
+    }
+
+    .control-group input:focus {
+      outline: none;
+      border-color: rgba(100, 200, 255, 0.6);
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 0 10px rgba(0, 217, 255, 0.2);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    button {
+      flex: 1;
+      padding: 8px 12px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .stats {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid rgba(100, 200, 255, 0.2);
+      font-size: 0.8rem;
+      color: #6699dd;
+    }
+
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+
+    .stat-label {
+      color: #5588cc;
+    }
+
+    .stat-value {
+      color: #00d9ff;
+      font-weight: 600;
+    }
+
+    .touch-info {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      color: #6699dd;
+      font-size: 0.75rem;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    .mode-indicator {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(10, 14, 39, 0.7);
+      backdrop-filter: blur(10px);
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid rgba(100, 200, 255, 0.2);
+      color: #00d9ff;
+      font-size: 0.85rem;
+      text-align: center;
+      z-index: 100;
+    }
+
+    @media (max-width: 768px) {
+      .ui-container {
+        max-width: 250px;
+        padding: 15px;
+        top: 10px;
+        left: 10px;
+      }
+
+      .ui-container h1 {
+        font-size: 1.1rem;
+      }
+
+      .touch-info {
+        bottom: 10px;
+        left: 10px;
+      }
+
+      .mode-indicator {
+        top: 10px;
+        right: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+
+  <div class="ui-container">
+    <h1>✨ Cosmic Click</h1>
+    <p>點擊或拖曳滑鼠，創造宇宙爆炸效果</p>
+
+    <div class="controls">
+      <div class="control-group">
+        <label>粒子數量</label>
+        <input type="number" id="particleCount" min="20" max="500" value="150" step="10">
+      </div>
+      <div class="control-group">
+        <label>粒子速度</label>
+        <input type="number" id="particleSpeed" min="1" max="20" value="8" step="1">
+      </div>
+      <div class="control-group">
+        <label>粒子大小</label>
+        <input type="number" id="particleSize" min="1" max="10" value="3" step="0.5">
+      </div>
+      <div class="button-group">
+        <button id="clearBtn">清空</button>
+        <button id="randomBtn">隨機色</button>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat-item">
+        <span class="stat-label">粒子總數：</span>
+        <span class="stat-value" id="particleTotal">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">爆炸次數：</span>
+        <span class="stat-value" id="explosionCount">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">FPS：</span>
+        <span class="stat-value" id="fps">60</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="mode-indicator" id="modeIndicator">
+    按住滑鼠拖曳<br>或點擊創造效果
+  </div>
+
+  <div class="touch-info">
+    <div>🎯 點擊創造爆炸</div>
+    <div>👆 拖曳繪製軌跡</div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // 設置 canvas 尺寸
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    // UI 控制元素
+    const particleCountInput = document.getElementById('particleCount');
+    const particleSpeedInput = document.getElementById('particleSpeed');
+    const particleSizeInput = document.getElementById('particleSize');
+    const clearBtn = document.getElementById('clearBtn');
+    const randomBtn = document.getElementById('randomBtn');
+
+    // 統計
+    let explosionCountValue = 0;
+    let particleTotal = 0;
+    let frameCount = 0;
+    let lastTime = performance.now();
+    let fps = 60;
+
+    // 粒子類
+    class Particle {
+      constructor(x, y, vx, vy, color, size) {
+        this.x = x;
+        this.y = y;
+        this.vx = vx;
+        this.vy = vy;
+        this.color = color;
+        this.size = size;
+        this.alpha = 1;
+        this.life = 0;
+        this.maxLife = 200 + Math.random() * 200;
+        this.friction = 0.98;
+        this.gravity = 0.15;
+      }
+
+      update() {
+        // 應用速度
+        this.x += this.vx;
+        this.y += this.vy;
+
+        // 應用重力
+        this.vy += this.gravity;
+
+        // 應用摩擦力
+        this.vx *= this.friction;
+        this.vy *= this.friction;
+
+        // 邊界彈跳
+        if (this.x - this.size < 0 || this.x + this.size > canvas.width) {
+          this.vx *= -0.6;
+          this.x = Math.max(this.size, Math.min(canvas.width - this.size, this.x));
+        }
+        if (this.y - this.size < 0 || this.y + this.size > canvas.height) {
+          this.vy *= -0.6;
+          this.y = Math.max(this.size, Math.min(canvas.height - this.size, this.y));
+        }
+
+        // 生命週期
+        this.life++;
+        this.alpha = Math.max(0, 1 - this.life / this.maxLife);
+      }
+
+      draw() {
+        ctx.save();
+        ctx.globalAlpha = this.alpha;
+        ctx.fillStyle = this.color;
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = 15;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      isDead() {
+        return this.life > this.maxLife;
+      }
+    }
+
+    let particles = [];
+
+    // 顏色庫
+    const colors = [
+      '#ff1493', // 深粉紅
+      '#00d9ff', // 青色
+      '#ff6ec7', // 粉紅
+      '#00ff88', // 綠色
+      '#ff9d00', // 橙色
+      '#6366f1', // 紫色
+      '#00ccff', // 亮青
+      '#ff0080', // 紅粉
+      '#00ffaa', // 薄荷綠
+      '#ffaa00', // 金色
+    ];
+
+    let currentColorPalette = colors.slice();
+
+    // 創建爆炸
+    function createExplosion(x, y, count, speed, size) {
+      const colors = currentColorPalette;
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
+        const v = speed + (Math.random() - 0.5) * 5;
+        const vx = Math.cos(angle) * v;
+        const vy = Math.sin(angle) * v;
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        const particleSize = size + (Math.random() - 0.5) * 2;
+
+        particles.push(new Particle(x, y, vx, vy, color, particleSize));
+      }
+      particleTotal = particles.length;
+      explosionCountValue++;
+      document.getElementById('explosionCount').textContent = explosionCountValue;
+    }
+
+    // 滑鼠事件
+    let isMouseDown = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    document.addEventListener('mousemove', (e) => {
+      if (isMouseDown) {
+        const dx = e.clientX - lastX;
+        const dy = e.clientY - lastY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance > 10) {
+          createExplosion(
+            e.clientX,
+            e.clientY,
+            parseInt(particleCountInput.value) / 3,
+            parseInt(particleSpeedInput.value) / 2,
+            parseFloat(particleSizeInput.value)
+          );
+          lastX = e.clientX;
+          lastY = e.clientY;
+        }
+      }
+    });
+
+    document.addEventListener('mousedown', (e) => {
+      isMouseDown = true;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      createExplosion(
+        e.clientX,
+        e.clientY,
+        parseInt(particleCountInput.value),
+        parseInt(particleSpeedInput.value),
+        parseFloat(particleSizeInput.value)
+      );
+    });
+
+    document.addEventListener('mouseup', () => {
+      isMouseDown = false;
+    });
+
+    // 觸控支援
+    document.addEventListener('touchstart', (e) => {
+      const touch = e.touches[0];
+      createExplosion(
+        touch.clientX,
+        touch.clientY,
+        parseInt(particleCountInput.value),
+        parseInt(particleSpeedInput.value),
+        parseFloat(particleSizeInput.value)
+      );
+    });
+
+    document.addEventListener('touchmove', (e) => {
+      const touch = e.touches[0];
+      createExplosion(
+        touch.clientX,
+        touch.clientY,
+        parseInt(particleCountInput.value) / 2,
+        parseInt(particleSpeedInput.value),
+        parseFloat(particleSizeInput.value)
+      );
+    });
+
+    // 按鈕事件
+    clearBtn.addEventListener('click', () => {
+      particles = [];
+      particleTotal = 0;
+      explosionCountValue = 0;
+      document.getElementById('explosionCount').textContent = '0';
+      document.getElementById('particleTotal').textContent = '0';
+    });
+
+    randomBtn.addEventListener('click', () => {
+      // 隨機打亂顏色順序
+      currentColorPalette = colors.sort(() => Math.random() - 0.5);
+    });
+
+    // 動畫循環
+    function animate() {
+      // 清空背景
+      ctx.fillStyle = 'rgba(10, 8, 20, 0.05)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // 更新和繪製粒子
+      for (let i = particles.length - 1; i >= 0; i--) {
+        particles[i].update();
+        particles[i].draw();
+
+        if (particles[i].isDead()) {
+          particles.splice(i, 1);
+        }
+      }
+
+      particleTotal = particles.length;
+      document.getElementById('particleTotal').textContent = particleTotal;
+
+      // 計算 FPS
+      frameCount++;
+      const now = performance.now();
+      if (now >= lastTime + 1000) {
+        fps = frameCount;
+        document.getElementById('fps').textContent = fps;
+        frameCount = 0;
+        lastTime = now;
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+  </script>
+</body>
+</html>
