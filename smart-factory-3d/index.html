@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FPC 智慧工廠3D可視化 | Smart Factory 3D</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #0a0e1f 0%, #1a1e2f 25%, #0f1a2e 50%, #162030 75%, #0a0e1f 100%);
+            color: #00ffff;
+            overflow: hidden;
+            cursor: none;
+        }
+
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .hud-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .top-bar {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #00ffff;
+            border-radius: 25px;
+            padding: 15px 30px;
+            backdrop-filter: blur(20px);
+            text-align: center;
+        }
+
+        .top-bar h1 {
+            font-size: 1.8rem;
+            color: #00ffff;
+            text-shadow: 0 0 20px #00ffff;
+            margin-bottom: 5px;
+        }
+
+        .top-bar .subtitle {
+            font-size: 0.9rem;
+            color: #40e0d0;
+            opacity: 0.8;
+        }
+
+        .left-panel {
+            position: absolute;
+            left: 20px;
+            top: 120px;
+            width: 280px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ffff;
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(20px);
+            pointer-events: auto;
+        }
+
+        .right-panel {
+            position: absolute;
+            right: 20px;
+            top: 120px;
+            width: 300px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ffff;
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(20px);
+            pointer-events: auto;
+        }
+
+        .bottom-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ffff;
+            border-radius: 25px;
+            padding: 15px 25px;
+            backdrop-filter: blur(20px);
+            pointer-events: auto;
+        }
+
+        .panel-section {
+            margin-bottom: 20px;
+        }
+
+        .panel-section h3 {
+            color: #00ffff;
+            font-size: 1rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #00ffff;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+            padding-bottom: 5px;
+        }
+
+        .data-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+
+        .data-label {
+            color: #40e0d0;
+        }
+
+        .data-value {
+            color: #00ffff;
+            font-weight: bold;
+            text-shadow: 0 0 5px #00ffff;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-online {
+            background: #00ff00;
+            box-shadow: 0 0 10px #00ff00;
+        }
+
+        .status-warning {
+            background: #ffaa00;
+            box-shadow: 0 0 10px #ffaa00;
+        }
+
+        .status-offline {
+            background: #ff0000;
+            box-shadow: 0 0 10px #ff0000;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ffff, #40e0d0);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+
+        .control-btn {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.8rem;
+            text-shadow: 0 0 5px #00ffff;
+        }
+
+        .control-btn:hover {
+            background: rgba(0, 255, 255, 0.2);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .control-btn.active {
+            background: #00ffff;
+            color: #000;
+        }
+
+        .home-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            text-shadow: 0 0 5px #00ffff;
+            z-index: 100;
+            transition: all 0.3s ease;
+            pointer-events: auto;
+        }
+
+        .home-btn:hover {
+            background: #00ffff;
+            color: #000;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+
+        .loading-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 1s ease;
+        }
+
+        .loading-screen.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(0, 255, 255, 0.3);
+            border-top: 3px solid #00ffff;
+            border-radius: 50%;
+            animation: spin 2s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #00ffff;
+            font-size: 1.2rem;
+            text-shadow: 0 0 10px #00ffff;
+        }
+
+        .cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #00ffff;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            transition: all 0.1s ease;
+            mix-blend-mode: difference;
+        }
+
+        .equipment-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .equipment-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: rgba(0, 255, 255, 0.05);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .equipment-item:hover {
+            background: rgba(0, 255, 255, 0.1);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        }
+
+        .equipment-name {
+            flex: 1;
+            font-size: 0.8rem;
+            color: #40e0d0;
+        }
+
+        .equipment-status {
+            font-size: 0.75rem;
+            color: #00ffff;
+        }
+
+        @media (max-width: 768px) {
+            .left-panel, .right-panel {
+                width: 250px;
+            }
+            
+            .top-bar h1 {
+                font-size: 1.4rem;
+            }
+            
+            .bottom-controls {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <a href="../index.html" class="home-btn">← 離開工廠</a>
+        
+        <div class="cursor" id="cursor"></div>
+        
+        <div class="loading-screen" id="loadingScreen">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">初始化智慧工廠系統...</div>
+        </div>
+
+        <div class="hud-overlay">
+            <div class="top-bar">
+                <h1>FPC 智慧工廠運營管控平台</h1>
+                <div class="subtitle">Flexible Printed Circuit Smart Factory Management System</div>
+            </div>
+
+            <div class="left-panel">
+                <div class="panel-section">
+                    <h3>🏭 生產狀態監控</h3>
+                    <div class="data-item">
+                        <span class="data-label">產線運行:</span>
+                        <span class="data-value" id="runningLines">3/4</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">整體效率:</span>
+                        <span class="data-value" id="overallEfficiency">92.5%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 92.5%" id="efficiencyBar"></div>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">今日產量:</span>
+                        <span class="data-value" id="todayOutput">12,847</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">良率:</span>
+                        <span class="data-value" id="yieldRate">96.2%</span>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>⚙️ 設備狀態</h3>
+                    <div class="equipment-list">
+                        <div class="equipment-item" onclick="focusEquipment('line1')">
+                            <span class="status-indicator status-online"></span>
+                            <span class="equipment-name">A線-曝光機</span>
+                            <span class="equipment-status">運行中</span>
+                        </div>
+                        <div class="equipment-item" onclick="focusEquipment('line2')">
+                            <span class="status-indicator status-online"></span>
+                            <span class="equipment-name">B線-蝕刻線</span>
+                            <span class="equipment-status">運行中</span>
+                        </div>
+                        <div class="equipment-item" onclick="focusEquipment('line3')">
+                            <span class="status-indicator status-warning"></span>
+                            <span class="equipment-name">C線-壓合機</span>
+                            <span class="equipment-status">待機中</span>
+                        </div>
+                        <div class="equipment-item" onclick="focusEquipment('line4')">
+                            <span class="status-indicator status-online"></span>
+                            <span class="equipment-name">D線-檢測站</span>
+                            <span class="equipment-status">運行中</span>
+                        </div>
+                        <div class="equipment-item" onclick="focusEquipment('storage')">
+                            <span class="status-indicator status-online"></span>
+                            <span class="equipment-name">自動倉儲</span>
+                            <span class="equipment-status">正常</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div class="panel-section">
+                    <h3>📊 實時數據分析</h3>
+                    <div class="data-item">
+                        <span class="data-label">系統溫度:</span>
+                        <span class="data-value" id="systemTemp">24.5°C</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">能耗監控:</span>
+                        <span class="data-value" id="powerUsage">1,247 kW</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">網路延遲:</span>
+                        <span class="data-value" id="networkLatency">12ms</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">作業人員:</span>
+                        <span class="data-value" id="workerCount">38人</span>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>🎯 品質指標</h3>
+                    <div class="data-item">
+                        <span class="data-label">首次通過率:</span>
+                        <span class="data-value" id="firstPassRate">94.8%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 94.8%" id="qualityBar"></div>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">客戶滿意度:</span>
+                        <span class="data-value" id="customerSat">4.7/5.0</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">準時交貨:</span>
+                        <span class="data-value" id="onTimeDelivery">98.3%</span>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>🔔 系統警示</h3>
+                    <div class="data-item">
+                        <span class="data-label">待處理事件:</span>
+                        <span class="data-value" id="pendingAlerts">2</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">系統狀態:</span>
+                        <span class="data-value" style="color: #00ff00;">正常運行</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bottom-controls">
+                <button class="control-btn active" onclick="setViewMode('overview')">總覽視角</button>
+                <button class="control-btn" onclick="setViewMode('production')">生產線視角</button>
+                <button class="control-btn" onclick="setViewMode('quality')">品質監控</button>
+                <button class="control-btn" onclick="setViewMode('logistics')">物流追蹤</button>
+                <button class="control-btn" onclick="toggleAnimation()">動畫效果</button>
+                <button class="control-btn" onclick="exportView()">導出視圖</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全域變數
+        let scene, camera, renderer, controls;
+        let buildings = [], equipment = [], particles = [];
+        let animationEnabled = true;
+        let currentViewMode = 'overview';
+        let mouseX = 0, mouseY = 0;
+        
+        // 場景設置
+        const SCENE_CONFIG = {
+            fogColor: 0x0a0e1f,
+            fogNear: 1,
+            fogFar: 2000,
+            ambientLight: 0x404040,
+            directionalLight: 0x00ffff
+        };
+
+        // 建築物配置
+        const BUILDING_CONFIG = [
+            { id: 'main', pos: [0, 0, 0], size: [200, 120, 100], type: 'main', name: '主生產廠房' },
+            { id: 'line1', pos: [-150, 0, -200], size: [80, 60, 60], type: 'production', name: 'A線-曝光製程' },
+            { id: 'line2', pos: [150, 0, -200], size: [80, 60, 60], type: 'production', name: 'B線-蝕刻製程' },
+            { id: 'line3', pos: [-150, 0, 200], size: [80, 60, 60], type: 'production', name: 'C線-壓合製程' },
+            { id: 'line4', pos: [150, 0, 200], size: [80, 60, 60], type: 'production', name: 'D線-檢測製程' },
+            { id: 'storage', pos: [300, 0, 0], size: [100, 80, 80], type: 'storage', name: '自動化倉儲' },
+            { id: 'office', pos: [-300, 0, 0], size: [60, 100, 60], type: 'office', name: '管理中心' }
+        ];
+
+        // 初始化場景
+        function initScene() {
+            // 創建場景
+            scene = new THREE.Scene();
+            scene.fog = new THREE.Fog(SCENE_CONFIG.fogColor, SCENE_CONFIG.fogNear, SCENE_CONFIG.fogFar);
+
+            // 創建相機
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 2000);
+            camera.position.set(500, 300, 500);
+
+            // 創建渲染器
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x0a0e1f, 1);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.getElementById('container').appendChild(renderer.domElement);
+
+            // 創建控制器
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxPolarAngle = Math.PI / 2;
+            controls.minDistance = 100;
+            controls.maxDistance = 1500;
+
+            // 添加燈光
+            setupLighting();
+
+            // 創建建築物
+            createBuildings();
+
+            // 創建地面
+            createGround();
+
+            // 創建粒子系統
+            createParticleSystem();
+
+            // 啟動動畫
+            animate();
+
+            // 隱藏載入畫面
+            setTimeout(() => {
+                document.getElementById('loadingScreen').classList.add('hide');
+            }, 2000);
+        }
+
+        // 設置燈光
+        function setupLighting() {
+            // 環境光
+            const ambientLight = new THREE.AmbientLight(SCENE_CONFIG.ambientLight, 0.4);
+            scene.add(ambientLight);
+
+            // 主方向光
+            const directionalLight = new THREE.DirectionalLight(SCENE_CONFIG.directionalLight, 0.8);
+            directionalLight.position.set(300, 400, 300);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
+            directionalLight.shadow.camera.near = 0.5;
+            directionalLight.shadow.camera.far = 1000;
+            directionalLight.shadow.camera.left = -500;
+            directionalLight.shadow.camera.right = 500;
+            directionalLight.shadow.camera.top = 500;
+            directionalLight.shadow.camera.bottom = -500;
+            scene.add(directionalLight);
+
+            // 輔助光源
+            const pointLight1 = new THREE.PointLight(0x00ffff, 0.6, 800);
+            pointLight1.position.set(-200, 100, -200);
+            scene.add(pointLight1);
+
+            const pointLight2 = new THREE.PointLight(0x40e0d0, 0.6, 800);
+            pointLight2.position.set(200, 100, 200);
+            scene.add(pointLight2);
+        }
+
+        // 創建建築物
+        function createBuildings() {
+            BUILDING_CONFIG.forEach(config => {
+                const building = createBuilding(config);
+                buildings.push(building);
+                scene.add(building);
+            });
+        }
+
+        // 創建單個建築物
+        function createBuilding(config) {
+            const group = new THREE.Group();
+            const [width, height, depth] = config.size;
+            const [x, y, z] = config.pos;
+
+            // 主體建築
+            const geometry = new THREE.BoxGeometry(width, height, depth);
+            
+            // 根據類型設置材質
+            let material;
+            switch (config.type) {
+                case 'main':
+                    material = createGlassMaterial(0x00ffff, 0.3);
+                    break;
+                case 'production':
+                    material = createGlassMaterial(0x40e0d0, 0.4);
+                    break;
+                case 'storage':
+                    material = createGlassMaterial(0x00ff7f, 0.3);
+                    break;
+                case 'office':
+                    material = createGlassMaterial(0xff6600, 0.4);
+                    break;
+                default:
+                    material = createGlassMaterial(0x00ffff, 0.3);
+            }
+
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.position.set(x, height / 2, z);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            group.add(mesh);
+
+            // 添加邊緣發光效果
+            const edgeGeometry = new THREE.EdgesGeometry(geometry);
+            const edgeMaterial = new THREE.LineBasicMaterial({ 
+                color: material.color,
+                transparent: true,
+                opacity: 0.8
+            });
+            const edges = new THREE.LineSegments(edgeGeometry, edgeMaterial);
+            edges.position.copy(mesh.position);
+            group.add(edges);
+
+            // 添加頂部發光點
+            const glowGeometry = new THREE.SphereGeometry(2, 8, 6);
+            const glowMaterial = new THREE.MeshBasicMaterial({ 
+                color: material.color,
+                transparent: true,
+                opacity: 0.8
+            });
+            const glowMesh = new THREE.Mesh(glowGeometry, glowMaterial);
+            glowMesh.position.set(x, height + 5, z);
+            group.add(glowMesh);
+
+            // 添加數據
+            group.userData = config;
+
+            return group;
+        }
+
+        // 創建玻璃材質
+        function createGlassMaterial(color, opacity) {
+            return new THREE.MeshPhongMaterial({
+                color: color,
+                transparent: true,
+                opacity: opacity,
+                shininess: 100,
+                specular: 0x111111
+            });
+        }
+
+        // 創建地面
+        function createGround() {
+            const groundGeometry = new THREE.PlaneGeometry(1500, 1500);
+            const groundMaterial = new THREE.MeshLambertMaterial({ 
+                color: 0x0a0a0a,
+                transparent: true,
+                opacity: 0.8
+            });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = -5;
+            ground.receiveShadow = true;
+            scene.add(ground);
+
+            // 添加網格線
+            const gridHelper = new THREE.GridHelper(1500, 30, 0x00ffff, 0x40e0d0);
+            gridHelper.position.y = -4;
+            gridHelper.material.transparent = true;
+            gridHelper.material.opacity = 0.3;
+            scene.add(gridHelper);
+        }
+
+        // 創建粒子系統
+        function createParticleSystem() {
+            const particleCount = 1000;
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            const colors = new Float32Array(particleCount * 3);
+
+            for (let i = 0; i < particleCount; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * 1000;
+                positions[i * 3 + 1] = Math.random() * 200;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 1000;
+
+                colors[i * 3] = Math.random();
+                colors[i * 3 + 1] = 1;
+                colors[i * 3 + 2] = 1;
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const material = new THREE.PointsMaterial({
+                size: 2,
+                transparent: true,
+                opacity: 0.6,
+                vertexColors: true,
+                blending: THREE.AdditiveBlending
+            });
+
+            const particleSystem = new THREE.Points(geometry, material);
+            scene.add(particleSystem);
+            particles.push(particleSystem);
+        }
+
+        // 動畫循環
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (animationEnabled) {
+                // 更新控制器
+                controls.update();
+
+                // 旋轉建築物
+                buildings.forEach((building, index) => {
+                    if (building.userData.type === 'main') {
+                        building.rotation.y += 0.001;
+                    }
+                });
+
+                // 更新粒子
+                particles.forEach(particle => {
+                    particle.rotation.y += 0.002;
+                });
+
+                // 更新實時數據
+                updateRealtimeData();
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // 更新實時數據
+        function updateRealtimeData() {
+            if (Math.random() < 0.01) { // 1% 機率更新
+                // 隨機更新數據
+                const efficiency = 88 + Math.random() * 10;
+                const temperature = 23 + Math.random() * 5;
+                const powerUsage = 1200 + Math.random() * 100;
+
+                document.getElementById('overallEfficiency').textContent = efficiency.toFixed(1) + '%';
+                document.getElementById('efficiencyBar').style.width = efficiency + '%';
+                document.getElementById('systemTemp').textContent = temperature.toFixed(1) + '°C';
+                document.getElementById('powerUsage').textContent = Math.round(powerUsage) + ' kW';
+            }
+        }
+
+        // 設置視圖模式
+        function setViewMode(mode) {
+            currentViewMode = mode;
+            
+            // 更新按鈕狀態
+            document.querySelectorAll('.control-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // 切換視角
+            switch (mode) {
+                case 'overview':
+                    camera.position.set(500, 300, 500);
+                    controls.target.set(0, 0, 0);
+                    break;
+                case 'production':
+                    camera.position.set(0, 200, 400);
+                    controls.target.set(0, 50, 0);
+                    break;
+                case 'quality':
+                    camera.position.set(200, 150, 200);
+                    controls.target.set(150, 30, 200);
+                    break;
+                case 'logistics':
+                    camera.position.set(400, 100, 0);
+                    controls.target.set(300, 40, 0);
+                    break;
+            }
+            
+            controls.update();
+        }
+
+        // 聚焦設備
+        function focusEquipment(equipmentId) {
+            const building = buildings.find(b => b.userData.id === equipmentId);
+            if (building) {
+                const pos = building.userData.pos;
+                camera.position.set(pos[0] + 100, 80, pos[2] + 100);
+                controls.target.set(pos[0], 30, pos[2]);
+                controls.update();
+            }
+        }
+
+        // 切換動畫
+        function toggleAnimation() {
+            animationEnabled = !animationEnabled;
+            event.target.textContent = animationEnabled ? '動畫效果' : '恢復動畫';
+        }
+
+        // 導出視圖
+        function exportView() {
+            const link = document.createElement('a');
+            link.download = `SmartFactory_${new Date().toISOString().slice(0, 19)}.png`;
+            link.href = renderer.domElement.toDataURL();
+            link.click();
+        }
+
+        // 自定義游標
+        function updateCustomCursor() {
+            document.addEventListener('mousemove', function(e) {
+                const cursor = document.getElementById('cursor');
+                cursor.style.left = e.clientX - 10 + 'px';
+                cursor.style.top = e.clientY - 10 + 'px';
+                
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            });
+        }
+
+        // 響應式調整
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // 鍵盤控制
+        function handleKeyboard() {
+            document.addEventListener('keydown', function(e) {
+                switch(e.code) {
+                    case 'Digit1':
+                        setViewMode('overview');
+                        break;
+                    case 'Digit2':
+                        setViewMode('production');
+                        break;
+                    case 'Digit3':
+                        setViewMode('quality');
+                        break;
+                    case 'Digit4':
+                        setViewMode('logistics');
+                        break;
+                    case 'Space':
+                        e.preventDefault();
+                        toggleAnimation();
+                        break;
+                    case 'KeyS':
+                        exportView();
+                        break;
+                }
+            });
+        }
+
+        // 初始化
+        window.addEventListener('load', function() {
+            initScene();
+            updateCustomCursor();
+            handleKeyboard();
+            window.addEventListener('resize', onWindowResize, false);
+        });
+    </script>
+</body>
+</html>
