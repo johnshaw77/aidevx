@@ -692,60 +692,291 @@
             const [width, height, depth] = config.size;
             const [x, y, z] = config.pos;
 
-            // 主體建築
-            const geometry = new THREE.BoxGeometry(width, height, depth);
-            
-            // 根據類型設置材質
-            let material;
+            // 根據類型創建不同的建築
             switch (config.type) {
                 case 'main':
-                    material = createGlassMaterial(0x00ffff, 0.3);
+                    createMainFactory(group, config);
                     break;
                 case 'production':
-                    material = createGlassMaterial(0x40e0d0, 0.4);
+                    createProductionLine(group, config);
                     break;
                 case 'storage':
-                    material = createGlassMaterial(0x00ff7f, 0.3);
+                    createStorageBuilding(group, config);
                     break;
                 case 'office':
-                    material = createGlassMaterial(0xff6600, 0.4);
+                    createOfficeBuilding(group, config);
                     break;
                 default:
-                    material = createGlassMaterial(0x00ffff, 0.3);
+                    createBasicBuilding(group, config);
             }
 
-            const mesh = new THREE.Mesh(geometry, material);
-            mesh.position.set(x, height / 2, z);
-            mesh.castShadow = true;
-            mesh.receiveShadow = true;
-            group.add(mesh);
-
-            // 添加邊緣發光效果
-            const edgeGeometry = new THREE.EdgesGeometry(geometry);
-            const edgeMaterial = new THREE.LineBasicMaterial({ 
-                color: material.color,
-                transparent: true,
-                opacity: 0.8
-            });
-            const edges = new THREE.LineSegments(edgeGeometry, edgeMaterial);
-            edges.position.copy(mesh.position);
-            group.add(edges);
-
-            // 添加頂部發光點
-            const glowGeometry = new THREE.SphereGeometry(2, 8, 6);
-            const glowMaterial = new THREE.MeshBasicMaterial({ 
-                color: material.color,
-                transparent: true,
-                opacity: 0.8
-            });
-            const glowMesh = new THREE.Mesh(glowGeometry, glowMaterial);
-            glowMesh.position.set(x, height + 5, z);
-            group.add(glowMesh);
-
-            // 添加數據
+            // 設置位置
+            group.position.set(x, 0, z);
             group.userData = config;
 
             return group;
+        }
+
+        // 創建主工廠
+        function createMainFactory(group, config) {
+            const [width, height, depth] = config.size;
+            
+            // 主體結構
+            const mainGeom = new THREE.BoxGeometry(width, height * 0.8, depth);
+            const mainMat = new THREE.MeshPhongMaterial({ 
+                color: 0x2a2a2a, 
+                transparent: true, 
+                opacity: 0.9,
+                shininess: 30 
+            });
+            const mainMesh = new THREE.Mesh(mainGeom, mainMat);
+            mainMesh.position.y = height * 0.4;
+            mainMesh.castShadow = true;
+            group.add(mainMesh);
+
+            // 屋頂結構
+            const roofGeom = new THREE.ConeGeometry(width * 0.6, height * 0.3, 8);
+            const roofMat = new THREE.MeshPhongMaterial({ color: 0x404040 });
+            const roofMesh = new THREE.Mesh(roofGeom, roofMat);
+            roofMesh.position.y = height * 0.9;
+            group.add(roofMesh);
+
+            // 煙囪
+            for (let i = 0; i < 3; i++) {
+                const chimneyGeom = new THREE.CylinderGeometry(3, 4, height * 0.4);
+                const chimneyMat = new THREE.MeshPhongMaterial({ color: 0x333333 });
+                const chimney = new THREE.Mesh(chimneyGeom, chimneyMat);
+                chimney.position.set(
+                    (i - 1) * width * 0.2, 
+                    height * 1.1, 
+                    depth * 0.3
+                );
+                group.add(chimney);
+            }
+
+            // 窗戶
+            addWindows(group, width, height, depth, 0x00ffff);
+            
+            // 管道系統
+            addPipingSystem(group, width, height, depth);
+            
+            // 發光邊緣
+            addGlowingEdges(group, mainGeom, 0x00ffff, mainMesh.position);
+        }
+
+        // 創建生產線
+        function createProductionLine(group, config) {
+            const [width, height, depth] = config.size;
+            
+            // 主體 - 更工業化的造型
+            const mainGeom = new THREE.BoxGeometry(width, height * 0.7, depth);
+            const mainMat = new THREE.MeshPhongMaterial({ 
+                color: 0x1a1a2e, 
+                metalness: 0.7,
+                roughness: 0.3
+            });
+            const mainMesh = new THREE.Mesh(mainGeom, mainMat);
+            mainMesh.position.y = height * 0.35;
+            group.add(mainMesh);
+
+            // 設備艙體
+            const equipGeom = new THREE.CylinderGeometry(width * 0.3, width * 0.25, height * 0.5);
+            const equipMat = new THREE.MeshPhongMaterial({ color: 0x40e0d0, transparent: true, opacity: 0.7 });
+            const equipMesh = new THREE.Mesh(equipGeom, equipMat);
+            equipMesh.position.y = height * 0.65;
+            group.add(equipMesh);
+
+            // 傳送帶
+            const beltGeom = new THREE.BoxGeometry(width * 1.2, 2, 8);
+            const beltMat = new THREE.MeshPhongMaterial({ color: 0x666666 });
+            const belt = new THREE.Mesh(beltGeom, beltMat);
+            belt.position.set(0, 3, depth * 0.6);
+            group.add(belt);
+
+            // 機械臂基座
+            for (let i = 0; i < 2; i++) {
+                const armBaseGeom = new THREE.CylinderGeometry(5, 8, 15);
+                const armBaseMat = new THREE.MeshPhongMaterial({ color: 0x00ff7f });
+                const armBase = new THREE.Mesh(armBaseGeom, armBaseMat);
+                armBase.position.set((i - 0.5) * width * 0.6, 10, 0);
+                group.add(armBase);
+
+                // 機械臂
+                const armGeom = new THREE.CylinderGeometry(2, 3, 25);
+                const armMat = new THREE.MeshPhongMaterial({ color: 0xffa500 });
+                const arm = new THREE.Mesh(armGeom, armMat);
+                arm.position.set((i - 0.5) * width * 0.6, 25, 10);
+                arm.rotation.z = Math.PI / 6 * (i === 0 ? 1 : -1);
+                group.add(arm);
+            }
+
+            // 控制面板
+            addControlPanels(group, width, height, depth);
+            
+            // 發光邊緣
+            addGlowingEdges(group, mainGeom, 0x40e0d0, mainMesh.position);
+        }
+
+        // 創建倉儲建築
+        function createStorageBuilding(group, config) {
+            const [width, height, depth] = config.size;
+            
+            // 主倉庫結構
+            const mainGeom = new THREE.BoxGeometry(width, height, depth);
+            const mainMat = new THREE.MeshPhongMaterial({ 
+                color: 0x0f3460, 
+                transparent: true, 
+                opacity: 0.8 
+            });
+            const mainMesh = new THREE.Mesh(mainGeom, mainMat);
+            mainMesh.position.y = height / 2;
+            group.add(mainMesh);
+
+            // 貨架系統
+            for (let i = 0; i < 5; i++) {
+                for (let j = 0; j < 3; j++) {
+                    const rackGeom = new THREE.BoxGeometry(8, height * 0.8, 6);
+                    const rackMat = new THREE.MeshPhongMaterial({ color: 0x666666 });
+                    const rack = new THREE.Mesh(rackGeom, rackMat);
+                    rack.position.set(
+                        (i - 2) * width * 0.15,
+                        height * 0.4,
+                        (j - 1) * depth * 0.25
+                    );
+                    group.add(rack);
+                }
+            }
+
+            // 自動化起重機
+            const craneGeom = new THREE.BoxGeometry(width * 0.8, 4, 8);
+            const craneMat = new THREE.MeshPhongMaterial({ color: 0xffa500 });
+            const crane = new THREE.Mesh(craneGeom, craneMat);
+            crane.position.y = height * 0.9;
+            group.add(crane);
+
+            // 發光邊緣
+            addGlowingEdges(group, mainGeom, 0x00ff7f, mainMesh.position);
+        }
+
+        // 創建辦公樓
+        function createOfficeBuilding(group, config) {
+            const [width, height, depth] = config.size;
+            
+            // 主體
+            const mainGeom = new THREE.BoxGeometry(width, height, depth);
+            const mainMat = new THREE.MeshPhongMaterial({ 
+                color: 0x2d1b69, 
+                transparent: true, 
+                opacity: 0.85 
+            });
+            const mainMesh = new THREE.Mesh(mainGeom, mainMat);
+            mainMesh.position.y = height / 2;
+            group.add(mainMesh);
+
+            // 多層窗戶
+            for (let floor = 0; floor < 6; floor++) {
+                for (let i = 0; i < 8; i++) {
+                    const windowGeom = new THREE.PlaneGeometry(4, 6);
+                    const windowMat = new THREE.MeshBasicMaterial({ 
+                        color: 0xff6600, 
+                        transparent: true, 
+                        opacity: 0.6 
+                    });
+                    const window = new THREE.Mesh(windowGeom, windowMat);
+                    window.position.set(
+                        (i - 3.5) * 6,
+                        10 + floor * 15,
+                        width / 2 + 0.5
+                    );
+                    group.add(window);
+                }
+            }
+
+            // 天線
+            const antennaGeom = new THREE.CylinderGeometry(0.5, 0.5, 20);
+            const antennaMat = new THREE.MeshPhongMaterial({ color: 0xffffff });
+            const antenna = new THREE.Mesh(antennaGeom, antennaMat);
+            antenna.position.y = height + 15;
+            group.add(antenna);
+
+            // 發光邊緣
+            addGlowingEdges(group, mainGeom, 0xff6600, mainMesh.position);
+        }
+
+        // 添加窗戶
+        function addWindows(group, width, height, depth, color) {
+            for (let i = 0; i < 12; i++) {
+                const windowGeom = new THREE.PlaneGeometry(8, 12);
+                const windowMat = new THREE.MeshBasicMaterial({ 
+                    color: color, 
+                    transparent: true, 
+                    opacity: 0.4 
+                });
+                const window = new THREE.Mesh(windowGeom, windowMat);
+                window.position.set(
+                    (i - 5.5) * 15,
+                    height * 0.5,
+                    depth / 2 + 0.5
+                );
+                group.add(window);
+            }
+        }
+
+        // 添加管道系統
+        function addPipingSystem(group, width, height, depth) {
+            for (let i = 0; i < 6; i++) {
+                const pipeGeom = new THREE.CylinderGeometry(1.5, 1.5, width);
+                const pipeMat = new THREE.MeshPhongMaterial({ color: 0x666666 });
+                const pipe = new THREE.Mesh(pipeGeom, pipeMat);
+                pipe.rotation.z = Math.PI / 2;
+                pipe.position.set(0, height * 0.2 + i * 8, depth / 2 + 2);
+                group.add(pipe);
+            }
+        }
+
+        // 添加控制面板
+        function addControlPanels(group, width, height, depth) {
+            const panelGeom = new THREE.BoxGeometry(12, 16, 2);
+            const panelMat = new THREE.MeshPhongMaterial({ color: 0x1a1a1a });
+            const panel = new THREE.Mesh(panelGeom, panelMat);
+            panel.position.set(width * 0.4, 10, depth / 2 + 1);
+            group.add(panel);
+
+            // 螢幕
+            const screenGeom = new THREE.PlaneGeometry(8, 6);
+            const screenMat = new THREE.MeshBasicMaterial({ 
+                color: 0x00ff00, 
+                transparent: true, 
+                opacity: 0.8 
+            });
+            const screen = new THREE.Mesh(screenGeom, screenMat);
+            screen.position.set(width * 0.4, 12, depth / 2 + 2);
+            group.add(screen);
+        }
+
+        // 添加發光邊緣
+        function addGlowingEdges(group, geometry, color, position) {
+            const edgeGeometry = new THREE.EdgesGeometry(geometry);
+            const edgeMaterial = new THREE.LineBasicMaterial({ 
+                color: color,
+                transparent: true,
+                opacity: 0.8,
+                linewidth: 2
+            });
+            const edges = new THREE.LineSegments(edgeGeometry, edgeMaterial);
+            edges.position.copy(position);
+            group.add(edges);
+        }
+
+        // 基本建築（備用）
+        function createBasicBuilding(group, config) {
+            const [width, height, depth] = config.size;
+            
+            const geometry = new THREE.BoxGeometry(width, height, depth);
+            const material = new THREE.MeshPhongMaterial({ color: 0x404040 });
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.position.y = height / 2;
+            group.add(mesh);
         }
 
         // 創建玻璃材質
