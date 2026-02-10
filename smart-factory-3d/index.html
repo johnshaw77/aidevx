@@ -274,6 +274,119 @@
             mix-blend-mode: difference;
         }
 
+        /* 手機版響應式設計 📱 */
+        @media (max-width: 768px) {
+            /* 隱藏自訂游標，用回系統游標 */
+            body { cursor: auto; }
+            .cursor { display: none; }
+
+            /* 頂部標題調整 */
+            .top-bar {
+                top: 10px;
+                left: 10px;
+                right: 10px;
+                width: auto;
+                transform: none;
+                padding: 10px 15px;
+            }
+
+            .top-bar h1 {
+                font-size: 1.2rem;
+            }
+
+            .top-bar .subtitle {
+                font-size: 0.75rem;
+            }
+
+            /* 左右面板改為垂直堆疊 */
+            .left-panel, .right-panel {
+                position: absolute;
+                left: 10px;
+                right: 10px;
+                width: auto;
+                max-height: 40vh;
+                overflow-y: auto;
+                font-size: 0.8rem;
+            }
+
+            .left-panel {
+                top: 80px;
+            }
+
+            .right-panel {
+                bottom: 100px;
+                max-height: 30vh;
+            }
+
+            /* 底部控制按鈕調整 */
+            .bottom-controls {
+                bottom: 10px;
+                left: 10px;
+                right: 10px;
+                width: auto;
+                transform: none;
+                flex-wrap: wrap;
+                gap: 8px;
+                padding: 10px;
+            }
+
+            .control-btn {
+                padding: 12px 20px; /* 增大觸控區域 */
+                font-size: 0.85rem;
+                min-height: 44px; /* Apple 建議的最小觸控區域 */
+            }
+
+            /* 首頁按鈕調整 */
+            .home-btn {
+                top: 10px;
+                left: 10px;
+                padding: 8px 15px;
+                font-size: 0.8rem;
+            }
+
+            /* 設備列表優化 */
+            .equipment-list {
+                max-height: 150px;
+            }
+
+            .equipment-item {
+                padding: 10px;
+                margin-bottom: 5px;
+            }
+
+            /* 數據項目優化 */
+            .data-item {
+                font-size: 0.8rem;
+                margin-bottom: 6px;
+            }
+
+            /* 面板標題縮小 */
+            .panel-section h3 {
+                font-size: 0.9rem;
+                margin-bottom: 8px;
+            }
+        }
+
+        /* 超小屏幕（手機橫向/小手機） */
+        @media (max-width: 480px) {
+            .top-bar h1 {
+                font-size: 1rem;
+            }
+
+            .left-panel, .right-panel {
+                padding: 15px;
+            }
+
+            .control-btn {
+                font-size: 0.75rem;
+                padding: 10px 15px;
+            }
+
+            .data-item {
+                font-size: 0.75rem;
+            }
+        }
+
         .equipment-list {
             max-height: 200px;
             overflow-y: auto;
