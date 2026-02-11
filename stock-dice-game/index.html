@@ -426,6 +426,7 @@
             '2454 聯發科', '3008 大立光', '1301 台塑'
         ];
         let isRolling = false;
+        let diceState = 'idle'; // 'idle', 'rolling', 'stopped'
         let rollHistory = [];
 
         // 初始化 3D 場景
@@ -531,7 +532,8 @@
         function animate() {
             requestAnimationFrame(animate);
 
-            if (!isRolling) {
+            // 只有在 idle 狀態才緩慢旋轉，stopped 狀態完全停止
+            if (diceState === 'idle') {
                 cube.rotation.x += 0.005;
                 cube.rotation.y += 0.005;
             }
@@ -544,6 +546,7 @@
             if (isRolling) return;
 
             isRolling = true;
+            diceState = 'rolling';
             const rollButton = document.querySelector('.btn-primary');
             rollButton.textContent = '🎲 投擲中...';
             rollButton.disabled = true;
@@ -598,6 +601,7 @@
             // 重置按鈕
             setTimeout(() => {
                 isRolling = false;
+                diceState = 'stopped'; // 投擲完成，骰子完全停止
                 const rollButton = document.querySelector('.btn-primary');
                 rollButton.textContent = '🎲 擲骰子';
                 rollButton.disabled = false;
@@ -641,6 +645,10 @@
             scene.remove(cube);
             createDiceCube();
 
+            // 重置狀態，讓新骰子開始緩慢旋轉
+            diceState = 'idle';
+            document.getElementById('resultPanel').style.display = 'none';
+
             alert('✅ 骰子已更新！');
         }
 
@@ -657,6 +665,7 @@
             cube.rotation.y = 0;
             cube.rotation.z = 0;
 
+            diceState = 'idle'; // 重置後回到緩慢旋轉狀態
             document.getElementById('resultPanel').style.display = 'none';
         }
 
