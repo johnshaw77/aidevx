@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>股票擲骰子 | Stock Dice Game</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 400px 1fr;
+            grid-template-rows: auto 500px auto;
+            gap: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            background: linear-gradient(45deg, #ffd700, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            color: #f8f9fa;
+        }
+
+        .left-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .dice-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #dice-canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
+        }
+
+        .dice-controls {
+            position: absolute;
+            bottom: 20px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .right-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            color: #ffd700;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .stock-list {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .stock-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .stock-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        .dice-face {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(45deg, #ff6b6b, #ffd700);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 0.9rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .stock-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: white;
+            font-size: 0.95rem;
+        }
+
+        .stock-input::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+
+        .stock-input:focus {
+            outline: none;
+            border-color: #ffd700;
+            box-shadow: 0 0 10px rgba(255,215,0,0.3);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #ff6b6b, #ffa500);
+            font-size: 1.2rem;
+            padding: 15px 30px;
+        }
+
+        .result-panel {
+            margin-top: 25px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .result-stock {
+            text-align: center;
+            padding: 15px 0;
+        }
+
+        .result-stock h3 {
+            font-size: 1.5rem;
+            color: #ffd700;
+            margin-bottom: 8px;
+        }
+
+        .result-stock p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .stock-info {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+        }
+
+        .rolling {
+            animation: shake 0.5s ease-in-out infinite;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(5deg); }
+            75% { transform: rotate(-5deg); }
+        }
+
+        .home-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .home-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .dice-instructions {
+            text-align: center;
+            opacity: 0.8;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .lucky-text {
+            text-align: center;
+            font-size: 1.1rem;
+            margin-top: 15px;
+            color: #ffd700;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #ffd700; }
+            to { text-shadow: 0 0 20px #ffd700, 0 0 30px #ffd700; }
+        }
+
+        /* 手機版響應式 📱 */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto auto;
+                padding: 15px;
+                gap: 15px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .left-panel, .right-panel {
+                padding: 20px;
+            }
+
+            .dice-container {
+                height: 300px;
+            }
+
+            .stock-list {
+                gap: 10px;
+            }
+
+            .stock-item {
+                padding: 10px 12px;
+            }
+
+            .dice-face {
+                width: 25px;
+                height: 25px;
+                font-size: 0.8rem;
+            }
+
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+
+            .btn-primary {
+                padding: 12px 25px;
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="../" class="home-btn">← 離開工廠</a>
+
+    <div class="container">
+        <div class="header">
+            <h1>🎲 股票擲骰子</h1>
+            <p>自訂六檔股票，讓命運幫你選股！</p>
+        </div>
+
+        <div class="left-panel">
+            <h2 class="section-title">📝 自訂股票清單</h2>
+            <div class="dice-instructions">
+                編輯骰子六個面的股票代號
+            </div>
+            
+            <div class="stock-list" id="stockList">
+                <div class="stock-item">
+                    <div class="dice-face">1</div>
+                    <input type="text" class="stock-input" placeholder="例：2330 台積電" value="2330 台積電" data-face="1">
+                </div>
+                <div class="stock-item">
+                    <div class="dice-face">2</div>
+                    <input type="text" class="stock-input" placeholder="例：0050 元大台灣50" value="0050 元大台灣50" data-face="2">
+                </div>
+                <div class="stock-item">
+                    <div class="dice-face">3</div>
+                    <input type="text" class="stock-input" placeholder="例：2317 鴻海" value="2317 鴻海" data-face="3">
+                </div>
+                <div class="stock-item">
+                    <div class="dice-face">4</div>
+                    <input type="text" class="stock-input" placeholder="例：2454 聯發科" value="2454 聯發科" data-face="4">
+                </div>
+                <div class="stock-item">
+                    <div class="dice-face">5</div>
+                    <input type="text" class="stock-input" placeholder="例：3008 大立光" value="3008 大立光" data-face="5">
+                </div>
+                <div class="stock-item">
+                    <div class="dice-face">6</div>
+                    <input type="text" class="stock-input" placeholder="例：1301 台塑" value="1301 台塑" data-face="6">
+                </div>
+            </div>
+
+            <button class="btn" onclick="updateDice()">🔄 更新骰子</button>
+        </div>
+
+        <div class="dice-container">
+            <canvas id="dice-canvas"></canvas>
+            <div class="dice-controls">
+                <button class="btn btn-primary" onclick="rollDice()">🎲 擲骰子</button>
+                <button class="btn" onclick="resetDice()">🔄 重置</button>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <h2 class="section-title">🎯 投擲結果</h2>
+            
+            <div class="result-panel" id="resultPanel" style="display: none;">
+                <div class="result-stock">
+                    <h3 id="selectedStock">等待投擲...</h3>
+                    <p id="selectedCode"></p>
+                </div>
+                
+                <div class="stock-info">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span>骰子面：</span>
+                            <span id="diceResult">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span>投擲時間：</span>
+                            <span id="rollTime">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lucky-text">
+                    🍀 今日幸運股票！
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 25px;">
+                <button class="btn" onclick="rollAgain()">🎲 再次投擲</button>
+                <button class="btn" onclick="saveToHistory()">📝 加入記錄</button>
+            </div>
+
+            <div style="margin-top: 25px; opacity: 0.7; text-align: center; font-size: 0.9rem;">
+                <p>💡 小提示：定期更新您的股票清單</p>
+                <p>🎯 投資有風險，選股需謹慎</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全域變數
+        let scene, camera, renderer, cube;
+        let currentStocks = [
+            '2330 台積電', '0050 元大台灣50', '2317 鴻海', 
+            '2454 聯發科', '3008 大立光', '1301 台塑'
+        ];
+        let isRolling = false;
+        let rollHistory = [];
+
+        // 初始化 3D 場景
+        function initDice() {
+            const canvas = document.getElementById('dice-canvas');
+            const container = canvas.parentElement;
+            
+            // 場景設置
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setClearColor(0x000000, 0);
+
+            // 創建骰子
+            createDiceCube();
+
+            // 設置燈光
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const pointLight = new THREE.PointLight(0xffffff, 0.8, 100);
+            pointLight.position.set(10, 10, 10);
+            scene.add(pointLight);
+
+            // 設置相機位置
+            camera.position.z = 5;
+
+            // 開始渲染
+            animate();
+
+            // 處理視窗大小調整
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        // 創建骰子立方體
+        function createDiceCube() {
+            const geometry = new THREE.BoxGeometry(2, 2, 2);
+            
+            // 創建材質陣列（每個面不同顏色）
+            const materials = [];
+            const colors = [0xff6b6b, 0x4ecdc4, 0x45b7d1, 0xf9ca24, 0xf0932b, 0xeb4d4b];
+            
+            for (let i = 0; i < 6; i++) {
+                const canvas = document.createElement('canvas');
+                canvas.width = 256;
+                canvas.height = 256;
+                const ctx = canvas.getContext('2d');
+
+                // 背景
+                ctx.fillStyle = `#${colors[i].toString(16)}`;
+                ctx.fillRect(0, 0, 256, 256);
+
+                // 邊框
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 8;
+                ctx.strokeRect(8, 8, 240, 240);
+
+                // 股票文字
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 24px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                const stockText = currentStocks[i] || `股票 ${i + 1}`;
+                const lines = wrapText(ctx, stockText, 220);
+                const lineHeight = 30;
+                const startY = 128 - (lines.length - 1) * lineHeight / 2;
+                
+                lines.forEach((line, index) => {
+                    ctx.fillText(line, 128, startY + index * lineHeight);
+                });
+
+                const texture = new THREE.CanvasTexture(canvas);
+                materials.push(new THREE.MeshPhongMaterial({ map: texture }));
+            }
+
+            cube = new THREE.Mesh(geometry, materials);
+            scene.add(cube);
+        }
+
+        // 文字換行
+        function wrapText(ctx, text, maxWidth) {
+            const words = text.split(' ');
+            const lines = [];
+            let currentLine = words[0];
+
+            for (let i = 1; i < words.length; i++) {
+                const word = words[i];
+                const width = ctx.measureText(currentLine + ' ' + word).width;
+                if (width < maxWidth) {
+                    currentLine += ' ' + word;
+                } else {
+                    lines.push(currentLine);
+                    currentLine = word;
+                }
+            }
+            lines.push(currentLine);
+            return lines;
+        }
+
+        // 動畫循環
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (!isRolling) {
+                cube.rotation.x += 0.005;
+                cube.rotation.y += 0.005;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // 擲骰子動畫
+        function rollDice() {
+            if (isRolling) return;
+
+            isRolling = true;
+            const rollButton = document.querySelector('.btn-primary');
+            rollButton.textContent = '🎲 投擲中...';
+            rollButton.disabled = true;
+
+            // 隨機旋轉動畫
+            const rotations = Math.random() * 10 + 15; // 15-25圈
+            const duration = 2000; // 2秒
+            const startTime = Date.now();
+
+            function animateRoll() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3); // 緩出效果
+
+                cube.rotation.x = rotations * Math.PI * 2 * eased;
+                cube.rotation.y = rotations * Math.PI * 2 * eased * 1.3;
+                cube.rotation.z = rotations * Math.PI * 2 * eased * 0.7;
+
+                if (progress < 1) {
+                    requestAnimationFrame(animateRoll);
+                } else {
+                    // 投擲完成
+                    finishRoll();
+                }
+            }
+
+            animateRoll();
+        }
+
+        // 完成投擲
+        function finishRoll() {
+            const result = Math.floor(Math.random() * 6) + 1;
+            const selectedStock = currentStocks[result - 1];
+            
+            // 設置最終旋轉角度來顯示對應面
+            const faceRotations = [
+                { x: 0, y: 0, z: 0 },           // 面1
+                { x: 0, y: Math.PI, z: 0 },     // 面2
+                { x: 0, y: Math.PI/2, z: 0 },   // 面3
+                { x: 0, y: -Math.PI/2, z: 0 },  // 面4
+                { x: Math.PI/2, y: 0, z: 0 },   // 面5
+                { x: -Math.PI/2, y: 0, z: 0 }   // 面6
+            ];
+
+            cube.rotation.x = faceRotations[result - 1].x;
+            cube.rotation.y = faceRotations[result - 1].y;
+            cube.rotation.z = faceRotations[result - 1].z;
+
+            // 顯示結果
+            showResult(result, selectedStock);
+
+            // 重置按鈕
+            setTimeout(() => {
+                isRolling = false;
+                const rollButton = document.querySelector('.btn-primary');
+                rollButton.textContent = '🎲 擲骰子';
+                rollButton.disabled = false;
+            }, 500);
+        }
+
+        // 顯示結果
+        function showResult(face, stock) {
+            const resultPanel = document.getElementById('resultPanel');
+            const selectedStock = document.getElementById('selectedStock');
+            const selectedCode = document.getElementById('selectedCode');
+            const diceResult = document.getElementById('diceResult');
+            const rollTime = document.getElementById('rollTime');
+
+            const parts = stock.split(' ');
+            const code = parts[0];
+            const name = parts.slice(1).join(' ');
+
+            selectedStock.textContent = name;
+            selectedCode.textContent = `代號：${code}`;
+            diceResult.textContent = `第 ${face} 面`;
+            rollTime.textContent = new Date().toLocaleTimeString();
+
+            resultPanel.style.display = 'block';
+
+            // 添加到歷史記錄
+            rollHistory.push({
+                stock: stock,
+                face: face,
+                time: new Date().toLocaleTimeString(),
+                date: new Date().toLocaleDateString()
+            });
+        }
+
+        // 更新骰子
+        function updateDice() {
+            const inputs = document.querySelectorAll('.stock-input');
+            currentStocks = Array.from(inputs).map(input => input.value || `股票 ${input.dataset.face}`);
+
+            // 重新創建骰子
+            scene.remove(cube);
+            createDiceCube();
+
+            alert('✅ 骰子已更新！');
+        }
+
+        // 再次投擲
+        function rollAgain() {
+            rollDice();
+        }
+
+        // 重置骰子
+        function resetDice() {
+            if (isRolling) return;
+
+            cube.rotation.x = 0;
+            cube.rotation.y = 0;
+            cube.rotation.z = 0;
+
+            document.getElementById('resultPanel').style.display = 'none';
+        }
+
+        // 保存到歷史
+        function saveToHistory() {
+            if (rollHistory.length === 0) {
+                alert('還沒有投擲記錄！');
+                return;
+            }
+
+            const latest = rollHistory[rollHistory.length - 1];
+            const historyData = JSON.stringify(rollHistory, null, 2);
+            const blob = new Blob([historyData], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `股票骰子記錄_${new Date().toLocaleDateString().replace(/\//g, '')}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            alert('📝 投擲記錄已下載！');
+        }
+
+        // 視窗大小調整
+        function onWindowResize() {
+            const canvas = document.getElementById('dice-canvas');
+            const container = canvas.parentElement;
+            
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initDice();
+        });
+    </script>
+</body>
+</html>
