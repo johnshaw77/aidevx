@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>寶石礦山 - Gem Mining Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #eee;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #fff;
+            border-radius: 50%;
+            opacity: 0.8;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            padding: 20px;
+            z-index: 10;
+        }
+
+        .game-wrapper {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        .mining-area {
+            background: rgba(15, 52, 96, 0.8);
+            border: 3px solid #00d4ff;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mining-area::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 48%, rgba(0, 212, 255, 0.05) 49%, rgba(0, 212, 255, 0.05) 51%, transparent 52%);
+            background-size: 20px 20px;
+            pointer-events: none;
+        }
+
+        .mine-btn {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ffed4e, #ffc107);
+            border: 4px solid #ff9800;
+            cursor: pointer;
+            font-size: 3em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(255, 193, 7, 0.5), inset -5px -5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.05s;
+            z-index: 5;
+            user-select: none;
+        }
+
+        .mine-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.5), inset -5px -5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .mine-btn:hover {
+            box-shadow: 0 15px 40px rgba(255, 193, 7, 0.6), inset -5px -5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .floating-text {
+            position: absolute;
+            font-weight: bold;
+            font-size: 1.5em;
+            pointer-events: none;
+            animation: float-up 1s ease-out forwards;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+        }
+
+        @keyframes float-up {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-80px) scale(0.5);
+            }
+        }
+
+        .stats-panel {
+            background: rgba(15, 52, 96, 0.8);
+            border: 3px solid #ff1493;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(255, 20, 147, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .stat-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 4px solid #00d4ff;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #00d4ff;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #ffed4e;
+            text-shadow: 0 0 10px rgba(255, 237, 74, 0.5);
+        }
+
+        .gem-counter {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .gem-item {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .gem-name {
+            font-size: 0.8em;
+            color: #aaa;
+        }
+
+        .gem-count {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .gem-red { color: #ff1744; }
+        .gem-blue { color: #00b0ff; }
+        .gem-green { color: #00e676; }
+        .gem-purple { color: #d500f9; }
+
+        .upgrade-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .upgrade-btn {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #ff1493, #ff69b4);
+            border: none;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 8px;
+            transition: all 0.2s;
+            font-size: 0.9em;
+        }
+
+        .upgrade-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.4);
+        }
+
+        .upgrade-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .info-text {
+            text-align: center;
+            color: #888;
+            font-size: 0.85em;
+            margin-top: 10px;
+        }
+
+        .title {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .title h1 {
+            font-size: 2.5em;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+            color: #00d4ff;
+            margin-bottom: 5px;
+            letter-spacing: 2px;
+        }
+
+        .title p {
+            color: #ffed4e;
+            font-size: 1.1em;
+        }
+
+        .combo {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 237, 74, 0.2);
+            border: 2px solid #ffed4e;
+            padding: 10px 15px;
+            border-radius: 8px;
+            color: #ffed4e;
+            font-weight: bold;
+            font-size: 0.9em;
+            text-align: center;
+        }
+
+        .combo-empty {
+            opacity: 0.3;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        @media (max-width: 768px) {
+            .game-wrapper {
+                grid-template-columns: 1fr;
+            }
+
+            .mine-btn {
+                width: 140px;
+                height: 140px;
+                font-size: 2.5em;
+            }
+
+            .title h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+
+    <div class="container">
+        <div class="title">
+            <h1>💎 寶石礦山 💎</h1>
+            <p>Gem Mining Game - 點擊挖礦，收集寶石！</p>
+        </div>
+
+        <div class="game-wrapper">
+            <div class="mining-area">
+                <div class="combo" id="combo" style="display: none;">連擊 x<span id="comboCount">0</span></div>
+                <canvas id="particleCanvas"></canvas>
+                <button class="mine-btn" id="mineBtn">⛏️</button>
+                <div class="info-text" id="debug"></div>
+            </div>
+
+            <div class="stats-panel">
+                <div class="stat-item">
+                    <div class="stat-label">總金幣</div>
+                    <div class="stat-value" id="totalCoins">0</div>
+                </div>
+
+                <div class="stat-item">
+                    <div class="stat-label">每次點擊</div>
+                    <div class="stat-value" id="damagePerClick">1</div>
+                </div>
+
+                <div class="stat-item">
+                    <div class="stat-label">寶石收藏</div>
+                    <div class="gem-counter">
+                        <div class="gem-item">
+                            <div class="gem-name">紅寶石</div>
+                            <div class="gem-count gem-red" id="redCount">0</div>
+                        </div>
+                        <div class="gem-item">
+                            <div class="gem-name">藍寶石</div>
+                            <div class="gem-count gem-blue" id="blueCount">0</div>
+                        </div>
+                        <div class="gem-item">
+                            <div class="gem-name">綠寶石</div>
+                            <div class="gem-count gem-green" id="greenCount">0</div>
+                        </div>
+                        <div class="gem-item">
+                            <div class="gem-name">紫水晶</div>
+                            <div class="gem-count gem-purple" id="purpleCount">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="upgrade-section">
+                    <div class="stat-label">升級</div>
+                    <button class="upgrade-btn" id="upgradeBtn">強化鎬 (10 金幣)</button>
+                    <button class="upgrade-btn" id="upgradeCombo">連擊加成 (50 金幣)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        const mineBtn = document.getElementById('mineBtn');
+
+        // Responsive canvas
+        function resizeCanvas() {
+            const rect = mineBtn.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Generate stars
+        function generateStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 50; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.opacity = Math.random() * 0.5 + 0.5;
+                starsContainer.appendChild(star);
+            }
+        }
+        generateStars();
+
+        // Game state
+        const gameState = {
+            coins: 0,
+            damagePerClick: 1,
+            comboMultiplier: 1.0,
+            combo: 0,
+            comboTimer: null,
+            gems: {
+                red: 0,
+                blue: 0,
+                green: 0,
+                purple: 0
+            }
+        };
+
+        // Particle system
+        const particles = [];
+
+        class Particle {
+            constructor(x, y, type = 'coin') {
+                this.x = x;
+                this.y = y;
+                this.type = type;
+                this.vx = (Math.random() - 0.5) * 8;
+                this.vy = (Math.random() - 0.5) * 8 - 3;
+                this.life = 1;
+                this.decay = Math.random() * 0.02 + 0.015;
+                this.size = Math.random() * 8 + 6;
+
+                const colors = {
+                    coin: '#ffed4e',
+                    red: '#ff1744',
+                    blue: '#00b0ff',
+                    green: '#00e676',
+                    purple: '#d500f9'
+                };
+                this.color = colors[type] || colors.coin;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += 0.2; // gravity
+                this.life -= this.decay;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.life;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function createParticles(x, y, count = 8, type = 'coin') {
+            for (let i = 0; i < count; i++) {
+                particles.push(new Particle(x, y, type));
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                particles[i].draw();
+                if (particles[i].life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            if (particles.length > 0) {
+                requestAnimationFrame(animateParticles);
+            }
+        }
+
+        // Mine button click
+        mineBtn.addEventListener('click', (e) => {
+            const damage = Math.floor(gameState.damagePerClick * gameState.comboMultiplier);
+            gameState.coins += damage;
+
+            // Combo system
+            gameState.combo++;
+            clearTimeout(gameState.comboTimer);
+            gameState.comboTimer = setTimeout(() => {
+                gameState.combo = 0;
+                document.getElementById('combo').style.display = 'none';
+            }, 2000);
+
+            if (gameState.combo >= 3) {
+                gameState.comboMultiplier = Math.min(1 + (gameState.combo - 3) * 0.1, 2.5);
+                document.getElementById('combo').style.display = 'block';
+                document.getElementById('comboCount').textContent = gameState.combo;
+            }
+
+            // Create gems randomly
+            const rand = Math.random();
+            if (rand < 0.3) {
+                gameState.gems.red++;
+                createParticles(e.clientX, e.clientY, 5, 'red');
+            } else if (rand < 0.6) {
+                gameState.gems.blue++;
+                createParticles(e.clientX, e.clientY, 5, 'blue');
+            } else if (rand < 0.85) {
+                gameState.gems.green++;
+                createParticles(e.clientX, e.clientY, 5, 'green');
+            } else {
+                gameState.gems.purple++;
+                createParticles(e.clientX, e.clientY, 5, 'purple');
+            }
+
+            createParticles(e.clientX, e.clientY, 10, 'coin');
+
+            // Floating text
+            const floatingText = document.createElement('div');
+            floatingText.className = 'floating-text';
+            floatingText.textContent = '+' + damage;
+            floatingText.style.left = (e.clientX - 25) + 'px';
+            floatingText.style.top = (e.clientY - 50) + 'px';
+            floatingText.style.color = gameState.combo >= 3 ? '#ffed4e' : '#00d4ff';
+            mineBtn.parentElement.appendChild(floatingText);
+            setTimeout(() => floatingText.remove(), 1000);
+
+            animateParticles();
+            updateUI();
+        });
+
+        // Upgrade button
+        document.getElementById('upgradeBtn').addEventListener('click', () => {
+            if (gameState.coins >= 10) {
+                gameState.coins -= 10;
+                gameState.damagePerClick += 1;
+                updateUI();
+            }
+        });
+
+        document.getElementById('upgradeCombo').addEventListener('click', () => {
+            if (gameState.coins >= 50) {
+                gameState.coins -= 50;
+                gameState.comboMultiplier = Math.min(gameState.comboMultiplier + 0.2, 3);
+                updateUI();
+            }
+        });
+
+        // UI updates
+        function updateUI() {
+            document.getElementById('totalCoins').textContent = gameState.coins;
+            document.getElementById('damagePerClick').textContent = gameState.damagePerClick;
+            document.getElementById('redCount').textContent = gameState.gems.red;
+            document.getElementById('blueCount').textContent = gameState.gems.blue;
+            document.getElementById('greenCount').textContent = gameState.gems.green;
+            document.getElementById('purpleCount').textContent = gameState.gems.purple;
+
+            document.getElementById('upgradeBtn').disabled = gameState.coins < 10;
+            document.getElementById('upgradeCombo').disabled = gameState.coins < 50;
+        }
+
+        updateUI();
+    </script>
+</body>
+</html>
