@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>靈魂維度掃描器 - Soul Dimension Scanner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a0a3e 50%, #0f1633 100%);
+            color: #00ffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* 星系背景動畫 */
+        .starfield {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #00ffff;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: glow-in 0.8s ease-out;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            color: #88ff00;
+            text-shadow: 0 0 10px #88ff00;
+        }
+
+        @keyframes glow-in {
+            from {
+                opacity: 0;
+                text-shadow: 0 0 0 #00ffff;
+            }
+            to {
+                opacity: 1;
+                text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff;
+            }
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .questions-section {
+            background: rgba(10, 14, 39, 0.8);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .questions-section::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .questions-section::-webkit-scrollbar-track {
+            background: rgba(0, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .questions-section::-webkit-scrollbar-thumb {
+            background: #00ffff;
+            border-radius: 10px;
+        }
+
+        .question-item {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+        }
+
+        .question-item:last-child {
+            border-bottom: none;
+        }
+
+        .question-text {
+            font-size: 1.1em;
+            margin-bottom: 12px;
+            color: #00ffff;
+            font-weight: bold;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 6px;
+            border-radius: 5px;
+            background: linear-gradient(to right, #ff0080, #88ff00, #00ffff);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #00ffff;
+            cursor: pointer;
+            box-shadow: 0 0 10px #00ffff;
+            border: 2px solid #fff;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #00ffff;
+            cursor: pointer;
+            box-shadow: 0 0 10px #00ffff;
+            border: 2px solid #fff;
+        }
+
+        .slider-value {
+            min-width: 30px;
+            text-align: center;
+            font-weight: bold;
+            color: #88ff00;
+        }
+
+        .result-section {
+            position: sticky;
+            top: 40px;
+        }
+
+        .radar-container {
+            background: rgba(10, 14, 39, 0.8);
+            border: 2px solid #88ff00;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(136, 255, 0, 0.3);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+            filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.5));
+        }
+
+        .analysis-box {
+            background: rgba(10, 14, 39, 0.8);
+            border: 2px solid #ff0080;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 0 20px rgba(255, 0, 128, 0.3);
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .dimension-score {
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dimension-name {
+            font-weight: bold;
+            color: #00ffff;
+        }
+
+        .score-bar {
+            flex: 1;
+            height: 8px;
+            background: rgba(0, 255, 255, 0.2);
+            border-radius: 5px;
+            margin: 0 15px;
+            overflow: hidden;
+        }
+
+        .score-fill {
+            height: 100%;
+            background: linear-gradient(to right, #ff0080, #88ff00, #00ffff);
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(136, 255, 0, 0.8);
+            transition: width 0.5s ease-out;
+        }
+
+        .score-value {
+            color: #88ff00;
+            font-weight: bold;
+            min-width: 30px;
+            text-align: right;
+        }
+
+        .soul-message {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #ff0080;
+            font-style: italic;
+            color: #88ff00;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .soul-mantra {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255, 0, 128, 0.1);
+            border-left: 4px solid #ff0080;
+            color: #00ffff;
+            font-size: 1.05em;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #ff0080, #88ff00);
+            border: none;
+            color: #000;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 0 20px rgba(255, 0, 128, 0.5);
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(255, 0, 128, 0.8);
+        }
+
+        .submit-btn:active {
+            transform: scale(0.95);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #00ffff;
+            font-size: 1.2em;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(0, 255, 255, 0.3);
+            border-top: 3px solid #00ffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 1024px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+
+            .result-section {
+                position: static;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="starfield" id="starfield"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1>✨ 靈魂維度掃描器 ✨</h1>
+            <p>Soul Dimension Scanner - 探索內心深處的 6 個靈性維度</p>
+        </div>
+
+        <div class="content">
+            <div class="questions-section">
+                <form id="scannerForm">
+                    <div id="questionsContainer"></div>
+                    <button type="submit" class="submit-btn">🚀 掃描我的靈魂</button>
+                </form>
+            </div>
+
+            <div class="result-section">
+                <div class="radar-container">
+                    <h3 style="margin-bottom: 20px; text-shadow: 0 0 10px #88ff00;">靈魂維度圖譜</h3>
+                    <canvas id="radarChart" width="300" height="300"></canvas>
+                </div>
+
+                <div class="analysis-box">
+                    <div id="scoresContainer" class="hidden">
+                        <div id="dimensionScores"></div>
+                        <div class="soul-message" id="soulMessage"></div>
+                        <div class="soul-mantra" id="soulMantra"></div>
+                    </div>
+                    <div id="loading" class="loading">
+                        <div class="spinner"></div>
+                        <span>正在掃描您的靈魂...</span>
+                    </div>
+                    <div id="initial" style="color: #88ff00; text-align: center;">
+                        👁️ 回答所有問題，開始掃描 👁️
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            { text: "你在創造新事物時的熱情程度？", dimension: "creativity" },
+            { text: "你對他人感受的敏感度如何？", dimension: "empathy" },
+            { text: "在面對困難時，你的勇氣有多強？", dimension: "courage" },
+            { text: "你對生命深層意義的探索程度？", dimension: "wisdom" },
+            { text: "你的工作與生活平衡度如何？", dimension: "balance" },
+            { text: "你對自我成長的渴望有多強烈？", dimension: "growth" },
+            { text: "你在人際關係中的真誠度？", dimension: "authenticity" },
+            { text: "你的內在平靜程度？", dimension: "inner-peace" },
+            { text: "你對美好事物的欣賞能力？", dimension: "appreciation" },
+            { text: "你的直覺與直感有多敏銳？", dimension: "intuition" },
+            { text: "你對人生目標的清晰度？", dimension: "clarity" },
+            { text: "你的愛心與同情心的強度？", dimension: "compassion" }
+        ];
+
+        const dimensions = [
+            { name: "創意力", key: "creativity", color: "#ff0080" },
+            { name: "同理心", key: "empathy", color: "#00ffff" },
+            { name: "勇氣", key: "courage", color: "#88ff00" },
+            { name: "智慧", key: "wisdom", color: "#ffff00" },
+            { name: "平衡", key: "balance", color: "#ff8800" },
+            { name: "成長", key: "growth", color: "#ff00ff" }
+        ];
+
+        const scores = {};
+        let radarChart = null;
+
+        // 生成星星背景
+        function generateStars() {
+            const starfield = document.getElementById('starfield');
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                starfield.appendChild(star);
+            }
+        }
+
+        // 初始化問卷
+        function initializeForm() {
+            const container = document.getElementById('questionsContainer');
+            questions.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question-item';
+                questionDiv.innerHTML = `
+                    <div class="question-text">${index + 1}. ${q.text}</div>
+                    <div class="slider-container">
+                        <input type="range" min="0" max="100" value="50" class="slider" 
+                               data-dimension="${q.dimension}" data-index="${index}">
+                        <span class="slider-value">50</span>
+                    </div>
+                `;
+                container.appendChild(questionDiv);
+
+                const slider = questionDiv.querySelector('.slider');
+                const valueSpan = questionDiv.querySelector('.slider-value');
+                slider.addEventListener('input', (e) => {
+                    valueSpan.textContent = e.target.value;
+                    scores[q.dimension] = parseInt(e.target.value);
+                    updateRadarChart();
+                });
+
+                // 初始化 scores
+                scores[q.dimension] = 50;
+            });
+        }
+
+        // 更新雷達圖
+        function updateRadarChart() {
+            const canvas = document.getElementById('radarChart');
+            const ctx = canvas.getContext('2d');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 80;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 繪製背景網格
+            ctx.strokeStyle = 'rgba(0, 255, 255, 0.2)';
+            ctx.lineWidth = 1;
+            for (let i = 1; i <= 5; i++) {
+                const r = (radius / 5) * i;
+                ctx.beginPath();
+                for (let j = 0; j <= dimensions.length; j++) {
+                    const angle = (j / dimensions.length) * Math.PI * 2;
+                    const x = centerX + r * Math.cos(angle - Math.PI / 2);
+                    const y = centerY + r * Math.sin(angle - Math.PI / 2);
+                    if (j === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.closePath();
+                ctx.stroke();
+            }
+
+            // 繪製數據點連線
+            ctx.fillStyle = 'rgba(0, 255, 255, 0.2)';
+            ctx.strokeStyle = '#00ffff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            dimensions.forEach((d, i) => {
+                const angle = (i / dimensions.length) * Math.PI * 2;
+                const value = scores[d.key] || 0;
+                const r = (value / 100) * radius;
+                const x = centerX + r * Math.cos(angle - Math.PI / 2);
+                const y = centerY + r * Math.sin(angle - Math.PI / 2);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // 繪製標籤
+            ctx.fillStyle = '#00ffff';
+            ctx.font = 'bold 12px Arial';
+            ctx.textAlign = 'center';
+            dimensions.forEach((d, i) => {
+                const angle = (i / dimensions.length) * Math.PI * 2;
+                const r = radius + 30;
+                const x = centerX + r * Math.cos(angle - Math.PI / 2);
+                const y = centerY + r * Math.sin(angle - Math.PI / 2);
+                ctx.fillText(d.name, x, y);
+            });
+        }
+
+        // 生成靈魂分析
+        async function generateSoulAnalysis() {
+            const loading = document.getElementById('loading');
+            const initial = document.getElementById('initial');
+            const scoresContainer = document.getElementById('scoresContainer');
+
+            loading.classList.add('active');
+            initial.classList.add('hidden');
+            scoresContainer.classList.add('hidden');
+
+            // 模擬 API 調用（實際可接 Claude API）
+            setTimeout(() => {
+                displayAnalysis();
+                loading.classList.remove('active');
+                scoresContainer.classList.remove('hidden');
+            }, 2000);
+        }
+
+        function displayAnalysis() {
+            const dimensionScores = document.getElementById('dimensionScores');
+            const soulMessage = document.getElementById('soulMessage');
+            const soulMantra = document.getElementById('soulMantra');
+
+            dimensionScores.innerHTML = '';
+
+            // 計算平均分
+            const avgScore = Math.round(Object.values(scores).reduce((a, b) => a + b, 0) / Object.keys(scores).length);
+
+            // 顯示各維度分數
+            dimensions.forEach(d => {
+                const score = scores[d.key] || 0;
+                const item = document.createElement('div');
+                item.className = 'dimension-score';
+                item.innerHTML = `
+                    <span class="dimension-name">${d.name}</span>
+                    <div class="score-bar">
+                        <div class="score-fill" style="width: ${score}%; background: linear-gradient(to right, ${d.color}, #88ff00);"></div>
+                    </div>
+                    <span class="score-value">${score}</span>
+                `;
+                dimensionScores.appendChild(item);
+            });
+
+            // 生成靈魂解讀
+            const messages = [
+                "你的靈魂在光與影之間舞動，平衡著理性與感性。",
+                "你內在的光芒正在覺醒，準備照亮他人的道路。",
+                "你的靈魂充滿韌性，在風雨中依然堅定前行。",
+                "你的內心世界深邃而豐富，蘊含無限的可能性。",
+                "你正在尋找自己的靈性中心，這條路充滿美好。"
+            ];
+
+            const mantras = [
+                "🔮 我是光，我是愛，我是無限的可能。",
+                "✨ 每一刻都是新的開始，我擁抱所有的改變。",
+                "💫 我的靈魂在進化，我的心在展開。",
+                "🌟 我承認我的力量，我擁抱我的真實。",
+                "🎆 我走向光明，我成為自己的光。"
+            ];
+
+            const msgIdx = avgScore % messages.length;
+            const mantraIdx = avgScore % mantras.length;
+
+            soulMessage.textContent = messages[msgIdx];
+            soulMantra.textContent = mantras[mantraIdx];
+        }
+
+        // 表單提交
+        document.getElementById('scannerForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            generateSoulAnalysis();
+        });
+
+        // 初始化
+        generateStars();
+        initializeForm();
+        updateRadarChart();
+    </script>
+</body>
+</html>
