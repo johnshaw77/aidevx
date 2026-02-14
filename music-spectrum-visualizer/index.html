@@ -380,14 +380,26 @@
                 
                 // Initialize audio context
                 if (!audioContext) {
-                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    const source = audioContext.createMediaElementAudioSource(audio);
-                    analyser = audioContext.createAnalyser();
-                    analyser.fftSize = 256;
-                    source.connect(analyser);
-                    analyser.connect(audioContext.destination);
-                    bufferLength = analyser.frequencyBinCount;
-                    dataArray = new Uint8Array(bufferLength);
+                    try {
+                        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        
+                        // Verify audioContext was created successfully
+                        if (!audioContext || typeof audioContext.createMediaElementAudioSource !== 'function') {
+                            throw new Error('AudioContext not properly initialized');
+                        }
+                        
+                        const source = audioContext.createMediaElementAudioSource(audio);
+                        analyser = audioContext.createAnalyser();
+                        analyser.fftSize = 256;
+                        source.connect(analyser);
+                        analyser.connect(audioContext.destination);
+                        bufferLength = analyser.frequencyBinCount;
+                        dataArray = new Uint8Array(bufferLength);
+                    } catch (error) {
+                        console.error('Audio context initialization failed:', error);
+                        alert('❌ 無法初始化音頻引擎\n\n可能原因：\n1. 瀏覽器不支援 Web Audio API\n2. 需要 HTTPS 連線\n3. 瀏覽器安全限制\n\n請使用最新版 Chrome、Firefox 或 Safari');
+                        return;
+                    }
                 }
                 
                 document.getElementById('playBtn').disabled = false;
