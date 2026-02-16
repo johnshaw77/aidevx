@@ -5,17 +5,13 @@ class DominoGame {
         // 檢查必要庫是否已加載
         if (typeof THREE === 'undefined') {
             console.error('Three.js 未載入');
+            alert('Three.js 載入失敗，請重新整理頁面');
             return;
         }
         
-        // 處理 cannon.js 的不同導出方式
-        if (typeof CANNON === 'undefined' && typeof CannonEs !== 'undefined') {
-            window.CANNON = CannonEs;
-        }
-        
         if (typeof CANNON === 'undefined') {
-            console.error('Cannon.js 未載入，嘗試重新加載...');
-            this.loadCannonAndInit();
+            console.error('Cannon.js 未載入');
+            alert('Cannon.js 物理引擎載入失敗，請重新整理頁面');
             return;
         }
 
