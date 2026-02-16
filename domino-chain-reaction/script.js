@@ -2,6 +2,23 @@
 
 class DominoGame {
     constructor() {
+        // 檢查必要庫是否已加載
+        if (typeof THREE === 'undefined') {
+            console.error('Three.js 未載入');
+            return;
+        }
+        
+        // 處理 cannon.js 的不同導出方式
+        if (typeof CANNON === 'undefined' && typeof CannonEs !== 'undefined') {
+            window.CANNON = CannonEs;
+        }
+        
+        if (typeof CANNON === 'undefined') {
+            console.error('Cannon.js 未載入，嘗試重新加載...');
+            this.loadCannonAndInit();
+            return;
+        }
+
         this.container = document.getElementById('container');
         this.dominoes = [];
         this.bodies = [];
@@ -37,6 +54,23 @@ class DominoGame {
         this.init();
         this.setupEventListeners();
         this.animate();
+    }
+    
+    loadCannonAndInit() {
+        // 如果 Cannon.js 未載入，動態加載
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/cannon@0.20.0/build/cannon.js';
+        script.onload = () => {
+            window.CANNON = window.CANNON || window.cannon;
+            this.init();
+            this.setupEventListeners();
+            this.animate();
+        };
+        script.onerror = () => {
+            console.error('Cannon.js 載入失敗');
+            alert('物理引擎載入失敗，請重新整理頁面');
+        };
+        document.head.appendChild(script);
     }
 
     init() {
