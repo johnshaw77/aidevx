@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D 骨牌連鎖反應遊戲</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"></script>
+</head>
+<body>
+    <div id="container"></div>
+    
+    <div class="ui-panel">
+        <h1>🎯 3D 骨牌連鎖反應</h1>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label>📍 放置模式</label>
+                <button id="placeModeBtn" class="btn active">放置骨牌</button>
+                <button id="clearBtn" class="btn">清空場景</button>
+            </div>
+
+            <div class="control-group">
+                <label>⚙️ 物理參數</label>
+                <div class="slider-group">
+                    <span>重力：</span>
+                    <input type="range" id="gravitySlider" min="0" max="50" value="20" class="slider">
+                    <span id="gravityValue">20</span>
+                </div>
+                <div class="slider-group">
+                    <span>骨牌高度：</span>
+                    <input type="range" id="heightSlider" min="3" max="8" value="5" class="slider">
+                    <span id="heightValue">5</span>
+                </div>
+                <div class="slider-group">
+                    <span>骨牌厚度：</span>
+                    <input type="range" id="thicknessSlider" min="0.2" max="1" value="0.5" step="0.1" class="slider">
+                    <span id="thicknessValue">0.5</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>🚀 控制</label>
+                <button id="activateBtn" class="btn btn-large">啟動連鎖反應</button>
+                <button id="resetBtn" class="btn">重置</button>
+            </div>
+
+            <div class="stats">
+                <p>骨牌數量：<span id="dominoCount">0</span></p>
+                <p>已倒下：<span id="fallenCount">0</span></p>
+                <p>FPS：<span id="fps">60</span></p>
+            </div>
+
+            <div class="info">
+                <p><strong>操作說明：</strong></p>
+                <p>🖱️ 左鍵拖放放置骨牌</p>
+                <p>🔄 右鍵旋轉視角</p>
+                <p>⚡ 點擊「啟動連鎖反應」開始</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
