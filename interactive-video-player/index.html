@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>互動式視頻播放器 - Interactive Video Player</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a0a3e 50%, #0f1633 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            color: #00ffff;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        .header p {
+            color: #88ff00;
+            font-size: 1.1em;
+            text-shadow: 0 0 10px #88ff00;
+        }
+
+        .player-container {
+            background: rgba(10, 14, 39, 0.9);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+            overflow: hidden;
+        }
+
+        .video-area {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .video-placeholder {
+            text-align: center;
+            color: #666;
+            font-size: 1.2em;
+        }
+
+        .controls {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .timeline-container {
+            margin-bottom: 15px;
+        }
+
+        .timeline {
+            width: 100%;
+            height: 8px;
+            background: rgba(0, 255, 255, 0.2);
+            border-radius: 5px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .timeline-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #00ffff, #88ff00);
+            width: 0%;
+            transition: width 0.05s;
+            border-radius: 5px;
+        }
+
+        .timeline:hover .timeline-buffered {
+            opacity: 1;
+        }
+
+        .timeline-buffered {
+            position: absolute;
+            height: 100%;
+            background: rgba(0, 255, 255, 0.3);
+            width: 100%;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            color: #888;
+            font-size: 0.85em;
+            margin-top: 8px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .playback-controls {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .play-pause-btn {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #ff0080, #88ff00);
+            border: none;
+            color: #000;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            transition: all 0.2s;
+            box-shadow: 0 0 20px rgba(255, 0, 128, 0.4);
+        }
+
+        .play-pause-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(255, 0, 128, 0.6);
+        }
+
+        .play-pause-btn:active {
+            transform: scale(0.95);
+        }
+
+        .control-bar {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-label {
+            color: #888;
+            font-size: 0.85em;
+            min-width: 35px;
+        }
+
+        input[type="range"] {
+            height: 6px;
+            border-radius: 5px;
+            background: linear-gradient(to right, #ff0080, #88ff00, #00ffff);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            cursor: pointer;
+            min-width: 80px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #00ffff;
+            cursor: pointer;
+            box-shadow: 0 0 10px #00ffff;
+            border: 2px solid #fff;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #00ffff;
+            cursor: pointer;
+            box-shadow: 0 0 10px #00ffff;
+            border: 2px solid #fff;
+        }
+
+        .value-display {
+            color: #88ff00;
+            font-weight: bold;
+            min-width: 35px;
+            font-size: 0.9em;
+        }
+
+        .settings-menu {
+            display: flex;
+            gap: 10px;
+        }
+
+        .icon-btn {
+            background: rgba(0, 255, 255, 0.2);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .icon-btn:hover {
+            background: rgba(0, 255, 255, 0.4);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+        }
+
+        .fullscreen-btn {
+            margin-left: auto;
+        }
+
+        .info-panel {
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 3px solid #ff0080;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9em;
+        }
+
+        .info-label {
+            color: #888;
+        }
+
+        .info-value {
+            color: #88ff00;
+            font-weight: bold;
+        }
+
+        .upload-section {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px dashed #00ffff;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .upload-section:hover {
+            border-color: #88ff00;
+            background: rgba(136, 255, 0, 0.1);
+        }
+
+        .upload-section input {
+            display: none;
+        }
+
+        .upload-text {
+            color: #888;
+            font-size: 0.95em;
+        }
+
+        .sample-videos {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .sample-btn {
+            background: rgba(0, 255, 255, 0.2);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.2s;
+        }
+
+        .sample-btn:hover {
+            background: rgba(0, 255, 255, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .playback-controls {
+                grid-template-columns: 1fr;
+            }
+
+            .control-bar {
+                flex-direction: column;
+            }
+
+            .info-panel {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: #00ffff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.8em;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 100;
+            bottom: 110%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 1px solid #00ffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 互動式視頻播放器 🎬</h1>
+            <p>Interactive Video Player - 享受專業級播放體驗</p>
+        </div>
+
+        <div class="player-container">
+            <!-- Upload Section -->
+            <div class="upload-section" id="uploadZone">
+                <div class="upload-text">
+                    📁 拖放視頻或點擊上傳
+                </div>
+                <input type="file" id="videoFile" accept="video/*">
+                <div class="sample-videos">
+                    <button class="sample-btn" data-src="https://www.w3schools.com/html/mov_bbb.mp4">範例 1: Big Buck Bunny</button>
+                    <button class="sample-btn" data-src="https://commondatastorage.googleapis.com/gtv-videos-library/sample/forrest_gump.mp4">範例 2: Forrest Gump</button>
+                </div>
+            </div>
+
+            <!-- Video Area -->
+            <div class="video-area" id="videoArea">
+                <video id="video" controls="false"></video>
+                <div class="video-placeholder" id="placeholder">
+                    👆 上傳或選擇視頻開始 👆
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls">
+                <!-- Timeline -->
+                <div class="timeline-container">
+                    <div class="timeline" id="timeline">
+                        <div class="timeline-buffered"></div>
+                        <div class="timeline-progress" id="progress"></div>
+                    </div>
+                    <div class="time-display">
+                        <span id="currentTime">0:00</span>
+                        <span id="duration">0:00</span>
+                    </div>
+                </div>
+
+                <!-- Playback Controls -->
+                <div class="playback-controls">
+                    <button class="play-pause-btn" id="playPauseBtn" disabled>▶</button>
+                    
+                    <div class="control-bar">
+                        <!-- Volume -->
+                        <div class="control-group">
+                            <label class="control-label">🔊</label>
+                            <input type="range" id="volumeControl" min="0" max="100" value="70" disabled>
+                            <span class="value-display" id="volumeValue">70%</span>
+                        </div>
+
+                        <!-- Playback Speed -->
+                        <div class="control-group">
+                            <label class="control-label">速度</label>
+                            <input type="range" id="speedControl" min="0.25" max="2" step="0.25" value="1" disabled>
+                            <span class="value-display" id="speedValue">1x</span>
+                        </div>
+
+                        <!-- Settings -->
+                        <div class="settings-menu">
+                            <button class="icon-btn" id="pipBtn" disabled title="畫中畫">
+                                📱
+                                <div class="tooltip">畫中畫</div>
+                            </button>
+                            <button class="icon-btn fullscreen-btn" id="fullscreenBtn" disabled title="全螢幕">
+                                ⛶
+                                <div class="tooltip">全螢幕</div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Panel -->
+                <div class="info-panel" id="infoPanel" style="display: none;">
+                    <div class="info-item">
+                        <span class="info-label">解析度</span>
+                        <span class="info-value" id="resolutionInfo">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">位元率</span>
+                        <span class="info-value" id="bitrateInfo">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">已緩衝</span>
+                        <span class="info-value" id="bufferedInfo">0%</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">播放狀態</span>
+                        <span class="info-value" id="statusInfo">待機</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const timeline = document.getElementById('timeline');
+        const progress = document.getElementById('progress');
+        const currentTimeSpan = document.getElementById('currentTime');
+        const durationSpan = document.getElementById('duration');
+        const volumeControl = document.getElementById('volumeControl');
+        const speedControl = document.getElementById('speedControl');
+        const uploadZone = document.getElementById('uploadZone');
+        const videoFile = document.getElementById('videoFile');
+        const placeholder = document.getElementById('placeholder');
+        const videoArea = document.getElementById('videoArea');
+        const pipBtn = document.getElementById('pipBtn');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const infoPanel = document.getElementById('infoPanel');
+
+        // File upload
+        uploadZone.addEventListener('click', () => videoFile.click());
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.style.background = 'rgba(136, 255, 0, 0.2)';
+        });
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.style.background = '';
+        });
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.style.background = '';
+            if (e.dataTransfer.files[0]) {
+                loadVideo(e.dataTransfer.files[0]);
+            }
+        });
+
+        videoFile.addEventListener('change', (e) => {
+            if (e.target.files[0]) {
+                loadVideo(e.target.files[0]);
+            }
+        });
+
+        // Sample videos
+        document.querySelectorAll('[data-src]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                video.src = btn.dataset.src;
+                loadedVideo();
+            });
+        });
+
+        function loadVideo(file) {
+            const url = URL.createObjectURL(file);
+            video.src = url;
+            loadedVideo();
+        }
+
+        function loadedVideo() {
+            uploadZone.style.display = 'none';
+            placeholder.style.display = 'none';
+            playPauseBtn.disabled = false;
+            volumeControl.disabled = false;
+            speedControl.disabled = false;
+            pipBtn.disabled = false;
+            fullscreenBtn.disabled = false;
+            infoPanel.style.display = 'grid';
+        }
+
+        // Play/Pause
+        playPauseBtn.addEventListener('click', () => {
+            if (video.paused) {
+                video.play();
+                playPauseBtn.textContent = '⏸';
+                document.getElementById('statusInfo').textContent = '播放中';
+            } else {
+                video.pause();
+                playPauseBtn.textContent = '▶';
+                document.getElementById('statusInfo').textContent = '暫停';
+            }
+        });
+
+        video.addEventListener('play', () => {
+            playPauseBtn.textContent = '⏸';
+            document.getElementById('statusInfo').textContent = '播放中';
+        });
+
+        video.addEventListener('pause', () => {
+            playPauseBtn.textContent = '▶';
+            document.getElementById('statusInfo').textContent = '暫停';
+        });
+
+        // Timeline
+        video.addEventListener('timeupdate', () => {
+            const percent = (video.currentTime / video.duration) * 100;
+            progress.style.width = percent + '%';
+            currentTimeSpan.textContent = formatTime(video.currentTime);
+            updateBuffered();
+        });
+
+        timeline.addEventListener('click', (e) => {
+            const rect = timeline.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            video.currentTime = percent * video.duration;
+        });
+
+        video.addEventListener('loadedmetadata', () => {
+            durationSpan.textContent = formatTime(video.duration);
+            updateResolution();
+        });
+
+        function updateBuffered() {
+            if (video.buffered.length > 0) {
+                const buffered = (video.buffered.end(video.buffered.length - 1) / video.duration) * 100;
+                document.getElementById('bufferedInfo').textContent = Math.floor(buffered) + '%';
+            }
+        }
+
+        function updateResolution() {
+            const width = video.videoWidth;
+            const height = video.videoHeight;
+            document.getElementById('resolutionInfo').textContent = width + 'x' + height;
+        }
+
+        function formatTime(seconds) {
+            if (!seconds) return '0:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Volume
+        volumeControl.addEventListener('input', (e) => {
+            video.volume = e.target.value / 100;
+            document.getElementById('volumeValue').textContent = e.target.value + '%';
+        });
+
+        // Speed
+        speedControl.addEventListener('input', (e) => {
+            video.playbackRate = e.target.value;
+            document.getElementById('speedValue').textContent = e.target.value + 'x';
+        });
+
+        // Picture in Picture
+        pipBtn.addEventListener('click', async () => {
+            try {
+                if (document.pictureInPictureElement) {
+                    await document.exitPictureInPicture();
+                } else {
+                    await video.requestPictureInPicture();
+                }
+            } catch (error) {
+                console.log('PiP not supported:', error);
+            }
+        });
+
+        // Fullscreen
+        fullscreenBtn.addEventListener('click', () => {
+            if (videoArea.requestFullscreen) {
+                videoArea.requestFullscreen();
+            } else if (videoArea.webkitRequestFullscreen) {
+                videoArea.webkitRequestFullscreen();
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (!video.src) return;
+            
+            switch(e.code) {
+                case 'Space':
+                    e.preventDefault();
+                    playPauseBtn.click();
+                    break;
+                case 'ArrowRight':
+                    video.currentTime += 5;
+                    break;
+                case 'ArrowLeft':
+                    video.currentTime -= 5;
+                    break;
+                case 'ArrowUp':
+                    video.volume = Math.min(video.volume + 0.1, 1);
+                    volumeControl.value = video.volume * 100;
+                    break;
+                case 'ArrowDown':
+                    video.volume = Math.max(video.volume - 0.1, 0);
+                    volumeControl.value = video.volume * 100;
+                    break;
+                case 'KeyF':
+                    fullscreenBtn.click();
+                    break;
+                case 'KeyM':
+                    video.muted = !video.muted;
+                    break;
+            }
+        });
+
+        // Initialize
+        video.volume = 0.7;
+    </script>
+</body>
+</html>
