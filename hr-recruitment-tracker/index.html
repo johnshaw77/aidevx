@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人才招募追蹤系統 | HR Recruitment Tracker</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .app {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* 側邊欄 */
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            padding: 24px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .logo h1 {
+            color: #667eea;
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+
+        .logo p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .nav-menu {
+            flex: 1;
+            padding: 20px 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #555;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            border-left-color: #667eea;
+        }
+
+        .nav-item i {
+            width: 20px;
+            margin-right: 12px;
+        }
+
+        /* 主要內容區 */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 16px 24px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h2 {
+            color: #333;
+            font-size: 1.5rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        /* Dashboard 統計卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .stat-icon.blue { background: linear-gradient(45deg, #667eea, #764ba2); }
+        .stat-icon.green { background: linear-gradient(45deg, #4facfe, #00f2fe); }
+        .stat-icon.orange { background: linear-gradient(45deg, #ff9a9e, #fecfef); }
+        .stat-icon.purple { background: linear-gradient(45deg, #a18cd1, #fbc2eb); }
+
+        .stat-info h3 {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .stat-info p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* 內容區塊 */
+        .content-section {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-content {
+            padding: 24px;
+        }
+
+        /* 按鈕 */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #555;
+            border: 1px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        /* 表格 */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .data-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        /* 狀態標籤 */
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-interview { background: #cce5ff; color: #004085; }
+        .status-approved { background: #d4edda; color: #155724; }
+        .status-rejected { background: #f8d7da; color: #721c24; }
+
+        /* 招募流程看板 */
+        .kanban-board {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .kanban-column {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 16px;
+            min-height: 400px;
+        }
+
+        .column-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .column-title {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .candidate-card {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .candidate-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .candidate-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .candidate-position {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .candidate-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: #999;
+        }
+
+        /* 行事曆 */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .calendar-day {
+            background: white;
+            padding: 12px 8px;
+            min-height: 80px;
+            position: relative;
+        }
+
+        .calendar-day.today {
+            background: #e3f2fd;
+        }
+
+        .day-number {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .event-dot {
+            width: 6px;
+            height: 6px;
+            background: #667eea;
+            border-radius: 50%;
+            margin: 2px;
+        }
+
+        /* 搜索框 */
+        .search-box {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px 12px 45px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+
+        /* 篩選器 */
+        .filters {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            font-size: 0.9rem;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .app {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+
+            .nav-menu {
+                display: flex;
+                overflow-x: auto;
+                padding: 10px 0;
+            }
+
+            .nav-item {
+                min-width: 120px;
+                justify-content: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .kanban-board {
+                grid-template-columns: 1fr;
+            }
+
+            .content {
+                padding: 16px;
+            }
+        }
+
+        /* 隱藏類 */
+        .hidden {
+            display: none !important;
+        }
+
+        /* 載入動畫 */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="app">
+            <!-- 側邊欄 -->
+            <div class="sidebar">
+                <div class="logo">
+                    <h1><i class="fas fa-users"></i> HR 招募系統</h1>
+                    <p>人才招募追蹤管理平台</p>
+                </div>
+
+                <div class="nav-menu">
+                    <div 
+                        class="nav-item" 
+                        :class="{ active: activeTab === 'dashboard' }"
+                        @click="activeTab = 'dashboard'"
+                    >
+                        <i class="fas fa-chart-pie"></i>
+                        <span>控制面板</span>
+                    </div>
+                    <div 
+                        class="nav-item"
+                        :class="{ active: activeTab === 'candidates' }"
+                        @click="activeTab = 'candidates'"
+                    >
+                        <i class="fas fa-user-tie"></i>
+                        <span>候選人管理</span>
+                    </div>
+                    <div 
+                        class="nav-item"
+                        :class="{ active: activeTab === 'positions' }"
+                        @click="activeTab = 'positions'"
+                    >
+                        <i class="fas fa-briefcase"></i>
+                        <span>職缺管理</span>
+                    </div>
+                    <div 
+                        class="nav-item"
+                        :class="{ active: activeTab === 'interviews' }"
+                        @click="activeTab = 'interviews'"
+                    >
+                        <i class="fas fa-calendar-check"></i>
+                        <span>面試安排</span>
+                    </div>
+                    <div 
+                        class="nav-item"
+                        :class="{ active: activeTab === 'pipeline' }"
+                        @click="activeTab = 'pipeline'"
+                    >
+                        <i class="fas fa-project-diagram"></i>
+                        <span>招募流程</span>
+                    </div>
+                    <div 
+                        class="nav-item"
+                        :class="{ active: activeTab === 'calendar' }"
+                        @click="activeTab = 'calendar'"
+                    >
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>行事曆</span>
+                    </div>
+                    <div 
+                        class="nav-item"
+                        :class="{ active: activeTab === 'reports' }"
+                        @click="activeTab = 'reports'"
+                    >
+                        <i class="fas fa-chart-bar"></i>
+                        <span>報表分析</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 主要內容 -->
+            <div class="main-content">
+                <div class="header">
+                    <h2>{{ getPageTitle() }}</h2>
+                    <div class="user-info">
+                        <span>歡迎，HR 管理員</span>
+                        <div class="avatar">HR</div>
+                    </div>
+                </div>
+
+                <div class="content">
+                    <!-- Dashboard 控制面板 -->
+                    <div v-show="activeTab === 'dashboard'">
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-icon blue">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h3>{{ stats.totalCandidates }}</h3>
+                                    <p>總候選人數</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon green">
+                                    <i class="fas fa-briefcase"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h3>{{ stats.openPositions }}</h3>
+                                    <p>開放職缺</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon orange">
+                                    <i class="fas fa-calendar-check"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h3>{{ stats.todayInterviews }}</h3>
+                                    <p>今日面試</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon purple">
+                                    <i class="fas fa-user-check"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h3>{{ stats.monthlyHires }}</h3>
+                                    <p>本月錄取</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="content-section">
+                            <div class="section-header">
+                                <div class="section-title">
+                                    <i class="fas fa-clock"></i>
+                                    最近活動
+                                </div>
+                            </div>
+                            <div class="section-content">
+                                <div v-for="activity in recentActivities" :key="activity.id" class="candidate-card">
+                                    <div class="candidate-name">{{ activity.title }}</div>
+                                    <div class="candidate-position">{{ activity.description }}</div>
+                                    <div class="candidate-meta">
+                                        <span>{{ activity.type }}</span>
+                                        <span>{{ activity.time }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 候選人管理 -->
+                    <div v-show="activeTab === 'candidates'">
+                        <div class="content-section">
+                            <div class="section-header">
+                                <div class="section-title">
+                                    <i class="fas fa-user-tie"></i>
+                                    候選人列表
+                                </div>
+                                <button class="btn btn-primary" @click="showAddCandidate = true">
+                                    <i class="fas fa-plus"></i>
+                                    新增候選人
+                                </button>
+                            </div>
+                            <div class="section-content">
+                                <div class="search-box">
+                                    <i class="fas fa-search search-icon"></i>
+                                    <input 
+                                        type="text" 
+                                        class="search-input" 
+                                        placeholder="搜索候選人姓名、職位或技能..."
+                                        v-model="candidateSearch"
+                                    >
+                                </div>
+
+                                <div class="filters">
+                                    <select class="filter-select" v-model="statusFilter">
+                                        <option value="">所有狀態</option>
+                                        <option value="pending">待審核</option>
+                                        <option value="interview">面試中</option>
+                                        <option value="approved">已錄取</option>
+                                        <option value="rejected">不錄取</option>
+                                    </select>
+                                    <select class="filter-select" v-model="positionFilter">
+                                        <option value="">所有職位</option>
+                                        <option value="frontend">前端工程師</option>
+                                        <option value="backend">後端工程師</option>
+                                        <option value="fullstack">全端工程師</option>
+                                        <option value="designer">UI/UX 設計師</option>
+                                        <option value="pm">產品經理</option>
+                                    </select>
+                                </div>
+
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>姓名</th>
+                                            <th>應徵職位</th>
+                                            <th>聯絡方式</th>
+                                            <th>狀態</th>
+                                            <th>投遞日期</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="candidate in filteredCandidates" :key="candidate.id">
+                                            <td>{{ candidate.name }}</td>
+                                            <td>{{ candidate.position }}</td>
+                                            <td>
+                                                <div>{{ candidate.email }}</div>
+                                                <div style="color: #666; font-size: 0.8rem;">{{ candidate.phone }}</div>
+                                            </td>
+                                            <td>
+                                                <span class="status-badge" :class="'status-' + candidate.status">
+                                                    {{ getStatusText(candidate.status) }}
+                                                </span>
+                                            </td>
+                                            <td>{{ candidate.appliedDate }}</td>
+                                            <td>
+                                                <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.8rem;">
+                                                    查看詳情
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 招募流程看板 -->
+                    <div v-show="activeTab === 'pipeline'">
+                        <div class="content-section">
+                            <div class="section-header">
+                                <div class="section-title">
+                                    <i class="fas fa-project-diagram"></i>
+                                    招募流程看板
+                                </div>
+                            </div>
+                            <div class="section-content">
+                                <div class="kanban-board">
+                                    <div v-for="stage in pipelineStages" :key="stage.id" class="kanban-column">
+                                        <div class="column-header">
+                                            <span class="column-title">{{ stage.name }}</span>
+                                            <span class="status-badge" :class="'status-' + stage.id">{{ stage.count }}</span>
+                                        </div>
+                                        <div v-for="candidate in stage.candidates" :key="candidate.id" class="candidate-card">
+                                            <div class="candidate-name">{{ candidate.name }}</div>
+                                            <div class="candidate-position">{{ candidate.position }}</div>
+                                            <div class="candidate-meta">
+                                                <span>{{ candidate.source }}</span>
+                                                <span>{{ candidate.days }}天</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 面試安排 -->
+                    <div v-show="activeTab === 'interviews'">
+                        <div class="content-section">
+                            <div class="section-header">
+                                <div class="section-title">
+                                    <i class="fas fa-calendar-check"></i>
+                                    面試安排
+                                </div>
+                                <button class="btn btn-primary">
+                                    <i class="fas fa-plus"></i>
+                                    安排面試
+                                </button>
+                            </div>
+                            <div class="section-content">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>候選人</th>
+                                            <th>職位</th>
+                                            <th>面試時間</th>
+                                            <th>面試官</th>
+                                            <th>會議室</th>
+                                            <th>狀態</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="interview in upcomingInterviews" :key="interview.id">
+                                            <td>{{ interview.candidate }}</td>
+                                            <td>{{ interview.position }}</td>
+                                            <td>{{ interview.datetime }}</td>
+                                            <td>{{ interview.interviewer }}</td>
+                                            <td>{{ interview.room }}</td>
+                                            <td>
+                                                <span class="status-badge" :class="'status-' + interview.status">
+                                                    {{ getInterviewStatusText(interview.status) }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.8rem;">
+                                                    編輯
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 行事曆 -->
+                    <div v-show="activeTab === 'calendar'">
+                        <div class="content-section">
+                            <div class="section-header">
+                                <div class="section-title">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    面試行事曆 - {{ currentMonth }}
+                                </div>
+                                <div>
+                                    <button class="btn btn-secondary" @click="previousMonth">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </button>
+                                    <button class="btn btn-secondary" @click="nextMonth">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="section-content">
+                                <div class="calendar-grid">
+                                    <div class="calendar-day" v-for="day in calendarDays" :key="day.date" :class="{ today: day.isToday }">
+                                        <div class="day-number">{{ day.day }}</div>
+                                        <div v-for="event in day.events" :key="event.id" class="event-dot"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 報表分析 -->
+                    <div v-show="activeTab === 'reports'">
+                        <div class="content-section">
+                            <div class="section-header">
+                                <div class="section-title">
+                                    <i class="fas fa-chart-bar"></i>
+                                    招募數據分析
+                                </div>
+                            </div>
+                            <div class="section-content">
+                                <div class="stats-grid">
+                                    <div class="stat-card">
+                                        <div class="stat-icon blue">
+                                            <i class="fas fa-percentage"></i>
+                                        </div>
+                                        <div class="stat-info">
+                                            <h3>85%</h3>
+                                            <p>面試到錄取轉換率</p>
+                                        </div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-icon green">
+                                            <i class="fas fa-clock"></i>
+                                        </div>
+                                        <div class="stat-info">
+                                            <h3>12天</h3>
+                                            <p>平均招募週期</p>
+                                        </div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-icon orange">
+                                            <i class="fas fa-dollar-sign"></i>
+                                        </div>
+                                        <div class="stat-info">
+                                            <h3>$1,500</h3>
+                                            <p>平均招募成本</p>
+                                        </div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-icon purple">
+                                            <i class="fas fa-star"></i>
+                                        </div>
+                                        <div class="stat-info">
+                                            <h3>4.2/5</h3>
+                                            <p>候選人體驗評分</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue
+
+        createApp({
+            data() {
+                return {
+                    activeTab: 'dashboard',
+                    candidateSearch: '',
+                    statusFilter: '',
+                    positionFilter: '',
+                    currentMonth: '2026年2月',
+                    
+                    // 統計數據
+                    stats: {
+                        totalCandidates: 186,
+                        openPositions: 12,
+                        todayInterviews: 5,
+                        monthlyHires: 8
+                    },
+
+                    // 最近活動
+                    recentActivities: [
+                        {
+                            id: 1,
+                            title: '張小明',
+                            description: '已安排前端工程師面試 - 2月18日 14:00',
+                            type: '面試安排',
+                            time: '10分鐘前'
+                        },
+                        {
+                            id: 2,
+                            title: '李美華',
+                            description: 'UI/UX 設計師職位面試完成',
+                            type: '面試完成',
+                            time: '1小時前'
+                        },
+                        {
+                            id: 3,
+                            title: '王大偉',
+                            description: '新履歷投遞 - 後端工程師',
+                            type: '新履歷',
+                            time: '2小時前'
+                        }
+                    ],
+
+                    // 候選人數據
+                    candidates: [
+                        {
+                            id: 1,
+                            name: '張小明',
+                            position: '前端工程師',
+                            email: 'zhang.xiaoming@email.com',
+                            phone: '0912-345-678',
+                            status: 'interview',
+                            appliedDate: '2026-02-15'
+                        },
+                        {
+                            id: 2,
+                            name: '李美華',
+                            position: 'UI/UX 設計師',
+                            email: 'li.meihua@email.com',
+                            phone: '0923-456-789',
+                            status: 'approved',
+                            appliedDate: '2026-02-14'
+                        },
+                        {
+                            id: 3,
+                            name: '王大偉',
+                            position: '後端工程師',
+                            email: 'wang.dawei@email.com',
+                            phone: '0934-567-890',
+                            status: 'pending',
+                            appliedDate: '2026-02-16'
+                        },
+                        {
+                            id: 4,
+                            name: '陳雅婷',
+                            position: '產品經理',
+                            email: 'chen.yating@email.com',
+                            phone: '0945-678-901',
+                            status: 'interview',
+                            appliedDate: '2026-02-13'
+                        },
+                        {
+                            id: 5,
+                            name: '林志豪',
+                            position: '全端工程師',
+                            email: 'lin.zhihao@email.com',
+                            phone: '0956-789-012',
+                            status: 'rejected',
+                            appliedDate: '2026-02-12'
+                        }
+                    ],
+
+                    // 招募流程階段
+                    pipelineStages: [
+                        {
+                            id: 'pending',
+                            name: '待審核',
+                            count: 8,
+                            candidates: [
+                                { id: 1, name: '王大偉', position: '後端工程師', source: '104', days: 1 },
+                                { id: 2, name: '劉小芳', position: '前端工程師', source: 'LinkedIn', days: 2 }
+                            ]
+                        },
+                        {
+                            id: 'interview',
+                            name: '面試中',
+                            count: 12,
+                            candidates: [
+                                { id: 3, name: '張小明', position: '前端工程師', source: '獵頭', days: 5 },
+                                { id: 4, name: '陳雅婷', position: '產品經理', source: '內推', days: 3 }
+                            ]
+                        },
+                        {
+                            id: 'approved',
+                            name: '待決策',
+                            count: 5,
+                            candidates: [
+                                { id: 5, name: '李美華', position: 'UI/UX 設計師', source: '104', days: 7 }
+                            ]
+                        },
+                        {
+                            id: 'rejected',
+                            name: '已錄取',
+                            count: 3,
+                            candidates: [
+                                { id: 6, name: '吳建明', position: '資深工程師', source: 'LinkedIn', days: 14 }
+                            ]
+                        }
+                    ],
+
+                    // 面試安排
+                    upcomingInterviews: [
+                        {
+                            id: 1,
+                            candidate: '張小明',
+                            position: '前端工程師',
+                            datetime: '2026-02-18 14:00',
+                            interviewer: '技術主管 李先生',
+                            room: '會議室 A',
+                            status: 'pending'
+                        },
+                        {
+                            id: 2,
+                            candidate: '陳雅婷',
+                            position: '產品經理',
+                            datetime: '2026-02-18 16:00',
+                            interviewer: '產品總監 王女士',
+                            room: '會議室 B',
+                            status: 'pending'
+                        },
+                        {
+                            id: 3,
+                            candidate: '林志明',
+                            position: '全端工程師',
+                            datetime: '2026-02-19 10:00',
+                            interviewer: 'CTO 張先生',
+                            room: '會議室 C',
+                            status: 'approved'
+                        }
+                    ],
+
+                    // 行事曆數據
+                    calendarDays: []
+                }
+            },
+
+            computed: {
+                filteredCandidates() {
+                    let filtered = this.candidates
+
+                    if (this.candidateSearch) {
+                        filtered = filtered.filter(candidate =>
+                            candidate.name.toLowerCase().includes(this.candidateSearch.toLowerCase()) ||
+                            candidate.position.toLowerCase().includes(this.candidateSearch.toLowerCase())
+                        )
+                    }
+
+                    if (this.statusFilter) {
+                        filtered = filtered.filter(candidate => candidate.status === this.statusFilter)
+                    }
+
+                    if (this.positionFilter) {
+                        filtered = filtered.filter(candidate => 
+                            candidate.position.toLowerCase().includes(this.positionFilter.toLowerCase())
+                        )
+                    }
+
+                    return filtered
+                }
+            },
+
+            mounted() {
+                this.generateCalendarDays()
+            },
+
+            methods: {
+                getPageTitle() {
+                    const titles = {
+                        dashboard: '控制面板',
+                        candidates: '候選人管理',
+                        positions: '職缺管理', 
+                        interviews: '面試安排',
+                        pipeline: '招募流程',
+                        calendar: '行事曆',
+                        reports: '報表分析'
+                    }
+                    return titles[this.activeTab] || '控制面板'
+                },
+
+                getStatusText(status) {
+                    const statusMap = {
+                        pending: '待審核',
+                        interview: '面試中',
+                        approved: '已錄取',
+                        rejected: '不錄取'
+                    }
+                    return statusMap[status] || status
+                },
+
+                getInterviewStatusText(status) {
+                    const statusMap = {
+                        pending: '待面試',
+                        approved: '已確認',
+                        completed: '已完成',
+                        cancelled: '已取消'
+                    }
+                    return statusMap[status] || status
+                },
+
+                generateCalendarDays() {
+                    // 生成當月日曆
+                    const today = new Date()
+                    const year = today.getFullYear()
+                    const month = today.getMonth()
+                    
+                    // 獲取當月第一天和最後一天
+                    const firstDay = new Date(year, month, 1)
+                    const lastDay = new Date(year, month + 1, 0)
+                    
+                    // 獲取第一週的開始日期（週日）
+                    const startDate = new Date(firstDay)
+                    startDate.setDate(startDate.getDate() - firstDay.getDay())
+                    
+                    // 生成42天的日曆（6週）
+                    this.calendarDays = []
+                    for (let i = 0; i < 42; i++) {
+                        const date = new Date(startDate)
+                        date.setDate(startDate.getDate() + i)
+                        
+                        const isToday = date.toDateString() === today.toDateString()
+                        
+                        // 模擬一些面試事件
+                        const events = []
+                        if (Math.random() > 0.7) {
+                            events.push({ id: 1, type: 'interview' })
+                        }
+                        
+                        this.calendarDays.push({
+                            date: date.toISOString(),
+                            day: date.getDate(),
+                            isToday,
+                            events
+                        })
+                    }
+                },
+
+                previousMonth() {
+                    // 上一個月邏輯
+                    this.currentMonth = '2026年1月'
+                    this.generateCalendarDays()
+                },
+
+                nextMonth() {
+                    // 下一個月邏輯  
+                    this.currentMonth = '2026年3月'
+                    this.generateCalendarDays()
+                }
+            }
+        }).mount('#app')
+    </script>
+</body>
+</html>
