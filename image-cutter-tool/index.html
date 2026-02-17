@@ -137,7 +137,8 @@
             left: 0;
             width: 100%;
             height: 100%;
-            pointer-events: none;
+            pointer-events: auto;
+            cursor: crosshair;
         }
 
         .crop-selection {
@@ -145,6 +146,64 @@
             border: 2px solid #667eea;
             background: rgba(102, 126, 234, 0.1);
             box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
+            cursor: move;
+            min-width: 20px;
+            min-height: 20px;
+        }
+
+        .crop-handle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #667eea;
+            border: 1px solid white;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .crop-handle.nw { top: -4px; left: -4px; cursor: nw-resize; }
+        .crop-handle.ne { top: -4px; right: -4px; cursor: ne-resize; }
+        .crop-handle.sw { bottom: -4px; left: -4px; cursor: sw-resize; }
+        .crop-handle.se { bottom: -4px; right: -4px; cursor: se-resize; }
+        .crop-handle.n { top: -4px; left: 50%; transform: translateX(-50%); cursor: n-resize; }
+        .crop-handle.s { bottom: -4px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
+        .crop-handle.w { left: -4px; top: 50%; transform: translateY(-50%); cursor: w-resize; }
+        .crop-handle.e { right: -4px; top: 50%; transform: translateY(-50%); cursor: e-resize; }
+
+        .crop-info {
+            position: absolute;
+            top: -30px;
+            left: 0;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            pointer-events: none;
+        }
+
+        .crop-guides {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .crop-guide {
+            position: absolute;
+            border: 1px dashed rgba(255, 255, 255, 0.5);
+        }
+
+        .crop-guide.horizontal {
+            width: 100%;
+            height: 0;
+        }
+
+        .crop-guide.vertical {
+            width: 0;
+            height: 100%;
         }
 
         /* 控制面板 */
@@ -313,6 +372,16 @@
             background: #e9ecef;
         }
 
+        .btn-secondary.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .crop-mode-toggle {
+            display: flex;
+            gap: 5px;
+        }
+
         .btn-block {
             width: 100%;
             margin-bottom: 10px;
@@ -467,6 +536,14 @@
                 <input type="range" class="slider" id="qualitySlider" min="0.1" max="1" step="0.1" value="0.9">
                 <span id="qualityValue">90%</span>
             </div>
+            <div class="crop-mode-toggle">
+                <button class="btn btn-secondary" id="autoCropBtn">
+                    <i class="fas fa-crop-alt"></i> 自動裁剪
+                </button>
+                <button class="btn btn-secondary" id="manualCropBtn">
+                    <i class="fas fa-crop"></i> 手動裁剪
+                </button>
+            </div>
             <button class="btn btn-secondary" id="resetBtn">
                 <i class="fas fa-undo"></i> 重置
             </button>
@@ -493,8 +570,24 @@
                 <!-- 圖片預覽 -->
                 <div class="image-preview" id="imagePreview">
                     <img id="previewImg" class="preview-image">
-                    <div class="crop-overlay">
-                        <div class="crop-selection" id="cropSelection"></div>
+                    <div class="crop-overlay" id="cropOverlay">
+                        <div class="crop-selection" id="cropSelection">
+                            <div class="crop-info" id="cropInfo">100×100</div>
+                            <div class="crop-guides">
+                                <div class="crop-guide horizontal" style="top: 33.33%"></div>
+                                <div class="crop-guide horizontal" style="top: 66.66%"></div>
+                                <div class="crop-guide vertical" style="left: 33.33%"></div>
+                                <div class="crop-guide vertical" style="left: 66.66%"></div>
+                            </div>
+                            <div class="crop-handle nw"></div>
+                            <div class="crop-handle ne"></div>
+                            <div class="crop-handle sw"></div>
+                            <div class="crop-handle se"></div>
+                            <div class="crop-handle n"></div>
+                            <div class="crop-handle s"></div>
+                            <div class="crop-handle w"></div>
+                            <div class="crop-handle e"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -598,6 +691,11 @@
                 this.customWidth = null;
                 this.customHeight = null;
                 this.quality = 0.9;
+                this.cropMode = 'auto'; // 'auto' or 'manual'
+                this.cropArea = { x: 0, y: 0, width: 100, height: 100 };
+                this.isDragging = false;
+                this.dragStart = { x: 0, y: 0 };
+                this.resizeHandle = null;
                 
                 this.initializeElements();
                 this.bindEvents();
@@ -611,6 +709,13 @@
                 this.imagePreview = document.getElementById('imagePreview');
                 this.previewImg = document.getElementById('previewImg');
                 this.previewGrid = document.getElementById('previewGrid');
+                
+                // Cropper 元素
+                this.cropOverlay = document.getElementById('cropOverlay');
+                this.cropSelection = document.getElementById('cropSelection');
+                this.cropInfo = document.getElementById('cropInfo');
+                this.autoCropBtn = document.getElementById('autoCropBtn');
+                this.manualCropBtn = document.getElementById('manualCropBtn');
                 
                 // 控制元素
                 this.sizePresets = document.getElementById('sizePresets');
@@ -636,6 +741,21 @@
                 this.uploadZone.addEventListener('dragleave', this.handleDragLeave.bind(this));
                 this.uploadZone.addEventListener('drop', this.handleDrop.bind(this));
                 this.imageInput.addEventListener('change', this.handleFileSelect.bind(this));
+
+                // 裁剪模式切換
+                this.autoCropBtn.addEventListener('click', () => this.setCropMode('auto'));
+                this.manualCropBtn.addEventListener('click', () => this.setCropMode('manual'));
+
+                // Cropper 事件
+                this.cropOverlay.addEventListener('mousedown', this.handleCropStart.bind(this));
+                this.cropSelection.addEventListener('mousedown', this.handleCropDragStart.bind(this));
+                document.addEventListener('mousemove', this.handleCropMove.bind(this));
+                document.addEventListener('mouseup', this.handleCropEnd.bind(this));
+                
+                // 調整手柄事件
+                this.cropSelection.querySelectorAll('.crop-handle').forEach(handle => {
+                    handle.addEventListener('mousedown', this.handleResizeStart.bind(this));
+                });
 
                 // 尺寸選擇
                 this.sizePresets.addEventListener('click', this.handleSizePresetClick.bind(this));
@@ -689,14 +809,219 @@
                     img.onload = () => {
                         this.originalImage = img;
                         this.previewImg.src = e.target.result;
+                        this.previewImg.onload = () => {
+                            this.initializeCropArea();
+                        };
                         this.uploadZone.style.display = 'none';
                         this.imagePreview.style.display = 'block';
                         this.generateBtn.disabled = false;
+                        this.setCropMode('auto'); // 預設自動模式
                         this.generatePreviews(); // 自動生成預覽
                     };
                     img.src = e.target.result;
                 };
                 reader.readAsDataURL(file);
+            }
+
+            // 設置裁剪模式
+            setCropMode(mode) {
+                this.cropMode = mode;
+                this.autoCropBtn.classList.toggle('active', mode === 'auto');
+                this.manualCropBtn.classList.toggle('active', mode === 'manual');
+                this.cropSelection.style.display = mode === 'manual' ? 'block' : 'none';
+                
+                if (mode === 'manual' && this.originalImage) {
+                    this.initializeCropArea();
+                }
+                
+                if (this.originalImage) {
+                    this.generatePreviews();
+                }
+            }
+
+            // 初始化裁剪區域
+            initializeCropArea() {
+                const rect = this.previewImg.getBoundingClientRect();
+                const containerRect = this.imagePreview.getBoundingClientRect();
+                
+                // 計算圖片在容器中的實際位置和尺寸
+                const imgWidth = this.previewImg.clientWidth;
+                const imgHeight = this.previewImg.clientHeight;
+                const imgLeft = (this.imagePreview.clientWidth - imgWidth) / 2;
+                const imgTop = (this.imagePreview.clientHeight - imgHeight) / 2;
+                
+                // 設置初始裁剪區域為圖片中心的正方形
+                const minSize = Math.min(imgWidth, imgHeight);
+                const cropSize = minSize * 0.8;
+                
+                this.cropArea = {
+                    x: imgLeft + (imgWidth - cropSize) / 2,
+                    y: imgTop + (imgHeight - cropSize) / 2,
+                    width: cropSize,
+                    height: cropSize
+                };
+                
+                this.updateCropSelection();
+            }
+
+            // 更新裁剪框顯示
+            updateCropSelection() {
+                this.cropSelection.style.left = this.cropArea.x + 'px';
+                this.cropSelection.style.top = this.cropArea.y + 'px';
+                this.cropSelection.style.width = this.cropArea.width + 'px';
+                this.cropSelection.style.height = this.cropArea.height + 'px';
+                
+                // 更新尺寸信息
+                const realWidth = Math.round(this.cropArea.width * this.originalImage.width / this.previewImg.clientWidth);
+                const realHeight = Math.round(this.cropArea.height * this.originalImage.height / this.previewImg.clientHeight);
+                this.cropInfo.textContent = `${realWidth}×${realHeight}`;
+            }
+
+            // 開始創建新的裁剪區域
+            handleCropStart(e) {
+                if (this.cropMode !== 'manual') return;
+                if (e.target === this.cropSelection || this.cropSelection.contains(e.target)) return;
+                
+                e.preventDefault();
+                const rect = this.cropOverlay.getBoundingClientRect();
+                this.dragStart.x = e.clientX - rect.left;
+                this.dragStart.y = e.clientY - rect.top;
+                this.isDragging = true;
+                this.cropArea.x = this.dragStart.x;
+                this.cropArea.y = this.dragStart.y;
+                this.cropArea.width = 0;
+                this.cropArea.height = 0;
+                this.updateCropSelection();
+            }
+
+            // 開始拖動裁剪框
+            handleCropDragStart(e) {
+                if (this.cropMode !== 'manual') return;
+                
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const rect = this.cropOverlay.getBoundingClientRect();
+                this.dragStart.x = e.clientX - rect.left - this.cropArea.x;
+                this.dragStart.y = e.clientY - rect.top - this.cropArea.y;
+                this.isDragging = true;
+            }
+
+            // 開始調整裁剪框尺寸
+            handleResizeStart(e) {
+                if (this.cropMode !== 'manual') return;
+                
+                e.preventDefault();
+                e.stopPropagation();
+                
+                this.resizeHandle = e.target.className.split(' ')[1]; // 獲取方向類名
+                const rect = this.cropOverlay.getBoundingClientRect();
+                this.dragStart.x = e.clientX - rect.left;
+                this.dragStart.y = e.clientY - rect.top;
+                this.isDragging = true;
+            }
+
+            // 處理鼠標移動
+            handleCropMove(e) {
+                if (!this.isDragging || this.cropMode !== 'manual') return;
+                
+                e.preventDefault();
+                const rect = this.cropOverlay.getBoundingClientRect();
+                const currentX = e.clientX - rect.left;
+                const currentY = e.clientY - rect.top;
+                
+                if (this.resizeHandle) {
+                    // 調整尺寸
+                    this.handleResize(currentX, currentY);
+                } else if (this.cropArea.width === 0 && this.cropArea.height === 0) {
+                    // 創建新裁剪區域
+                    this.cropArea.width = Math.abs(currentX - this.dragStart.x);
+                    this.cropArea.height = Math.abs(currentY - this.dragStart.y);
+                    if (currentX < this.dragStart.x) this.cropArea.x = currentX;
+                    if (currentY < this.dragStart.y) this.cropArea.y = currentY;
+                } else {
+                    // 拖動裁剪框
+                    this.cropArea.x = currentX - this.dragStart.x;
+                    this.cropArea.y = currentY - this.dragStart.y;
+                }
+                
+                // 限制邊界
+                this.constrainCropArea();
+                this.updateCropSelection();
+            }
+
+            // 調整尺寸處理
+            handleResize(currentX, currentY) {
+                const deltaX = currentX - this.dragStart.x;
+                const deltaY = currentY - this.dragStart.y;
+                const originalArea = { ...this.cropArea };
+                
+                switch (this.resizeHandle) {
+                    case 'se': // 東南
+                        this.cropArea.width = Math.max(20, originalArea.width + deltaX);
+                        this.cropArea.height = Math.max(20, originalArea.height + deltaY);
+                        break;
+                    case 'sw': // 西南
+                        this.cropArea.width = Math.max(20, originalArea.width - deltaX);
+                        this.cropArea.height = Math.max(20, originalArea.height + deltaY);
+                        this.cropArea.x = originalArea.x + deltaX;
+                        break;
+                    case 'ne': // 東北
+                        this.cropArea.width = Math.max(20, originalArea.width + deltaX);
+                        this.cropArea.height = Math.max(20, originalArea.height - deltaY);
+                        this.cropArea.y = originalArea.y + deltaY;
+                        break;
+                    case 'nw': // 西北
+                        this.cropArea.width = Math.max(20, originalArea.width - deltaX);
+                        this.cropArea.height = Math.max(20, originalArea.height - deltaY);
+                        this.cropArea.x = originalArea.x + deltaX;
+                        this.cropArea.y = originalArea.y + deltaY;
+                        break;
+                    case 'n': // 北
+                        this.cropArea.height = Math.max(20, originalArea.height - deltaY);
+                        this.cropArea.y = originalArea.y + deltaY;
+                        break;
+                    case 's': // 南
+                        this.cropArea.height = Math.max(20, originalArea.height + deltaY);
+                        break;
+                    case 'w': // 西
+                        this.cropArea.width = Math.max(20, originalArea.width - deltaX);
+                        this.cropArea.x = originalArea.x + deltaX;
+                        break;
+                    case 'e': // 東
+                        this.cropArea.width = Math.max(20, originalArea.width + deltaX);
+                        break;
+                }
+                
+                this.dragStart.x = currentX;
+                this.dragStart.y = currentY;
+            }
+
+            // 限制裁剪區域邊界
+            constrainCropArea() {
+                const imgWidth = this.previewImg.clientWidth;
+                const imgHeight = this.previewImg.clientHeight;
+                const imgLeft = (this.imagePreview.clientWidth - imgWidth) / 2;
+                const imgTop = (this.imagePreview.clientHeight - imgHeight) / 2;
+                
+                // 限制在圖片範圍內
+                this.cropArea.x = Math.max(imgLeft, Math.min(this.cropArea.x, imgLeft + imgWidth - this.cropArea.width));
+                this.cropArea.y = Math.max(imgTop, Math.min(this.cropArea.y, imgTop + imgHeight - this.cropArea.height));
+                this.cropArea.width = Math.min(this.cropArea.width, imgLeft + imgWidth - this.cropArea.x);
+                this.cropArea.height = Math.min(this.cropArea.height, imgTop + imgHeight - this.cropArea.y);
+            }
+
+            // 結束拖動
+            handleCropEnd(e) {
+                if (this.isDragging) {
+                    this.isDragging = false;
+                    this.resizeHandle = null;
+                    
+                    // 自動生成預覽
+                    if (this.originalImage) {
+                        this.generatePreviews();
+                    }
+                }
             }
 
             // 尺寸預設點擊
@@ -806,19 +1131,43 @@
                 const ctx = canvas.getContext('2d');
                 const img = this.originalImage;
                 
-                // 計算裁剪區域（居中裁剪）
-                const sourceSize = Math.min(img.width, img.height);
-                const sourceX = (img.width - sourceSize) / 2;
-                const sourceY = (img.height - sourceSize) / 2;
-                
                 // 使用高品質縮放
                 ctx.imageSmoothingEnabled = true;
                 ctx.imageSmoothingQuality = 'high';
                 
+                let sourceX, sourceY, sourceWidth, sourceHeight;
+                
+                if (this.cropMode === 'manual') {
+                    // 手動裁剪：使用用戶選擇的區域
+                    const imgWidth = this.previewImg.clientWidth;
+                    const imgHeight = this.previewImg.clientHeight;
+                    const imgLeft = (this.imagePreview.clientWidth - imgWidth) / 2;
+                    const imgTop = (this.imagePreview.clientHeight - imgHeight) / 2;
+                    
+                    // 計算相對於圖片的裁剪區域
+                    const relativeX = (this.cropArea.x - imgLeft) / imgWidth;
+                    const relativeY = (this.cropArea.y - imgTop) / imgHeight;
+                    const relativeWidth = this.cropArea.width / imgWidth;
+                    const relativeHeight = this.cropArea.height / imgHeight;
+                    
+                    // 轉換為原圖坐標
+                    sourceX = Math.max(0, relativeX * img.width);
+                    sourceY = Math.max(0, relativeY * img.height);
+                    sourceWidth = Math.min(img.width - sourceX, relativeWidth * img.width);
+                    sourceHeight = Math.min(img.height - sourceY, relativeHeight * img.height);
+                } else {
+                    // 自動裁剪：居中正方形裁剪
+                    const sourceSize = Math.min(img.width, img.height);
+                    sourceX = (img.width - sourceSize) / 2;
+                    sourceY = (img.height - sourceSize) / 2;
+                    sourceWidth = sourceSize;
+                    sourceHeight = sourceSize;
+                }
+                
                 // 繪製圖片
                 ctx.drawImage(
                     img,
-                    sourceX, sourceY, sourceSize, sourceSize,
+                    sourceX, sourceY, sourceWidth, sourceHeight,
                     0, 0, width, height
                 );
             }
@@ -899,6 +1248,10 @@
                 this.selectedSizes = new Set(['32', '64', '128']);
                 this.customWidth = null;
                 this.customHeight = null;
+                this.cropMode = 'auto';
+                this.cropArea = { x: 0, y: 0, width: 100, height: 100 };
+                this.isDragging = false;
+                this.resizeHandle = null;
                 
                 // 重置UI
                 this.uploadZone.style.display = 'flex';
@@ -907,6 +1260,11 @@
                 this.customWidthInput.value = '';
                 this.customHeightInput.value = '';
                 this.imageInput.value = '';
+                
+                // 重置裁剪模式按鈕
+                this.autoCropBtn.classList.add('active');
+                this.manualCropBtn.classList.remove('active');
+                this.cropSelection.style.display = 'none';
                 
                 // 重置按鈕狀態
                 this.generateBtn.disabled = true;
