@@ -180,6 +180,26 @@
             border-radius: 4px;
             font-size: 0.8rem;
             pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .crop-hint {
+            position: absolute;
+            bottom: -30px;
+            right: 0;
+            background: rgba(102, 126, 234, 0.9);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            pointer-events: none;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .crop-selection:hover .crop-hint {
+            opacity: 1;
         }
 
         .crop-guides {
@@ -573,6 +593,7 @@
                     <div class="crop-overlay" id="cropOverlay">
                         <div class="crop-selection" id="cropSelection">
                             <div class="crop-info" id="cropInfo">100×100</div>
+                            <div class="crop-hint">按住 Shift 等比例調整</div>
                             <div class="crop-guides">
                                 <div class="crop-guide horizontal" style="top: 33.33%"></div>
                                 <div class="crop-guide horizontal" style="top: 66.66%"></div>
@@ -696,6 +717,8 @@
                 this.isDragging = false;
                 this.dragStart = { x: 0, y: 0 };
                 this.resizeHandle = null;
+                this.shiftPressed = false;
+                this.initialAspectRatio = 1;
                 
                 this.initializeElements();
                 this.bindEvents();
@@ -756,6 +779,10 @@
                 this.cropSelection.querySelectorAll('.crop-handle').forEach(handle => {
                     handle.addEventListener('mousedown', this.handleResizeStart.bind(this));
                 });
+
+                // 鍵盤事件
+                document.addEventListener('keydown', this.handleKeyDown.bind(this));
+                document.addEventListener('keyup', this.handleKeyUp.bind(this));
 
                 // 尺寸選擇
                 this.sizePresets.addEventListener('click', this.handleSizePresetClick.bind(this));
@@ -871,10 +898,11 @@
                 this.cropSelection.style.width = this.cropArea.width + 'px';
                 this.cropSelection.style.height = this.cropArea.height + 'px';
                 
-                // 更新尺寸信息
+                    // 更新尺寸信息
                 const realWidth = Math.round(this.cropArea.width * this.originalImage.width / this.previewImg.clientWidth);
                 const realHeight = Math.round(this.cropArea.height * this.originalImage.height / this.previewImg.clientHeight);
-                this.cropInfo.textContent = `${realWidth}×${realHeight}`;
+                const shiftHint = this.shiftPressed ? ' (等比例)' : '';
+                this.cropInfo.textContent = `${realWidth}×${realHeight}${shiftHint}`;
             }
 
             // 開始創建新的裁剪區域
@@ -907,6 +935,23 @@
                 this.isDragging = true;
             }
 
+            // 鍵盤事件處理
+            handleKeyDown(e) {
+                if (e.key === 'Shift') {
+                    this.shiftPressed = true;
+                    // 記錄當前比例
+                    this.initialAspectRatio = this.cropArea.width / this.cropArea.height;
+                    this.updateCropSelection();
+                }
+            }
+
+            handleKeyUp(e) {
+                if (e.key === 'Shift') {
+                    this.shiftPressed = false;
+                    this.updateCropSelection();
+                }
+            }
+
             // 開始調整裁剪框尺寸
             handleResizeStart(e) {
                 if (this.cropMode !== 'manual') return;
@@ -915,6 +960,7 @@
                 e.stopPropagation();
                 
                 this.resizeHandle = e.target.className.split(' ')[1]; // 獲取方向類名
+                this.initialAspectRatio = this.cropArea.width / this.cropArea.height;
                 const rect = this.cropOverlay.getBoundingClientRect();
                 this.dragStart.x = e.clientX - rect.left;
                 this.dragStart.y = e.clientY - rect.top;
@@ -956,6 +1002,20 @@
                 const deltaY = currentY - this.dragStart.y;
                 const originalArea = { ...this.cropArea };
                 
+                if (this.shiftPressed) {
+                    // 等比例調整
+                    this.handleProportionalResize(deltaX, deltaY, originalArea);
+                } else {
+                    // 自由調整
+                    this.handleFreeResize(deltaX, deltaY, originalArea);
+                }
+                
+                this.dragStart.x = currentX;
+                this.dragStart.y = currentY;
+            }
+
+            // 自由調整
+            handleFreeResize(deltaX, deltaY, originalArea) {
                 switch (this.resizeHandle) {
                     case 'se': // 東南
                         this.cropArea.width = Math.max(20, originalArea.width + deltaX);
@@ -992,9 +1052,93 @@
                         this.cropArea.width = Math.max(20, originalArea.width + deltaX);
                         break;
                 }
-                
-                this.dragStart.x = currentX;
-                this.dragStart.y = currentY;
+            }
+
+            // 等比例調整
+            handleProportionalResize(deltaX, deltaY, originalArea) {
+                const aspectRatio = this.initialAspectRatio;
+                let newWidth, newHeight;
+
+                switch (this.resizeHandle) {
+                    case 'se': // 東南 - 以對角線距離為基準
+                    case 'nw': // 西北
+                        const diagonal = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                        const sign = (this.resizeHandle === 'se') ? 1 : -1;
+                        const direction = (deltaX + deltaY) * sign;
+                        
+                        if (aspectRatio >= 1) {
+                            // 寬度為主
+                            newWidth = Math.max(20, originalArea.width + direction / Math.sqrt(1 + 1/aspectRatio/aspectRatio));
+                            newHeight = newWidth / aspectRatio;
+                        } else {
+                            // 高度為主
+                            newHeight = Math.max(20, originalArea.height + direction / Math.sqrt(1 + aspectRatio*aspectRatio));
+                            newWidth = newHeight * aspectRatio;
+                        }
+
+                        this.cropArea.width = newWidth;
+                        this.cropArea.height = newHeight;
+                        
+                        if (this.resizeHandle === 'nw') {
+                            this.cropArea.x = originalArea.x + originalArea.width - newWidth;
+                            this.cropArea.y = originalArea.y + originalArea.height - newHeight;
+                        }
+                        break;
+                        
+                    case 'ne': // 東北
+                    case 'sw': // 西南
+                        const diagonalNE = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                        const signNE = (this.resizeHandle === 'ne') ? 1 : -1;
+                        const directionNE = (deltaX - deltaY) * signNE;
+                        
+                        if (aspectRatio >= 1) {
+                            newWidth = Math.max(20, originalArea.width + directionNE / Math.sqrt(1 + 1/aspectRatio/aspectRatio));
+                            newHeight = newWidth / aspectRatio;
+                        } else {
+                            newHeight = Math.max(20, originalArea.height - directionNE / Math.sqrt(1 + aspectRatio*aspectRatio));
+                            newWidth = newHeight * aspectRatio;
+                        }
+
+                        this.cropArea.width = newWidth;
+                        this.cropArea.height = newHeight;
+                        
+                        if (this.resizeHandle === 'ne') {
+                            this.cropArea.y = originalArea.y + originalArea.height - newHeight;
+                        } else {
+                            this.cropArea.x = originalArea.x + originalArea.width - newWidth;
+                        }
+                        break;
+                        
+                    case 'e': // 東
+                    case 'w': // 西
+                        newWidth = Math.max(20, originalArea.width + (this.resizeHandle === 'e' ? deltaX : -deltaX));
+                        newHeight = newWidth / aspectRatio;
+                        
+                        this.cropArea.width = newWidth;
+                        this.cropArea.height = newHeight;
+                        
+                        if (this.resizeHandle === 'w') {
+                            this.cropArea.x = originalArea.x + originalArea.width - newWidth;
+                        }
+                        // 保持垂直居中
+                        this.cropArea.y = originalArea.y + (originalArea.height - newHeight) / 2;
+                        break;
+                        
+                    case 'n': // 北
+                    case 's': // 南
+                        newHeight = Math.max(20, originalArea.height + (this.resizeHandle === 's' ? deltaY : -deltaY));
+                        newWidth = newHeight * aspectRatio;
+                        
+                        this.cropArea.width = newWidth;
+                        this.cropArea.height = newHeight;
+                        
+                        if (this.resizeHandle === 'n') {
+                            this.cropArea.y = originalArea.y + originalArea.height - newHeight;
+                        }
+                        // 保持水平居中
+                        this.cropArea.x = originalArea.x + (originalArea.width - newWidth) / 2;
+                        break;
+                }
             }
 
             // 限制裁剪區域邊界
@@ -1252,6 +1396,8 @@
                 this.cropArea = { x: 0, y: 0, width: 100, height: 100 };
                 this.isDragging = false;
                 this.resizeHandle = null;
+                this.shiftPressed = false;
+                this.initialAspectRatio = 1;
                 
                 // 重置UI
                 this.uploadZone.style.display = 'flex';
