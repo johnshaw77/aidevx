@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>財務估價系統 - Financial Quotation System</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            color: #2563eb;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header p {
+            color: #64748b;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        .quote-form {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .form-section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            color: #2563eb;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #374151;
+            font-weight: 500;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .item-list {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .item-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 10px;
+            align-items: end;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .summary-card, .chart-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #2563eb;
+        }
+
+        .price {
+            font-weight: 600;
+            color: #059669;
+        }
+
+        .recent-quotes {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .quote-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #f8fafc;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .quote-item:hover {
+            background: #e2e8f0;
+            transform: translateX(5px);
+        }
+
+        .quote-info h4 {
+            color: #2563eb;
+            margin-bottom: 5px;
+        }
+
+        .quote-info p {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .quotation {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+        }
+
+        .quotation-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #3b82f6;
+        }
+
+        .company-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .info-block h4 {
+            color: #2563eb;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .quotation-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+
+        .quotation-table th,
+        .quotation-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .quotation-table th {
+            background: #f8fafc;
+            color: #2563eb;
+            font-weight: 600;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .item-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .company-info {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+
+        .fade-enter-active, .fade-leave-active {
+            transition: opacity 0.3s;
+        }
+        .fade-enter, .fade-leave-to {
+            opacity: 0;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <div class="container">
+            <div class="header">
+                <h1>
+                    <i class="fas fa-calculator"></i>
+                    財務估價系統
+                </h1>
+                <p>專業採購估價與報價管理平台</p>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">{{ quotes.length }}</div>
+                        <div class="stat-label">總報價單數</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">NT$ {{ formatPrice(totalValue) }}</div>
+                        <div class="stat-label">總估價金額</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">{{ avgMargin.toFixed(1) }}%</div>
+                        <div class="stat-label">平均利潤率</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">{{ completedQuotes }}</div>
+                        <div class="stat-label">已完成報價</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="main-content">
+                <!-- Quote Form -->
+                <div class="quote-form">
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-file-invoice"></i>
+                            建立新報價單
+                        </h3>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>客戶名稱</label>
+                                <input v-model="currentQuote.customerName" placeholder="輸入客戶名稱">
+                            </div>
+                            <div class="form-group">
+                                <label>報價編號</label>
+                                <input v-model="currentQuote.quoteNumber" placeholder="自動生成或手動輸入">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>聯絡人</label>
+                                <input v-model="currentQuote.contactPerson" placeholder="聯絡窗口">
+                            </div>
+                            <div class="form-group">
+                                <label>報價日期</label>
+                                <input type="date" v-model="currentQuote.quoteDate">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>有效期限</label>
+                                <select v-model="currentQuote.validityDays">
+                                    <option value="7">7天</option>
+                                    <option value="14">14天</option>
+                                    <option value="30">30天</option>
+                                    <option value="60">60天</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>付款條件</label>
+                                <select v-model="currentQuote.paymentTerms">
+                                    <option value="現金">現金</option>
+                                    <option value="月結30">月結30天</option>
+                                    <option value="月結60">月結60天</option>
+                                    <option value="預付款">預付款</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-list"></i>
+                            估價項目
+                        </h3>
+                        
+                        <div class="item-list">
+                            <div class="item-row">
+                                <div class="form-group">
+                                    <label>品項名稱</label>
+                                    <input v-model="newItem.name" placeholder="輸入品項名稱">
+                                </div>
+                                <div class="form-group">
+                                    <label>數量</label>
+                                    <input type="number" v-model.number="newItem.quantity" min="1">
+                                </div>
+                                <div class="form-group">
+                                    <label>單價 (NT$)</label>
+                                    <input type="number" v-model.number="newItem.unitPrice" min="0" step="0.01">
+                                </div>
+                                <div class="form-group">
+                                    <label>折扣 (%)</label>
+                                    <input type="number" v-model.number="newItem.discount" min="0" max="100">
+                                </div>
+                                <div class="form-group">
+                                    <label>&nbsp;</label>
+                                    <button class="btn btn-primary" @click="addItem">
+                                        <i class="fas fa-plus"></i>
+                                        新增
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div v-for="(item, index) in currentQuote.items" :key="index" class="item-row">
+                                <div><strong>{{ item.name }}</strong></div>
+                                <div>{{ item.quantity }} 個</div>
+                                <div>NT$ {{ formatPrice(item.unitPrice) }}</div>
+                                <div>
+                                    <span class="price">NT$ {{ formatPrice(calculateItemTotal(item)) }}</span>
+                                </div>
+                                <div>
+                                    <button class="btn btn-danger" @click="removeItem(index)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>稅率 (%)</label>
+                                <input type="number" v-model.number="currentQuote.taxRate" min="0" max="100" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label>運費 (NT$)</label>
+                                <input type="number" v-model.number="currentQuote.shippingCost" min="0" step="0.01">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>備註</label>
+                            <textarea v-model="currentQuote.notes" rows="3" placeholder="其他說明事項"></textarea>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 30px;">
+                        <button class="btn btn-primary" @click="saveQuote" :disabled="saving">
+                            <span v-if="saving" class="loading"></span>
+                            <i v-else class="fas fa-save"></i>
+                            {{ saving ? '儲存中...' : '儲存報價單' }}
+                        </button>
+                        <button class="btn btn-secondary" @click="previewQuote" style="margin-left: 15px;">
+                            <i class="fas fa-eye"></i>
+                            預覽報價單
+                        </button>
+                        <button class="btn btn-success" @click="resetForm" style="margin-left: 15px;">
+                            <i class="fas fa-plus"></i>
+                            新建報價
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="sidebar">
+                    <!-- Summary Card -->
+                    <div class="summary-card">
+                        <h3 class="section-title">
+                            <i class="fas fa-chart-line"></i>
+                            本次報價摘要
+                        </h3>
+                        <div class="summary-item">
+                            <span>項目數量:</span>
+                            <span>{{ currentQuote.items.length }} 項</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>小計:</span>
+                            <span class="price">NT$ {{ formatPrice(subtotal) }}</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>稅額:</span>
+                            <span class="price">NT$ {{ formatPrice(taxAmount) }}</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>運費:</span>
+                            <span class="price">NT$ {{ formatPrice(currentQuote.shippingCost) }}</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>總計:</span>
+                            <span class="price">NT$ {{ formatPrice(grandTotal) }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Chart Card -->
+                    <div class="chart-card">
+                        <h3 class="section-title">
+                            <i class="fas fa-chart-pie"></i>
+                            成本分析
+                        </h3>
+                        <canvas id="costChart" width="300" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Quotes -->
+            <div class="recent-quotes">
+                <h3 class="section-title">
+                    <i class="fas fa-history"></i>
+                    最近報價記錄
+                </h3>
+                <div v-if="quotes.length === 0" style="text-align: center; color: #64748b; padding: 40px;">
+                    <i class="fas fa-file-invoice" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.3;"></i>
+                    <p>尚無報價記錄</p>
+                </div>
+                <div v-for="quote in quotes.slice().reverse()" :key="quote.id" class="quote-item">
+                    <div class="quote-info">
+                        <h4>{{ quote.customerName }} - {{ quote.quoteNumber }}</h4>
+                        <p>{{ formatDate(quote.quoteDate) }} | {{ quote.items.length }} 項目 | {{ quote.paymentTerms }}</p>
+                    </div>
+                    <div>
+                        <div class="price" style="font-size: 1.1rem; margin-bottom: 5px;">
+                            NT$ {{ formatPrice(calculateQuoteTotal(quote)) }}
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.9rem;" 
+                                    @click="loadQuote(quote)">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.9rem;" 
+                                    @click="showQuotePreview(quote)">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quote Preview Modal -->
+        <transition name="fade">
+            <div v-if="showPreview" class="modal" @click="closePreview">
+                <div class="modal-content" @click.stop>
+                    <div class="quotation">
+                        <div class="quotation-header">
+                            <h2 style="color: #2563eb; margin-bottom: 10px;">正式報價單</h2>
+                            <p style="color: #64748b;">QUOTATION</p>
+                        </div>
+
+                        <div class="company-info">
+                            <div class="info-block">
+                                <h4>報價方資訊</h4>
+                                <p><strong>公司名稱:</strong> 您的公司名稱</p>
+                                <p><strong>地址:</strong> 公司地址</p>
+                                <p><strong>電話:</strong> (02) 1234-5678</p>
+                                <p><strong>Email:</strong> info@company.com</p>
+                            </div>
+                            <div class="info-block">
+                                <h4>客戶資訊</h4>
+                                <p><strong>客戶名稱:</strong> {{ previewQuote.customerName }}</p>
+                                <p><strong>聯絡人:</strong> {{ previewQuote.contactPerson }}</p>
+                                <p><strong>報價編號:</strong> {{ previewQuote.quoteNumber }}</p>
+                                <p><strong>報價日期:</strong> {{ formatDate(previewQuote.quoteDate) }}</p>
+                                <p><strong>有效期限:</strong> {{ previewQuote.validityDays }} 天</p>
+                                <p><strong>付款條件:</strong> {{ previewQuote.paymentTerms }}</p>
+                            </div>
+                        </div>
+
+                        <table class="quotation-table">
+                            <thead>
+                                <tr>
+                                    <th>項目</th>
+                                    <th>數量</th>
+                                    <th>單價</th>
+                                    <th>折扣</th>
+                                    <th>小計</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="item in previewQuote.items" :key="item.name">
+                                    <td>{{ item.name }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>NT$ {{ formatPrice(item.unitPrice) }}</td>
+                                    <td>{{ item.discount }}%</td>
+                                    <td>NT$ {{ formatPrice(calculateItemTotal(item)) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div style="text-align: right; margin-bottom: 30px;">
+                            <div style="display: inline-block; text-align: left;">
+                                <p><strong>小計:</strong> NT$ {{ formatPrice(calculateSubtotal(previewQuote)) }}</p>
+                                <p><strong>稅額 ({{ previewQuote.taxRate }}%):</strong> NT$ {{ formatPrice(calculateTaxAmount(previewQuote)) }}</p>
+                                <p><strong>運費:</strong> NT$ {{ formatPrice(previewQuote.shippingCost) }}</p>
+                                <hr style="margin: 10px 0;">
+                                <p style="font-size: 1.2rem; color: #2563eb;"><strong>總計: NT$ {{ formatPrice(calculateQuoteTotal(previewQuote)) }}</strong></p>
+                            </div>
+                        </div>
+
+                        <div v-if="previewQuote.notes" style="margin-bottom: 30px;">
+                            <h4 style="color: #2563eb; margin-bottom: 10px;">備註</h4>
+                            <p style="white-space: pre-wrap;">{{ previewQuote.notes }}</p>
+                        </div>
+
+                        <div style="text-align: center; margin-top: 40px;">
+                            <button class="btn btn-primary" @click="printQuote">
+                                <i class="fas fa-print"></i>
+                                列印報價單
+                            </button>
+                            <button class="btn btn-secondary" @click="closePreview" style="margin-left: 15px;">
+                                <i class="fas fa-times"></i>
+                                關閉
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    currentQuote: {
+                        id: null,
+                        customerName: '',
+                        quoteNumber: '',
+                        contactPerson: '',
+                        quoteDate: new Date().toISOString().split('T')[0],
+                        validityDays: 30,
+                        paymentTerms: '月結30',
+                        items: [],
+                        taxRate: 5,
+                        shippingCost: 0,
+                        notes: ''
+                    },
+                    newItem: {
+                        name: '',
+                        quantity: 1,
+                        unitPrice: 0,
+                        discount: 0
+                    },
+                    quotes: [],
+                    showPreview: false,
+                    previewQuote: {},
+                    saving: false,
+                    costChart: null
+                }
+            },
+            computed: {
+                subtotal() {
+                    return this.calculateSubtotal(this.currentQuote);
+                },
+                taxAmount() {
+                    return this.calculateTaxAmount(this.currentQuote);
+                },
+                grandTotal() {
+                    return this.calculateQuoteTotal(this.currentQuote);
+                },
+                totalValue() {
+                    return this.quotes.reduce((sum, quote) => sum + this.calculateQuoteTotal(quote), 0);
+                },
+                avgMargin() {
+                    if (this.quotes.length === 0) return 0;
+                    const totalMargin = this.quotes.reduce((sum, quote) => sum + (quote.taxRate || 5), 0);
+                    return totalMargin / this.quotes.length;
+                },
+                completedQuotes() {
+                    return this.quotes.filter(quote => quote.items.length > 0).length;
+                }
+            },
+            mounted() {
+                this.loadQuotes();
+                this.generateQuoteNumber();
+                this.$nextTick(() => {
+                    this.initChart();
+                });
+            },
+            watch: {
+                currentQuote: {
+                    handler() {
+                        this.updateChart();
+                    },
+                    deep: true
+                }
+            },
+            methods: {
+                addItem() {
+                    if (this.newItem.name && this.newItem.quantity > 0 && this.newItem.unitPrice >= 0) {
+                        this.currentQuote.items.push({...this.newItem});
+                        this.resetNewItem();
+                    }
+                },
+                removeItem(index) {
+                    this.currentQuote.items.splice(index, 1);
+                },
+                resetNewItem() {
+                    this.newItem = {
+                        name: '',
+                        quantity: 1,
+                        unitPrice: 0,
+                        discount: 0
+                    };
+                },
+                calculateItemTotal(item) {
+                    const subtotal = item.quantity * item.unitPrice;
+                    const discountAmount = subtotal * (item.discount / 100);
+                    return subtotal - discountAmount;
+                },
+                calculateSubtotal(quote) {
+                    return quote.items.reduce((sum, item) => sum + this.calculateItemTotal(item), 0);
+                },
+                calculateTaxAmount(quote) {
+                    return this.calculateSubtotal(quote) * (quote.taxRate / 100);
+                },
+                calculateQuoteTotal(quote) {
+                    return this.calculateSubtotal(quote) + this.calculateTaxAmount(quote) + (quote.shippingCost || 0);
+                },
+                generateQuoteNumber() {
+                    const now = new Date();
+                    const year = now.getFullYear();
+                    const month = String(now.getMonth() + 1).padStart(2, '0');
+                    const day = String(now.getDate()).padStart(2, '0');
+                    const sequence = String(this.quotes.length + 1).padStart(3, '0');
+                    this.currentQuote.quoteNumber = `Q${year}${month}${day}-${sequence}`;
+                },
+                async saveQuote() {
+                    if (!this.currentQuote.customerName || this.currentQuote.items.length === 0) {
+                        alert('請填寫客戶名稱並至少添加一個項目');
+                        return;
+                    }
+
+                    this.saving = true;
+                    
+                    // Simulate API call
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+
+                    const quote = {
+                        ...this.currentQuote,
+                        id: this.currentQuote.id || Date.now(),
+                        createdAt: new Date().toISOString()
+                    };
+
+                    const existingIndex = this.quotes.findIndex(q => q.id === quote.id);
+                    if (existingIndex !== -1) {
+                        this.quotes[existingIndex] = quote;
+                    } else {
+                        this.quotes.push(quote);
+                    }
+
+                    this.saveQuotes();
+                    this.saving = false;
+                    alert('報價單已成功儲存！');
+                },
+                resetForm() {
+                    this.currentQuote = {
+                        id: null,
+                        customerName: '',
+                        quoteNumber: '',
+                        contactPerson: '',
+                        quoteDate: new Date().toISOString().split('T')[0],
+                        validityDays: 30,
+                        paymentTerms: '月結30',
+                        items: [],
+                        taxRate: 5,
+                        shippingCost: 0,
+                        notes: ''
+                    };
+                    this.generateQuoteNumber();
+                },
+                previewQuote() {
+                    this.previewQuote = {...this.currentQuote};
+                    this.showPreview = true;
+                },
+                showQuotePreview(quote) {
+                    this.previewQuote = {...quote};
+                    this.showPreview = true;
+                },
+                closePreview() {
+                    this.showPreview = false;
+                },
+                loadQuote(quote) {
+                    this.currentQuote = {...quote};
+                },
+                printQuote() {
+                    window.print();
+                },
+                formatPrice(amount) {
+                    return new Intl.NumberFormat('zh-TW').format(amount);
+                },
+                formatDate(dateString) {
+                    return new Date(dateString).toLocaleDateString('zh-TW');
+                },
+                saveQuotes() {
+                    localStorage.setItem('financial_quotes', JSON.stringify(this.quotes));
+                },
+                loadQuotes() {
+                    const saved = localStorage.getItem('financial_quotes');
+                    if (saved) {
+                        this.quotes = JSON.parse(saved);
+                    }
+                },
+                initChart() {
+                    const ctx = document.getElementById('costChart');
+                    if (ctx) {
+                        this.costChart = new Chart(ctx, {
+                            type: 'doughnut',
+                            data: {
+                                labels: ['商品成本', '稅額', '運費'],
+                                datasets: [{
+                                    data: [0, 0, 0],
+                                    backgroundColor: [
+                                        '#3b82f6',
+                                        '#10b981',
+                                        '#f59e0b'
+                                    ],
+                                    borderWidth: 0
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        position: 'bottom'
+                                    }
+                                }
+                            }
+                        });
+                    }
+                },
+                updateChart() {
+                    if (this.costChart) {
+                        const subtotal = this.subtotal;
+                        const tax = this.taxAmount;
+                        const shipping = this.currentQuote.shippingCost;
+                        
+                        this.costChart.data.datasets[0].data = [subtotal, tax, shipping];
+                        this.costChart.update();
+                    }
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
