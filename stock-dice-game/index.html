@@ -332,27 +332,28 @@
     <div class="container">
         <div class="header">
             <h1>🎲 股票擲骰子</h1>
-            <p>自訂六檔股票，讓命運幫你選股！</p>
+            <p>仿真實骰子設計，灰白簡約風格，讓命運幫你選股！</p>
         </div>
 
         <div class="left-panel">
             <h2 class="section-title">📝 自訂股票清單</h2>
             <div class="dice-instructions">
-                編輯骰子六個面的股票代號
+                編輯骰子六個面的股票代號與公司名稱<br>
+                <small>格式：代號 公司名稱（如：3037 欣興）</small>
             </div>
             
             <div class="stock-list" id="stockList">
                 <div class="stock-item">
                     <div class="dice-face">1</div>
-                    <input type="text" class="stock-input" placeholder="例：2330 台積電" value="2330 台積電" data-face="1">
+                    <input type="text" class="stock-input" placeholder="例：3037 欣興" value="3037 欣興" data-face="1">
                 </div>
                 <div class="stock-item">
                     <div class="dice-face">2</div>
-                    <input type="text" class="stock-input" placeholder="例：0050 元大台灣50" value="0050 元大台灣50" data-face="2">
+                    <input type="text" class="stock-input" placeholder="例：2904 智邦" value="2904 智邦" data-face="2">
                 </div>
                 <div class="stock-item">
                     <div class="dice-face">3</div>
-                    <input type="text" class="stock-input" placeholder="例：2317 鴻海" value="2317 鴻海" data-face="3">
+                    <input type="text" class="stock-input" placeholder="例：2330 台積電" value="2330 台積電" data-face="3">
                 </div>
                 <div class="stock-item">
                     <div class="dice-face">4</div>
@@ -364,7 +365,7 @@
                 </div>
                 <div class="stock-item">
                     <div class="dice-face">6</div>
-                    <input type="text" class="stock-input" placeholder="例：1301 台塑" value="1301 台塑" data-face="6">
+                    <input type="text" class="stock-input" placeholder="例：2317 鴻海" value="2317 鴻海" data-face="6">
                 </div>
             </div>
 
@@ -422,8 +423,8 @@
         // 全域變數
         let scene, camera, renderer, cube;
         let currentStocks = [
-            '2330 台積電', '0050 元大台灣50', '2317 鴻海', 
-            '2454 聯發科', '3008 大立光', '1301 台塑'
+            '3037 欣興', '2904 智邦', '2330 台積電', 
+            '2454 聯發科', '3008 大立光', '2317 鴻海'
         ];
         let isRolling = false;
         let diceState = 'idle'; // 'idle', 'rolling', 'stopped'
@@ -466,46 +467,127 @@
         function createDiceCube() {
             const geometry = new THREE.BoxGeometry(2, 2, 2);
             
-            // 創建材質陣列（每個面不同顏色）
+            // 創建材質陣列（統一灰白色調）
             const materials = [];
-            const colors = [0xff6b6b, 0x4ecdc4, 0x45b7d1, 0xf9ca24, 0xf0932b, 0xeb4d4b];
             
             for (let i = 0; i < 6; i++) {
                 const canvas = document.createElement('canvas');
-                canvas.width = 256;
-                canvas.height = 256;
+                canvas.width = 512;
+                canvas.height = 512;
                 const ctx = canvas.getContext('2d');
 
-                // 背景
-                ctx.fillStyle = `#${colors[i].toString(16)}`;
-                ctx.fillRect(0, 0, 256, 256);
+                // 創建漸層背景（灰白色調）
+                const gradient = ctx.createLinearGradient(0, 0, 512, 512);
+                gradient.addColorStop(0, '#f8f9fa');
+                gradient.addColorStop(0.5, '#e9ecef');
+                gradient.addColorStop(1, '#dee2e6');
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, 512, 512);
 
-                // 邊框
-                ctx.strokeStyle = '#fff';
-                ctx.lineWidth = 8;
-                ctx.strokeRect(8, 8, 240, 240);
+                // 添加圓角邊框（模擬真實骰子）
+                ctx.strokeStyle = '#6c757d';
+                ctx.lineWidth = 6;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                
+                // 外框
+                ctx.strokeRect(12, 12, 488, 488);
+                
+                // 內框（增加立體感）
+                ctx.strokeStyle = '#adb5bd';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(24, 24, 464, 464);
 
-                // 股票文字
-                ctx.fillStyle = '#fff';
+                // 角落小圓點（面編號）
+                ctx.fillStyle = '#6c757d';
                 ctx.font = 'bold 24px Arial';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.fillText((i + 1).toString(), 36, 36);
+
+                // 解析股票資訊
+                const stockText = currentStocks[i] || `股票 ${i + 1}`;
+                const parts = stockText.split(' ');
+                const stockCode = parts[0] || '0000';
+                const companyName = parts.slice(1).join(' ') || '股票';
+
+                // 股票代號（大字體，置中上方）
+                ctx.fillStyle = '#343a40';
+                ctx.font = 'bold 80px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(stockCode, 256, 200);
+
+                // 公司名稱（小字體，置中下方）
+                ctx.fillStyle = '#495057';
+                ctx.font = 'bold 36px Arial';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 
-                const stockText = currentStocks[i] || `股票 ${i + 1}`;
-                const lines = wrapText(ctx, stockText, 220);
-                const lineHeight = 30;
-                const startY = 128 - (lines.length - 1) * lineHeight / 2;
-                
-                lines.forEach((line, index) => {
-                    ctx.fillText(line, 128, startY + index * lineHeight);
-                });
+                // 處理公司名稱換行（如果太長）
+                if (companyName.length > 4) {
+                    const maxWidth = 400;
+                    const lines = wrapTextAdvanced(ctx, companyName, maxWidth);
+                    const lineHeight = 40;
+                    const startY = 320 - (lines.length - 1) * lineHeight / 2;
+                    
+                    lines.forEach((line, index) => {
+                        ctx.fillText(line, 256, startY + index * lineHeight);
+                    });
+                } else {
+                    ctx.fillText(companyName, 256, 320);
+                }
+
+                // 添加細微紋理（模擬真實骰子質感）
+                for (let x = 0; x < 512; x += 8) {
+                    for (let y = 0; y < 512; y += 8) {
+                        if (Math.random() > 0.7) {
+                            ctx.fillStyle = 'rgba(108, 117, 125, 0.1)';
+                            ctx.fillRect(x, y, 1, 1);
+                        }
+                    }
+                }
 
                 const texture = new THREE.CanvasTexture(canvas);
-                materials.push(new THREE.MeshPhongMaterial({ map: texture }));
+                texture.generateMipmaps = false;
+                texture.minFilter = THREE.LinearFilter;
+                texture.magFilter = THREE.LinearFilter;
+                
+                materials.push(new THREE.MeshPhongMaterial({ 
+                    map: texture,
+                    shininess: 30,
+                    specular: 0x222222
+                }));
             }
 
             cube = new THREE.Mesh(geometry, materials);
             scene.add(cube);
+        }
+
+        // 進階文字換行（更智能的中文處理）
+        function wrapTextAdvanced(ctx, text, maxWidth) {
+            const chars = text.split('');
+            const lines = [];
+            let currentLine = '';
+
+            for (let i = 0; i < chars.length; i++) {
+                const testLine = currentLine + chars[i];
+                const width = ctx.measureText(testLine).width;
+                
+                if (width > maxWidth && currentLine.length > 0) {
+                    lines.push(currentLine);
+                    currentLine = chars[i];
+                } else {
+                    currentLine = testLine;
+                }
+            }
+            
+            if (currentLine.length > 0) {
+                lines.push(currentLine);
+            }
+            
+            return lines;
         }
 
         // 文字換行
