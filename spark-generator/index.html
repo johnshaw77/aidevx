@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💡 靈感火花啟動器 - Spark Generator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: linear-gradient(135deg, #0a0e1f 0%, #1a1e2f 50%, #0f1a2e 100%); color: #c8cdd8; font-family: 'Inter', sans-serif; min-height: 100vh; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 40px; }
+        h1 { font-size: 2.5rem; background: linear-gradient(45deg, #ffa500, #fffd38); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .input-section { background: radial-gradient(ellipse at center, rgba(99, 102, 241, 0.1) 0%, transparent 70%); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 20px; padding: 30px; margin-bottom: 30px; }
+        input { width: 100%; padding: 12px; border: 2px solid rgba(255, 165, 0, 0.2); border-radius: 10px; background: rgba(0, 0, 0, 0.3); color: #c8cdd8; margin-bottom: 15px; font-family: inherit; }
+        input:focus { border-color: #ffa500; outline: none; }
+        .btn { background: linear-gradient(45deg, #ffa500, #fffd38); border: 2px solid #ffa500; color: #000; padding: 15px 30px; border-radius: 10px; cursor: pointer; font-weight: bold; transition: all 0.3s; }
+        .btn:hover { box-shadow: 0 0 25px rgba(255, 165, 0, 0.8); }
+        .result-card { background: radial-gradient(ellipse at center, rgba(255, 165, 0, 0.1) 0%, transparent 70%); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 15px; padding: 25px; margin-bottom: 20px; }
+        .result-title { font-size: 1.3rem; font-weight: bold; margin-bottom: 10px; color: #ffa500; }
+        .result-description { opacity: 0.9; }
+        .spark { position: fixed; pointer-events: none; font-size: 1.5rem; animation: spark-burst 1s ease-out forwards; }
+        @keyframes spark-burst { 0% { opacity: 1; transform: translate(0, 0) scale(1); } 100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💡 靈感火花啟動器</h1>
+            <p style="opacity: 0.8;">激發創意點子！✨</p>
+        </header>
+        <div class="input-section">
+            <input type="text" id="topic" placeholder="輸入主題..." value="">
+            <button class="btn" onclick="generateIdeas()" style="width: 100%;">🔥 激發火花</button>
+        </div>
+        <div id="results"></div>
+    </div>
+    <script>
+        const ideas = {
+            product: ['智能水杯', '自清潔鞋', '溫度調節枕', '聲控購物助手', '可穿戴心情紀錄器'],
+            content: ['製作教程', '創建系列影片', '寫部落格文章', '製作podcast', '創建攝影指南'],
+            startup: ['線上社群空間', 'AI家務助手', '可持續時尚平台', '技能交易市場', '心理健康應用'],
+            game: ['益智遊戲', '多人冒險遊戲', '時間管理遊戲', '教語言遊戲', '進化寵物遊戲'],
+            art: ['AI生成藝術', '光影裝置', '交互壁畫', '動畫短片', '虛擬現實展覽'],
+            other: ['創新應用', '社交平台', '數據可視化', '教育工具', '健康助手']
+        };
+        function generateIdeas() {
+            const topic = document.getElementById('topic').value;
+            let results = [];
+            if (ideas[topic]) {
+                results = ideas[topic].slice(0, 5);
+            } else {
+                results = ideas.other.slice(0, 5);
+            }
+            document.getElementById('results').innerHTML = results.map((idea, i) => `
+                <div class="result-card">
+                    <div class="result-title">${i+1}. ${idea}</div>
+                    <div class="result-description">💡 一個有趣且可行的創意點子，可以進一步開發。</div>
+                </div>
+            `).join('');
+            createSparks();
+        }
+        function createSparks() {
+            for (let i = 0; i < 20; i++) {
+                const spark = document.createElement('div');
+                spark.className = 'spark';
+                spark.textContent = '✨';
+                spark.style.left = Math.random() * window.innerWidth + 'px';
+                spark.style.top = Math.random() * window.innerHeight + 'px';
+                spark.style.setProperty('--tx', (Math.random() - 0.5) * 200 + 'px');
+                spark.style.setProperty('--ty', (Math.random() - 1) * 200 + 'px');
+                document.body.appendChild(spark);
+                setTimeout(() => spark.remove(), 1000);
+            }
+        }
+    </script>
+</body>
+</html>

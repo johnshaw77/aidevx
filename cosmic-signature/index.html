@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ 宇宙簽名生成器 - Cosmic Signature</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: linear-gradient(135deg, #0a0e1f 0%, #1a1e2f 50%, #0f1a2e 100%); color: #c8cdd8; font-family: 'Inter', sans-serif; min-height: 100vh; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 40px; }
+        h1 { font-size: 2.5rem; background: linear-gradient(45deg, #ff00ff, #00d4ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .input-section { background: radial-gradient(ellipse at center, rgba(99, 102, 241, 0.1) 0%, transparent 70%); border: 2px solid rgba(255, 0, 128, 0.3); border-radius: 20px; padding: 30px; margin-bottom: 30px; }
+        input { width: 100%; padding: 12px; border: 2px solid rgba(255, 0, 128, 0.2); border-radius: 10px; background: rgba(0, 0, 0, 0.3); color: #c8cdd8; margin-bottom: 15px; font-family: inherit; }
+        input:focus { border-color: #ff00ff; outline: none; }
+        .btn { background: linear-gradient(45deg, #ff00ff, #00d4ff); border: 2px solid #ff00ff; color: white; padding: 15px 30px; border-radius: 10px; cursor: pointer; font-weight: bold; transition: all 0.3s; text-transform: uppercase; width: 100%; }
+        .btn:hover { box-shadow: 0 0 25px rgba(255, 0, 255, 0.8); }
+        .canvas-section { background: radial-gradient(ellipse at center, rgba(99, 102, 241, 0.1) 0%, transparent 70%); border: 2px solid rgba(0, 212, 255, 0.3); border-radius: 20px; padding: 30px; text-align: center; }
+        canvas { width: 100%; max-width: 600px; height: auto; background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.5) 0%, transparent 100%); border: 3px solid rgba(0, 212, 255, 0.3); border-radius: 15px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>✨ 宇宙簽名生成器</h1>
+            <p style="opacity: 0.8;">創造你的專屬宇宙簽名藝術</p>
+        </header>
+        <div class="input-section">
+            <input type="text" id="nameInput" placeholder="輸入你的名字" value="Cosmic">
+            <button class="btn" onclick="generateSignature()">🎨 生成簽名</button>
+        </div>
+        <div class="canvas-section">
+            <div style="font-weight: bold; margin-bottom: 20px;">✨ 你的宇宙簽名</div>
+            <canvas id="canvas" width="600" height="300"></canvas>
+            <button class="btn" onclick="downloadSignature()">📥 下載</button>
+        </div>
+    </div>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        function generateSignature() {
+            const name = document.getElementById('nameInput').value || 'Cosmic';
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, 'rgba(0, 0, 0, 0.3)');
+            gradient.addColorStop(1, 'rgba(20, 30, 50, 0.5)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < 50; i++) {
+                ctx.fillStyle = `rgba(${Math.random() * 100 + 155}, ${Math.random() * 100 + 155}, 255, ${Math.random() * 0.5})`;
+                ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 2, 2);
+            }
+            ctx.font = 'italic bold 80px Georgia';
+            ctx.fillStyle = '#ff00ff';
+            ctx.textAlign = 'center';
+            ctx.shadowColor = '#ff00ff';
+            ctx.shadowBlur = 20;
+            ctx.fillText(name, canvas.width / 2, canvas.height / 2);
+        }
+        function downloadSignature() {
+            const link = document.createElement('a');
+            link.download = `signature-${document.getElementById('nameInput').value || 'cosmic'}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+        generateSignature();
+    </script>
+</body>
+</html>

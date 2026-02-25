@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐠 夢幻水族館 - Dream Aquarium</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: linear-gradient(135deg, #0a0e1f 0%, #1a1e2f 50%, #0f1a2e 100%); color: #c8cdd8; font-family: 'Inter', sans-serif; min-height: 100vh; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 40px; }
+        h1 { font-size: 2.5rem; background: linear-gradient(45deg, #00d4ff, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .aquarium { position: relative; width: 100%; height: 500px; background: radial-gradient(ellipse at center, rgba(0, 212, 255, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%); border: 3px solid rgba(0, 212, 255, 0.4); border-radius: 30px; overflow: hidden; margin-bottom: 30px; }
+        .creature { position: absolute; cursor: pointer; font-size: 2rem; animation: swim 6s ease-in-out infinite; filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.5)); }
+        @keyframes swim { 0% { transform: translateX(0); } 50% { transform: translateX(20px); } 100% { transform: translateX(0); } }
+        .creature:hover { filter: drop-shadow(0 0 20px rgba(255, 0, 128, 0.8)); }
+        .controls { background: radial-gradient(ellipse at center, rgba(99, 102, 241, 0.1) 0%, transparent 70%); border: 2px solid rgba(0, 212, 255, 0.3); border-radius: 20px; padding: 30px; }
+        .buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin: 20px 0; }
+        .btn { background: linear-gradient(45deg, #00d4ff, #10b981); border: 2px solid #10b981; color: white; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn:hover { box-shadow: 0 0 20px rgba(0, 212, 255, 0.5); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🐠 夢幻水族館</h1>
+            <p style="opacity: 0.8;">點擊按鈕添加生物，享受水族館的寧靜</p>
+        </header>
+        <div class="aquarium" id="aquarium"></div>
+        <div class="controls">
+            <div style="font-weight: bold; margin-bottom: 10px;">添加生物</div>
+            <div class="buttons">
+                <button class="btn" onclick="addCreature('🐠')">🐠 小魚</button>
+                <button class="btn" onclick="addCreature('🐙')">🐙 章魚</button>
+                <button class="btn" onclick="addCreature('🦀')">🦀 螃蟹</button>
+                <button class="btn" onclick="addCreature('🐚')">🐚 貝殼</button>
+                <button class="btn" onclick="addCreature('🦐')">🦐 蝦</button>
+                <button class="btn" onclick="resetAquarium()">🔄 清空</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        const aquarium = document.getElementById('aquarium');
+        let creatures = [];
+        function addCreature(emoji) {
+            const c = document.createElement('div');
+            c.className = 'creature';
+            c.textContent = emoji;
+            c.style.left = Math.random() * aquarium.clientWidth + 'px';
+            c.style.top = Math.random() * aquarium.clientHeight + 'px';
+            c.style.animationDelay = Math.random() * 2 + 's';
+            c.onclick = () => { c.remove(); creatures = creatures.filter(x => x !== c); };
+            aquarium.appendChild(c);
+            creatures.push(c);
+        }
+        function resetAquarium() { creatures.forEach(c => c.remove()); creatures = []; }
+        ['🐠', '🐟', '🦀'].forEach(emoji => addCreature(emoji));
+    </script>
+</body>
+</html>

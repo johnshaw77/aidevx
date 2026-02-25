@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>☕ 虛擬霓虹咖啡館 - Cyber Cafe</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #0a0e1f 0%, #1a1e2f 50%, #0f1a2e 100%);
+            color: #c8cdd8;
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #00d4ff, #ff0080);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .cafe-scene {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+        .cafe-window {
+            background: radial-gradient(ellipse at center, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+            border: 3px solid rgba(0, 212, 255, 0.3);
+            border-radius: 30px;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+        }
+        .menu-items {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .menu-item {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(0, 212, 255, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .menu-item:hover {
+            border-color: #00d4ff;
+            transform: translateX(5px);
+        }
+        .seating-area {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .seat {
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(0, 212, 255, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .seat:hover {
+            border-color: #00d4ff;
+        }
+        .seat.occupied {
+            background: linear-gradient(45deg, rgba(16, 185, 129, 0.3), rgba(0, 212, 255, 0.3));
+            border-color: #10b981;
+        }
+        .btn {
+            background: linear-gradient(45deg, #00d4ff, #10b981);
+            border: 2px solid #10b981;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+        }
+        @media (max-width: 900px) {
+            .cafe-scene { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>☕ 虛擬霓虹咖啡館</h1>
+            <p style="opacity: 0.8;">選擇飲品、座位、下單享受咖啡！</p>
+        </header>
+        <div class="cafe-scene">
+            <div class="cafe-window">
+                <h2 style="color: #00d4ff; margin-bottom: 20px;">菜單</h2>
+                <div class="menu-items" id="menu"></div>
+            </div>
+            <div class="cafe-window">
+                <h2 style="color: #ff0080; margin-bottom: 20px;">座位 & 訂單</h2>
+                <div class="seating-area" id="seating"></div>
+                <div style="margin-top: 20px;" id="order"></div>
+                <div style="margin-top: 10px; display: flex; gap: 10px;">
+                    <button class="btn" style="flex: 1;" id="clearBtn">清空</button>
+                    <button class="btn" style="flex: 1;" id="orderBtn">下單</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const menu = [
+            {name: '拿鐵', emoji: '☕', price: 60},
+            {name: '卡布奇諾', emoji: '☕', price: 70},
+            {name: '美式黑咖啡', emoji: '🖤', price: 50},
+            {name: '冷萃咖啡', emoji: '🧊', price: 55},
+            {name: '提拉米蘇', emoji: '🍰', price: 85},
+            {name: '起司蛋糕', emoji: '🍰', price: 75}
+        ];
+        let order = [];
+        let seat = null;
+        document.getElementById('menu').innerHTML = menu.map(item => `
+            <div class="menu-item" onclick="order.push(${item.price}); updateOrder();">
+                <span>${item.emoji} ${item.name}</span>
+                <span>$${item.price}</span>
+            </div>
+        `).join('');
+        document.getElementById('seating').innerHTML = [1,2,3,4,5,6].map(i => `
+            <div class="seat" onclick="seat=${i}; document.querySelectorAll('.seat').forEach(s=>s.classList.remove('occupied')); event.target.classList.add('occupied');">🪑 ${i}</div>
+        `).join('');
+        function updateOrder() {
+            let total = order.reduce((a,b)=>a+b, 0);
+            document.getElementById('order').innerHTML = `<div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px;"><div style="color: #10b981; font-weight: bold;">總計: $${total}</div></div>`;
+        }
+        document.getElementById('clearBtn').onclick = () => { order = []; updateOrder(); };
+        document.getElementById('orderBtn').onclick = () => {
+            if (order.length && seat) {
+                alert(`✨ 訂單確認！座位 #${seat}\n總計：$${order.reduce((a,b)=>a+b,0)}`);
+                order = []; seat = null;
+                updateOrder();
+                document.querySelectorAll('.seat').forEach(s=>s.classList.remove('occupied'));
+            } else alert('請選擇商品和座位！');
+        };
+        updateOrder();
+    </script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌀 迷宮冒險 - Maze Quest</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: linear-gradient(135deg, #0a0e1f 0%, #1a1e2f 50%, #0f1a2e 100%); color: #c8cdd8; font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .container { max-width: 900px; width: 100%; }
+        header { text-align: center; margin-bottom: 30px; }
+        h1 { font-size: 2.5rem; background: linear-gradient(45deg, #ffd700, #ff6b9d); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .controls { background: radial-gradient(ellipse at center, rgba(99, 102, 241, 0.1) 0%, transparent 70%); border: 2px solid rgba(255, 215, 0, 0.3); border-radius: 15px; padding: 20px; margin-bottom: 20px; }
+        .btn { background: linear-gradient(45deg, #ffd700, #ff6b9d); border: 2px solid #ffd700; color: #000; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn:hover { box-shadow: 0 0 20px rgba(255, 215, 0, 0.6); }
+        .canvas-container { background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.6) 0%, transparent 100%); border: 3px solid rgba(255, 215, 0, 0.3); border-radius: 20px; padding: 20px; text-align: center; margin-bottom: 20px; }
+        canvas { max-width: 100%; background: #0a0e1f; border-radius: 15px; }
+        .info { background: rgba(0, 0, 0, 0.3); border: 2px solid rgba(255, 215, 0, 0.2); border-radius: 15px; padding: 20px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌀 迷宮冒險</h1>
+            <p style="opacity: 0.8;">控制重力找到出口！</p>
+        </header>
+        <div class="controls">
+            <select id="difficulty" style="padding: 8px; background: rgba(0,0,0,0.3); border: 2px solid rgba(255, 215, 0, 0.2); border-radius: 8px; color: #c8cdd8;">
+                <option>🟢 簡單 (5x5)</option>
+                <option selected>🟡 普通 (8x8)</option>
+                <option>🔴 困難 (12x12)</option>
+            </select>
+            <button class="btn" style="margin-left: 10px;" onclick="location.reload()">🔄 新迷宮</button>
+        </div>
+        <div class="canvas-container">
+            <canvas id="maze"></canvas>
+        </div>
+        <div class="info">
+            <div style="font-weight: bold; margin-bottom: 10px;">📖 用鼠標控制重力傾斜迷宮，讓紅球滾向藍色出口</div>
+        </div>
+    </div>
+    <script>
+        const canvas = document.getElementById('maze');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 400;
+        canvas.height = 400;
+        let gridSize = 8;
+        let maze = Array(gridSize).fill(null).map(() => Array(gridSize).fill(1));
+        for (let i = 0; i < gridSize; i++) maze[0][i] = 0;
+        for (let i = 0; i < gridSize; i++) maze[i][gridSize-1] = 0;
+        let ball = { x: 25, y: 25, vx: 0, vy: 0, radius: 8 };
+        function draw() {
+            ctx.fillStyle = '#0a0e1f';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            const cellSize = canvas.width / gridSize;
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
+                    if (maze[i][j] === 1) {
+                        ctx.fillStyle = 'rgba(0, 212, 255, 0.3)';
+                        ctx.fillRect(j * cellSize, i * cellSize, cellSize, cellSize);
+                    }
+                }
+            }
+            ctx.fillStyle = '#0099ff';
+            ctx.beginPath();
+            ctx.arc((gridSize-0.5) * cellSize, (gridSize-0.5) * cellSize, 15, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ff6b6b';
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fill();
+            requestAnimationFrame(draw);
+        }
+        document.addEventListener('mousemove', (e) => {
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            ball.vx += (e.clientX - centerX) / centerX * 0.3;
+            ball.vy += (e.clientY - centerY) / centerY * 0.3;
+            ball.vx *= 0.95;
+            ball.vy *= 0.95;
+            ball.x += ball.vx;
+            ball.y += ball.vy;
+            ball.x = Math.max(ball.radius, Math.min(canvas.width - ball.radius, ball.x));
+            ball.y = Math.max(ball.radius, Math.min(canvas.height - ball.radius, ball.y));
+        });
+        draw();
+    </script>
+</body>
+</html>

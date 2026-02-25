@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌈 靈魂顏色配對 - Soul Color Match</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: linear-gradient(135deg, #0a0e1f 0%, #1a1e2f 50%, #0f1a2e 100%);
+            color: #c8cdd8;
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b9d, #c06c84);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .quiz-container {
+            background: radial-gradient(ellipse at center, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+            border: 2px solid rgba(255, 107, 157, 0.3);
+            border-radius: 20px;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .progress-bar {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 107, 157, 0.2);
+            border-radius: 15px;
+            height: 30px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b9d, #c06c84);
+            width: 0%;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+        
+        .question-section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .question-section.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .question-title {
+            font-size: 1.3rem;
+            margin-bottom: 25px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .option {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 107, 157, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .option:hover {
+            transform: translateY(-5px);
+            border-color: #ff6b9d;
+            box-shadow: 0 0 20px rgba(255, 107, 157, 0.3);
+        }
+        
+        .option.selected {
+            background: linear-gradient(45deg, #ff6b9d, #c06c84);
+            border-color: #ff6b9d;
+            box-shadow: 0 0 30px rgba(255, 107, 157, 0.8);
+        }
+        
+        /* Result section */
+        .result-section {
+            display: none;
+            text-align: center;
+        }
+        
+        .result-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .result-color-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            margin: 30px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            box-shadow: 0 0 60px currentColor;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .result-title {
+            font-size: 1.8rem;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        
+        .result-description {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid;
+        }
+        
+        .color-attributes {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .attribute {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 3px solid currentColor;
+        }
+        
+        .attribute-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #ff6b9d, #c06c84);
+            border: 2px solid #ff6b9d;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            box-shadow: 0 0 15px rgba(255, 107, 157, 0.3);
+        }
+        
+        .btn:hover {
+            box-shadow: 0 0 25px rgba(255, 107, 157, 0.8);
+            transform: translateY(-2px);
+        }
+        
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            animation: float-up 2s ease-out forwards;
+        }
+        
+        @keyframes float-up {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-100px) scale(0); }
+        }
+        
+        @media (max-width: 600px) {
+            h1 { font-size: 1.8rem; }
+            .options { grid-template-columns: 1fr; }
+            .color-attributes { grid-template-columns: 1fr; }
+            .result-color-circle { width: 150px; height: 150px; font-size: 3rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌈 靈魂顏色配對</h1>
+            <p style="opacity: 0.8;">十個問題，發現你的靈魂色彩！</p>
+        </header>
+        
+        <div class="quiz-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill">0%</div>
+            </div>
+            
+            <div id="quizContent">
+                <!-- Questions will be generated here -->
+            </div>
+            
+            <div id="resultContent" class="result-section"></div>
+        </div>
+    </div>
+    
+    <script>
+        const questions = [
+            { q: '你處於壓力中時傾向於？', a: ['尋求寧靜', '尋求冒險', '尋求陪伴', '尋求挑戰'] },
+            { q: '你最欣賞的特質是？', a: ['智慧', '勇氣', '同情心', '決心'] },
+            { q: '在團體中你通常是？', a: ['旁觀者', '領導者', '支持者', '創新者'] },
+            { q: '你的創意來源是？', a: ['自然與靜思', '冒險與新奇', '人際互動', '實驗與嘗試'] },
+            { q: '面對失敗時你會？', a: ['反思學習', '重新再來', '尋求幫助', '堅持前進'] },
+            { q: '哪種環境讓你最放鬆？', a: ['寧靜的地方', '熱鬧的地方', '溫暖的社交', '充滿可能的地方'] },
+            { q: '你的人生目標傾向於？', a: ['內心平靜', '夢想實現', '幸福生活', '成功超越'] },
+            { q: '面對新機會時你的反應是？', a: ['謹慎考慮', '立即行動', '聽聽他人', '大膽嘗試'] },
+            { q: '你最自豪的成就是？', a: ['個人成長', '克服困難', '幫助他人', '創造成果'] },
+            { q: '理想的未來生活是？', a: ['簡樸寧靜', '冒險自由', '家人陪伴', '功成名就'] }
+        ];
+        
+        const colors = [
+            {
+                name: '寧靜藍',
+                emoji: '🔵',
+                desc: '你是深思熟慮的靈魂，擁有內在智慧和平靜的力量。你重視自我反思，在安靜的環境中找到靈感。',
+                attrs: [
+                    { title: '性格', value: '內斂、聰慧、冥想' },
+                    { title: '優勢', value: '深度思考、情感理解' },
+                    { title: '靈性', value: '靜觀、覺察、智慧' },
+                    { title: '人生色彩', value: '寧靜、深邃、神聖' }
+                ]
+            },
+            {
+                name: '熾烈紅',
+                emoji: '🔴',
+                desc: '你是充滿熱情和勇氣的靈魂，敢於冒險和挑戰自我。你的能量感染周圍的人，推動著變革。',
+                attrs: [
+                    { title: '性格', value: '熱情、勇敢、直率' },
+                    { title: '優勢', value: '行動力、冒險精神' },
+                    { title: '靈性', value: '力量、火焰、變革' },
+                    { title: '人生色彩', value: '炎熱、激烈、充沛' }
+                ]
+            },
+            {
+                name: '溫暖黃',
+                emoji: '🟡',
+                desc: '你是溫柔和善的靈魂，將愛與關懷散播給他人。你的同理心和親切感是你最大的禮物。',
+                attrs: [
+                    { title: '性格', value: '溫暖、友善、同情心' },
+                    { title: '優勢', value: '人際關係、同理心' },
+                    { title: '靈性', value: '療癒、連結、愛' },
+                    { title: '人生色彩', value: '溫暖、明亮、希望' }
+                ]
+            },
+            {
+                name: '翠綠綠',
+                emoji: '🟢',
+                desc: '你是成長導向的靈魂，永遠尋求改進和創新。你適應力強，帶來新的可能性和希望。',
+                attrs: [
+                    { title: '性格', value: '積極、創新、適應強' },
+                    { title: '優勢', value: '解決問題、創意思維' },
+                    { title: '靈性', value: '成長、再生、自然' },
+                    { title: '人生色彩', value: '蓬勃、活力、希望' }
+                ]
+            }
+        ];
+        
+        let scores = [0, 0, 0, 0];
+        let currentQuestion = 0;
+        
+        function initQuiz() {
+            const quizContent = document.getElementById('quizContent');
+            quizContent.innerHTML = questions.map((q, idx) => `
+                <div class="question-section" data-question="${idx}">
+                    <div class="question-title">問題 ${idx + 1}: ${q.q}</div>
+                    <div class="options">
+                        ${q.a.map((answer, aidx) => `
+                            <div class="option" data-answer="${aidx}">${answer}</div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+            
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.addEventListener('click', selectAnswer);
+            });
+            
+            showQuestion(0);
+        }
+        
+        function showQuestion(idx) {
+            document.querySelectorAll('.question-section').forEach(el => el.classList.remove('active'));
+            document.querySelector(`[data-question="${idx}"]`).classList.add('active');
+            currentQuestion = idx;
+            updateProgress();
+        }
+        
+        function selectAnswer(e) {
+            const answer = parseInt(e.target.dataset.answer);
+            scores[answer]++;
+            
+            // Particle effect
+            createParticles(e.clientX, e.clientY);
+            
+            const nextIdx = currentQuestion + 1;
+            if (nextIdx < questions.length) {
+                setTimeout(() => showQuestion(nextIdx), 500);
+            } else {
+                setTimeout(showResult, 500);
+            }
+        }
+        
+        function updateProgress() {
+            const percent = Math.round(((currentQuestion + 1) / questions.length) * 100);
+            const progressFill = document.getElementById('progressFill');
+            progressFill.style.width = percent + '%';
+            progressFill.textContent = percent + '%';
+        }
+        
+        function showResult() {
+            document.getElementById('quizContent').style.display = 'none';
+            const resultContent = document.getElementById('resultContent');
+            resultContent.classList.add('active');
+            
+            const maxScore = Math.max(...scores);
+            const colorIdx = scores.indexOf(maxScore);
+            const color = colors[colorIdx];
+            
+            resultContent.innerHTML = `
+                <div class="result-color-circle" style="color: ${['#6495ED', '#DC143C', '#FFD700', '#00AA55'][colorIdx]}">${color.emoji}</div>
+                <div class="result-title">${color.name}</div>
+                <div class="result-description" style="border-color: ${['#6495ED', '#DC143C', '#FFD700', '#00AA55'][colorIdx]}">${color.desc}</div>
+                
+                <div class="color-attributes">
+                    ${color.attrs.map((attr, idx) => `
+                        <div class="attribute" style="border-left-color: ${['#6495ED', '#DC143C', '#FFD700', '#00AA55'][colorIdx]}; color: ${['#6495ED', '#DC143C', '#FFD700', '#00AA55'][colorIdx]}">
+                            <div class="attribute-title">${attr.title}</div>
+                            <div>${attr.value}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="controls">
+                    <button class="btn" onclick="location.reload()">🔄 重新測驗</button>
+                    <button class="btn" onclick="shareResult('${color.name}')">📤 分享結果</button>
+                </div>
+            `;
+        }
+        
+        function createParticles(x, y) {
+            const particleCount = 8;
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.textContent = '✨';
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                particle.style.fontSize = Math.random() * 20 + 10 + 'px';
+                particle.style.setProperty('--duration', Math.random() * 1 + 1 + 's');
+                document.body.appendChild(particle);
+                setTimeout(() => particle.remove(), 2000);
+            }
+        }
+        
+        function shareResult(colorName) {
+            const text = `我的靈魂顏色是: ${colorName} 🌈 你也來試試吧！`;
+            if (navigator.share) {
+                navigator.share({ title: '靈魂顏色配對', text });
+            } else {
+                alert(text);
+            }
+        }
+        
+        // Initialize
+        initQuiz();
+    </script>
+</body>
+</html>
