@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>靈夢互動療癒島</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 90vw;
+            max-width: 1000px;
+            background: rgba(30, 20, 60, 0.9);
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            background: linear-gradient(135deg, #a8edea, #fed6e3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.1em;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .island-canvas {
+            width: 100%;
+            height: 400px;
+            background: linear-gradient(180deg, #87ceeb 0%, #e0f6ff 100%);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+            cursor: crosshair;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.05);
+            color: #a8edea;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn:hover {
+            background: rgba(168, 237, 234, 0.1);
+            border-color: #a8edea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(168, 237, 234, 0.3);
+        }
+
+        .btn.active {
+            background: #a8edea;
+            color: #1e143c;
+        }
+
+        .info-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(168, 237, 234, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .info-title {
+            color: #a8edea;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .info-text {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+            font-size: 0.95em;
+        }
+
+        .affirmation {
+            color: #fed6e3;
+            font-style: italic;
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(254, 214, 227, 0.1);
+            border-left: 3px solid #fed6e3;
+            border-radius: 5px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-box {
+            background: rgba(168, 237, 234, 0.05);
+            border: 1px solid rgba(168, 237, 234, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            color: #a8edea;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .footer {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.9em;
+            margin-top: 30px;
+        }
+
+        .particles {
+            position: absolute;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            animation: rise 2s ease-out forwards;
+        }
+
+        @keyframes rise {
+            0% {
+                opacity: 1;
+                transform: translateY(0) translateX(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100px) translateX(var(--tx)) scale(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✨ 靈夢互動療癒島 ✨</h1>
+            <p>點擊島嶼來啟動你的療癒旅程</p>
+        </div>
+
+        <div class="island-canvas" id="canvas-container">
+            <canvas id="islandCanvas"></canvas>
+        </div>
+
+        <div class="controls">
+            <button class="btn" data-element="lamp">🕯️ 靈燈</button>
+            <button class="btn" data-element="fountain">⛲ 噴泉</button>
+            <button class="btn" data-element="plant">🌿 植物</button>
+            <button class="btn" data-element="cloud">☁️ 雲彩</button>
+            <button class="btn" data-element="dream">💭 夢境</button>
+            <button class="btn" data-element="clear">🔄 重置</button>
+        </div>
+
+        <div class="info-panel">
+            <div class="info-title">歡迎來到療癒島</div>
+            <div class="info-text">
+                這是你的個人療癒空間。選擇上方的元素來裝飾你的島嶼，或直接點擊畫布來放置靈感碎片。每一次互動都會帶來新的啟發。
+            </div>
+            <div class="affirmation" id="affirmation">
+                💫 你正在創造屬於自己的魔法時刻
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-value" id="clicks">0</div>
+                <div class="stat-label">靈感觸點</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="elements">0</div>
+                <div class="stat-label">島上元素</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>🌙 療癒來自於每一個靜心時刻 🌙</p>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('islandCanvas');
+        const ctx = canvas.getContext('2d');
+        const container = document.getElementById('canvas-container');
+
+        let clicks = 0;
+        let elements = [];
+        let selectedElement = null;
+
+        // 設置 Canvas 大小
+        function resizeCanvas() {
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+            draw();
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // 療癒語錄庫
+        const affirmations = [
+            '💫 你正在創造屬於自己的魔法時刻',
+            '🌟 靜心就是力量',
+            '✨ 每一呼吸都是新的開始',
+            '🌊 如水般流動，如山般穩定',
+            '💝 你值得被溫柔對待',
+            '🦋 從容靜待，美好自會到來',
+            '🌺 生命在當下綻放',
+            '✨ 寧靜的心是最強的心',
+            '🌈 挑戰過後總有彩虹',
+            '💎 你內在閃閃發光'
+        ];
+
+        // 選擇元素按鈕
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+                
+                if (btn.dataset.element === 'clear') {
+                    elements = [];
+                    clicks = 0;
+                    updateStats();
+                    draw();
+                    btn.classList.remove('active');
+                } else {
+                    btn.classList.add('active');
+                    selectedElement = btn.dataset.element;
+                }
+            });
+        });
+
+        // Canvas 點擊處理
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+            const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+            clicks++;
+
+            if (selectedElement) {
+                elements.push({ type: selectedElement, x, y, time: Date.now() });
+            } else {
+                // 隨機添加靈感碎片
+                const types = ['lamp', 'fountain', 'plant', 'cloud'];
+                const randomType = types[Math.floor(Math.random() * types.length)];
+                elements.push({ type: randomType, x, y, time: Date.now() });
+            }
+
+            createParticles(x, y);
+            updateAffirmation();
+            updateStats();
+            draw();
+        });
+
+        // 創建粒子效果
+        function createParticles(x, y) {
+            for (let i = 0; i < 8; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                const tx = (Math.random() - 0.5) * 100;
+                const ty = -100 - Math.random() * 50;
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                particle.style.width = particle.style.height = (Math.random() * 8 + 3) + 'px';
+                particle.style.background = ['#a8edea', '#fed6e3', '#fff'][Math.floor(Math.random() * 3)];
+                particle.style.setProperty('--tx', tx + 'px');
+                container.appendChild(particle);
+                setTimeout(() => particle.remove(), 2000);
+            }
+        }
+
+        // 更新療癒語錄
+        function updateAffirmation() {
+            const affirmation = affirmations[Math.floor(Math.random() * affirmations.length)];
+            document.getElementById('affirmation').textContent = affirmation;
+        }
+
+        // 更新統計
+        function updateStats() {
+            document.getElementById('clicks').textContent = clicks;
+            document.getElementById('elements').textContent = elements.length;
+        }
+
+        // 繪製島嶼和元素
+        function draw() {
+            // 清空背景
+            ctx.fillStyle = 'rgba(200, 230, 250, 0.3)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 繪製島嶼
+            ctx.fillStyle = 'rgba(200, 150, 100, 0.4)';
+            ctx.beginPath();
+            ctx.ellipse(canvas.width / 2, canvas.height * 0.7, canvas.width * 0.4, canvas.height * 0.3, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 繪製沙灘
+            ctx.strokeStyle = 'rgba(200, 180, 150, 0.3)';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.ellipse(canvas.width / 2, canvas.height * 0.72, canvas.width * 0.35, canvas.height * 0.25, 0, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // 繪製島上元素
+            elements.forEach(el => {
+                drawElement(el.x, el.y, el.type);
+            });
+        }
+
+        // 繪製各種元素
+        function drawElement(x, y, type) {
+            const time = Date.now() * 0.001;
+            
+            switch(type) {
+                case 'lamp':
+                    // 靈燈 🕯️
+                    ctx.fillStyle = '#fed6e3';
+                    ctx.fillRect(x - 5, y - 20, 10, 25);
+                    ctx.fillStyle = '#ffa500';
+                    const flameSize = 8 + Math.sin(time * 3) * 2;
+                    ctx.beginPath();
+                    ctx.ellipse(x, y - 25 - flameSize, flameSize * 0.6, flameSize, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+                    
+                case 'fountain':
+                    // 噴泉 ⛲
+                    ctx.fillStyle = '#87ceeb';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 15, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#a8edea';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    for (let i = 0; i < 6; i++) {
+                        const angle = (i * Math.PI / 3) + time;
+                        const dist = 25 + Math.sin(time * 4) * 5;
+                        const px = x + Math.cos(angle) * dist;
+                        const py = y - Math.abs(Math.sin(angle)) * dist;
+                        ctx.fillStyle = 'rgba(168, 237, 234, 0.6)';
+                        ctx.beginPath();
+                        ctx.arc(px, py, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    break;
+                    
+                case 'plant':
+                    // 植物 🌿
+                    ctx.strokeStyle = '#90ee90';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.quadraticCurveTo(x - 10 + Math.sin(time * 2) * 3, y - 20, x - 15, y - 30);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.quadraticCurveTo(x + 10 - Math.sin(time * 2) * 3, y - 20, x + 15, y - 30);
+                    ctx.stroke();
+                    break;
+                    
+                case 'cloud':
+                    // 雲彩 ☁️
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                    ctx.beginPath();
+                    for (let i = 0; i < 5; i++) {
+                        const cx = x - 20 + i * 10;
+                        const cy = y + Math.sin(time + i) * 3;
+                        ctx.ellipse(cx, cy, 10, 6, 0, 0, Math.PI * 2);
+                    }
+                    ctx.fill();
+                    break;
+                    
+                case 'dream':
+                    // 夢境 💭
+                    ctx.fillStyle = 'rgba(168, 237, 234, 0.3)';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 20 + Math.sin(time * 2) * 3, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#a8edea';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    ctx.fillStyle = '#a8edea';
+                    ctx.font = '12px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('✨', x, y);
+                    break;
+            }
+        }
+
+        // 持續動畫
+        function animate() {
+            draw();
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        updateStats();
+        updateAffirmation();
+    </script>
+</body>
+</html>
