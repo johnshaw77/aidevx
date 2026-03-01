@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>毛孩占卜機 | 寵物運勢預測</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0e1f 0%, #1a1e2f 25%, #0f1a2e 50%, #162030 75%, #0a0e1f 100%);
+            color: #c8cdd8;
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image:
+                radial-gradient(circle at 20% 80%, rgba(138, 43, 226, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 105, 180, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(32, 178, 170, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+            animation: float 6s ease-in-out infinite alternate;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            100% { transform: translateY(-10px) rotate(1deg); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .back-link {
+            align-self: flex-start;
+            color: #64748b;
+            text-decoration: none;
+            font-size: 14px;
+            margin-bottom: 20px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .back-link:hover {
+            color: #00d4ff;
+            background: rgba(0, 212, 255, 0.1);
+            border-color: rgba(0, 212, 255, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #00d4ff 0%, #ff6b9d 50%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #94a3b8;
+            font-weight: 300;
+        }
+
+        .pet-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .pet-option {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 15px 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .pet-option:hover {
+            border-color: rgba(0, 212, 255, 0.5);
+            background: rgba(0, 212, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .pet-option.active {
+            border-color: #00d4ff;
+            background: rgba(0, 212, 255, 0.2);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .pet-emoji {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+            display: block;
+            animation: bounce 2s infinite;
+        }
+
+        .pet-name {
+            font-size: 0.9rem;
+            color: #c8cdd8;
+            font-weight: 500;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        .fortune-area {
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 30px;
+        }
+
+        .question-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            font-size: 1.1rem;
+            color: #c8cdd8;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 120px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .question-input:focus {
+            outline: none;
+            border-color: #00d4ff;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+        }
+
+        .question-input::placeholder {
+            color: #64748b;
+        }
+
+        .ask-button {
+            width: 100%;
+            background: linear-gradient(135deg, #00d4ff 0%, #ff6b9d 100%);
+            border: none;
+            border-radius: 15px;
+            padding: 20px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .ask-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+        }
+
+        .ask-button:active {
+            transform: translateY(0);
+        }
+
+        .ask-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .fortune-result {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 30px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .fortune-result.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .pet-avatar {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            animation: wiggle 0.5s ease-in-out;
+        }
+
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-5deg); }
+            75% { transform: rotate(5deg); }
+        }
+
+        .fortune-text {
+            font-size: 1.3rem;
+            line-height: 1.6;
+            color: #e2e8f0;
+            margin-bottom: 15px;
+        }
+
+        .pet-signature {
+            font-size: 1rem;
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #00d4ff;
+            margin: 20px 0;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .loading-dots {
+            font-size: 2rem;
+            animation: loading 1s infinite;
+        }
+
+        @keyframes loading {
+            0%, 20%, 50%, 80%, 100% { opacity: 1; }
+            40%, 60% { opacity: 0.3; }
+        }
+
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2.2rem;
+            }
+
+            .pet-selector {
+                gap: 10px;
+            }
+
+            .pet-option {
+                padding: 12px 20px;
+                min-width: 100px;
+            }
+
+            .pet-emoji {
+                font-size: 2rem;
+            }
+
+            .container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-link">← 返回首頁</a>
+        
+        <div class="header">
+            <h1 class="title">毛孩占卜機</h1>
+            <p class="subtitle">向你的毛孩朋友求籤問運勢 🔮</p>
+        </div>
+
+        <div class="pet-selector">
+            <div class="pet-option active" data-pet="cat">
+                <span class="pet-emoji">🐱</span>
+                <div class="pet-name">喵星人</div>
+            </div>
+            <div class="pet-option" data-pet="dog">
+                <span class="pet-emoji">🐶</span>
+                <div class="pet-name">汪星人</div>
+            </div>
+            <div class="pet-option" data-pet="hamster">
+                <span class="pet-emoji">🐹</span>
+                <div class="pet-name">倉鼠君</div>
+            </div>
+            <div class="pet-option" data-pet="rabbit">
+                <span class="pet-emoji">🐰</span>
+                <div class="pet-name">兔兔</div>
+            </div>
+            <div class="pet-option" data-pet="bird">
+                <span class="pet-emoji">🐦</span>
+                <div class="pet-name">小鳥</div>
+            </div>
+        </div>
+
+        <div class="fortune-area">
+            <textarea 
+                class="question-input" 
+                placeholder="向你的毛孩朋友提問吧！例如：我今天會有好運嗎？工作上會遇到什麼機會？感情方面有什麼建議？"
+            ></textarea>
+            <button class="ask-button" onclick="askFortune()">🔮 開始占卜</button>
+        </div>
+
+        <div class="loading">
+            <div class="loading-dots">🐾 毛孩正在思考中...</div>
+        </div>
+
+        <div class="fortune-result" id="fortuneResult">
+            <div class="pet-avatar" id="petAvatar">🐱</div>
+            <div class="fortune-text" id="fortuneText"></div>
+            <div class="pet-signature" id="petSignature"></div>
+        </div>
+    </div>
+
+    <script>
+        const pets = {
+            cat: {
+                emoji: '🐱',
+                name: '喵星人',
+                personality: 'mysterious',
+                responses: [
+                    '喵～ 根據我的神秘直覺，{answer} 記住，貓咪永遠知道最好的答案！',
+                    '咪咪～ 我的鬍鬚告訴我，{answer} 相信喵星人的智慧吧！',
+                    '呼嚕呼嚕～ {answer} 現在給我小魚干作為占卜費用！',
+                    '喵嗚～ 在我打盹的夢中看見了，{answer} 貓咪不會說謊的！',
+                    '咪～ {answer} 順便記得今天要多摸摸我喔！'
+                ],
+                fortunes: [
+                    '今天會像貓咪一樣靈活，輕鬆化解困難',
+                    '保持貓咪般的好奇心，會發現意想不到的機會',
+                    '像我一樣慵懶一點，好事會自然而然地來到',
+                    '相信你的直覺，就像貓咪感知危險一樣準確',
+                    '今天適合做一些讓自己舒服的事情，就像曬太陽一樣',
+                    '要有耐心等待，就像貓咪守候老鼠一樣',
+                    '保持優雅的姿態，魅力會為你帶來好運'
+                ]
+            },
+            dog: {
+                emoji: '🐶',
+                name: '汪星人',
+                personality: 'loyal',
+                responses: [
+                    '汪汪！我超興奮地告訴你，{answer} 我們永遠是最好的夥伴！',
+                    '嗷嗚～ {answer} 記得要保持像狗狗一樣的忠誠和熱情！',
+                    '汪！{answer} 現在我們一起出去散步慶祝吧！',
+                    '汪汪汪！我的狗狗雷達偵測到，{answer} 相信我，我從不騙人！',
+                    '嗷～ {answer} 記得要對身邊的人好一點，就像我對你一樣！'
+                ],
+                fortunes: [
+                    '像狗狗一樣保持忠誠，會得到他人的信任',
+                    '今天適合主動出擊，像小狗追球一樣積極',
+                    '友誼會帶來意想不到的幸運，記得聯絡老朋友',
+                    '保持樂觀的態度，就像狗狗看到主人回家一樣開心',
+                    '今天會遇到值得信任的人，像找到新的玩伴',
+                    '勇敢面對挑戰，狗狗的勇氣會保護你',
+                    '分享你的快樂給別人，就像狗狗分享玩具一樣'
+                ]
+            },
+            hamster: {
+                emoji: '🐹',
+                name: '倉鼠君',
+                personality: 'cute',
+                responses: [
+                    '吱吱！我忙著囤積堅果時看到了，{answer} 記得要像倉鼠一樣未雨綢繆！',
+                    '嘰嘰～ {answer} 我會在我的小窩裡為你祈禱的！',
+                    '吱！{answer} 現在給我一些葵花子當作占卜謝禮吧！',
+                    '嘰嘰吱！我轉轉輪的時候想到了，{answer} 小倉鼠的建議很靈驗的！',
+                    '吱吱～ {answer} 記得要像我一樣保持可愛的心情！'
+                ],
+                fortunes: [
+                    '今天適合儲蓄和規劃，為未來做準備',
+                    '小步快跑，像倉鼠一樣穩定前進',
+                    '保持勤勞的態度，收穫會讓你驚喜',
+                    '注意細節，像倉鼠整理窩一樣仔細',
+                    '今天會有小確幸，就像找到藏起來的食物',
+                    '保持可愛的笑容，會融化別人的心',
+                    '適合在舒適圈中尋找新的可能性'
+                ]
+            },
+            rabbit: {
+                emoji: '🐰',
+                name: '兔兔',
+                personality: 'gentle',
+                responses: [
+                    '蹦蹦～ 我在草地上跳躍時感應到了，{answer} 溫柔的兔子不會錯的！',
+                    '咪咪～ {answer} 記得要像兔兔一樣保持純真的心！',
+                    '蹦！{answer} 現在分我一些胡蘿蔔吧，占卜很消耗體力的！',
+                    '咪嗚～ {answer} 兔子的直覺總是很準確的喔！',
+                    '蹦蹦～ {answer} 記得要對自己溫柔一點！'
+                ],
+                fortunes: [
+                    '溫柔待人，會收到意想不到的善意回報',
+                    '今天適合靜下心來思考，靈感會突然出現',
+                    '像兔子一樣靈敏，會及時抓住機會',
+                    '保持純真的心，世界會對你更友善',
+                    '今天會有溫暖的相遇，珍惜每個緣分',
+                    '適合做一些療癒心靈的事情',
+                    '跟隨內心的聲音，就像兔子跟隨月亮一樣'
+                ]
+            },
+            bird: {
+                emoji: '🐦',
+                name: '小鳥',
+                personality: 'free',
+                responses: [
+                    '啾啾！我在高空中俯瞰時看見了，{answer} 小鳥的視野最廣闊！',
+                    '嘰嘰喳！{answer} 記得要像小鳥一樣自由自在！',
+                    '啾～ {answer} 現在給我一些鳥食當作報酬吧！',
+                    '嘰嘰～ 我飛遍天空後得出的結論是，{answer} 相信小鳥的智慧！',
+                    '啾啾喳！{answer} 記得要保持像鳥兒一樣的輕盈心情！'
+                ],
+                fortunes: [
+                    '今天適合放飛夢想，像鳥兒一樣自由翱翔',
+                    '換個角度看問題，會有全新的發現',
+                    '溝通會帶來好運，多和別人分享想法',
+                    '保持輕盈的心境，不要被小事困擾',
+                    '今天會有遠方的消息傳來，帶來驚喜',
+                    '適合計劃一場旅行或冒險',
+                    '歌聲會帶來快樂，記得保持愉悦心情'
+                ]
+            }
+        };
+
+        let currentPet = 'cat';
+
+        // 選擇寵物
+        document.querySelectorAll('.pet-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.pet-option').forEach(opt => opt.classList.remove('active'));
+                option.classList.add('active');
+                currentPet = option.dataset.pet;
+            });
+        });
+
+        function getRandomResponse(pet, fortune) {
+            const responses = pets[pet].responses;
+            const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+            return randomResponse.replace('{answer}', fortune);
+        }
+
+        function getRandomFortune(pet) {
+            const fortunes = pets[pet].fortunes;
+            return fortunes[Math.floor(Math.random() * fortunes.length)];
+        }
+
+        async function askFortune() {
+            const questionInput = document.querySelector('.question-input');
+            const question = questionInput.value.trim();
+            
+            if (!question) {
+                alert('請輸入你的問題喔！');
+                return;
+            }
+
+            const button = document.querySelector('.ask-button');
+            const loading = document.querySelector('.loading');
+            const result = document.querySelector('.fortune-result');
+
+            // 開始占卜動畫
+            button.disabled = true;
+            button.textContent = '占卜中...';
+            loading.classList.add('show');
+            result.classList.remove('show');
+
+            // 模擬占卜過程
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // 生成回答
+            const pet = pets[currentPet];
+            const fortune = getRandomFortune(currentPet);
+            const response = getRandomResponse(currentPet, fortune);
+
+            // 顯示結果
+            document.getElementById('petAvatar').textContent = pet.emoji;
+            document.getElementById('fortuneText').textContent = response;
+            document.getElementById('petSignature').textContent = `—— ${pet.name} 🐾`;
+
+            loading.classList.remove('show');
+            result.classList.add('show');
+
+            // 重設按鈕
+            button.disabled = false;
+            button.textContent = '🔮 再次占卜';
+        }
+
+        // 回車鍵提交
+        document.querySelector('.question-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                askFortune();
+            }
+        });
+    </script>
+</body>
+</html>
