@@ -443,20 +443,6 @@
       </div>
     </a>
 
-
-    <a href="/productivity-metronome/" class="card">
-      <div class="card-top">
-        <div class="card-icon">🎵</div>
-        <div class="card-tag">2026-03-02</div>
-      </div>
-      <div class="card-name">生產力節拍器</div>
-      <div class="card-desc">結合番茄鐘與節拍器的高效工作法 — 可設定工作/休息時間、BPM節奏、音效選擇，視覺化進度與統計</div>
-      <div class="card-footer">
-        <span class="card-path">/productivity-metronome</span>
-        <span class="card-arrow">→</span>
-      </div>
-    </a>
-
     <a href="/dream-island-wellness/" class="card">
       <div class="card-top">
         <div class="card-icon">✨</div>
