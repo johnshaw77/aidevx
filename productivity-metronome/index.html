@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生產力節拍器 | Productivity Metronome</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1c29 0%, #2d1b69 25%, #5b2c6f 50%, #8b1538 75%, #d32f2f 100%);
+            color: #ffffff;
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated background patterns */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image:
+                radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+            animation: pulse 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.3; }
+            100% { opacity: 0.7; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #ffeb3b, #ff9800, #e91e63);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 2px 10px rgba(255, 235, 59, 0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            color: #e8eaf6;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            flex: 1;
+        }
+
+        .timer-section, .metronome-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+            text-align: center;
+            color: #ffeb3b;
+        }
+
+        .timer-display {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .time-text {
+            font-size: 4rem;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 2px 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .timer-label {
+            font-size: 1.2rem;
+            color: #ff9800;
+            margin-top: 10px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4caf50, #8bc34a);
+            color: white;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #ff9800, #ff5722);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f44336, #e91e63);
+            color: white;
+            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
+        }
+
+        .settings {
+            margin-bottom: 25px;
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .setting-label {
+            font-weight: 500;
+            color: #e8eaf6;
+        }
+
+        .setting-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="range"] {
+            width: 120px;
+            height: 6px;
+            border-radius: 3px;
+            background: #333;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffeb3b, #ff9800);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(255, 235, 59, 0.3);
+        }
+
+        input[type="number"] {
+            width: 70px;
+            padding: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-align: center;
+        }
+
+        select {
+            padding: 8px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            cursor: pointer;
+        }
+
+        select option {
+            background: #333;
+            color: white;
+        }
+
+        .metronome-display {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .bpm-display {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .beat-indicator {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 20px auto;
+            background: linear-gradient(135deg, #ff9800, #e91e63);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            transition: all 0.1s ease;
+            box-shadow: 0 4px 20px rgba(255, 152, 0, 0.4);
+        }
+
+        .beat-indicator.active {
+            transform: scale(1.1);
+            box-shadow: 0 6px 30px rgba(255, 152, 0, 0.8);
+        }
+
+        .stats {
+            grid-column: 1 / -1;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #ffeb3b;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #e8eaf6;
+            opacity: 0.8;
+        }
+
+        .progress-ring {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 20px;
+        }
+
+        .progress-ring svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring circle {
+            fill: none;
+            stroke-width: 8;
+        }
+
+        .progress-ring .background {
+            stroke: rgba(255, 255, 255, 0.1);
+        }
+
+        .progress-ring .progress {
+            stroke: #ffeb3b;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s ease;
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .time-text {
+                font-size: 3rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        .sound-wave {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 3px;
+            height: 60px;
+            margin: 20px 0;
+        }
+
+        .wave-bar {
+            width: 4px;
+            background: linear-gradient(to top, #ff9800, #ffeb3b);
+            border-radius: 2px;
+            animation: wave 1s ease-in-out infinite alternate;
+        }
+
+        .wave-bar:nth-child(2) { animation-delay: 0.1s; }
+        .wave-bar:nth-child(3) { animation-delay: 0.2s; }
+        .wave-bar:nth-child(4) { animation-delay: 0.3s; }
+        .wave-bar:nth-child(5) { animation-delay: 0.4s; }
+
+        @keyframes wave {
+            0% { height: 10px; }
+            100% { height: 40px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎵 生產力節拍器</h1>
+            <p>結合番茄鐘與節拍器，讓工作更有節奏感！</p>
+        </div>
+
+        <div class="main-content">
+            <!-- 番茄鐘區域 -->
+            <div class="timer-section">
+                <h2 class="section-title">🍅 番茄鐘</h2>
+                
+                <div class="progress-ring">
+                    <svg>
+                        <circle class="background" cx="100" cy="100" r="90"></circle>
+                        <circle class="progress" cx="100" cy="100" r="90" id="progressCircle"></circle>
+                    </svg>
+                    <div class="progress-text" id="progressText">25:00</div>
+                </div>
+
+                <div class="timer-display">
+                    <div class="time-text" id="timeDisplay">25:00</div>
+                    <div class="timer-label" id="timerLabel">工作時間</div>
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-primary" id="startTimer">
+                        <span>▶️</span> 開始
+                    </button>
+                    <button class="btn btn-secondary" id="pauseTimer">
+                        <span>⏸️</span> 暫停
+                    </button>
+                    <button class="btn btn-danger" id="resetTimer">
+                        <span>🔄</span> 重置
+                    </button>
+                </div>
+
+                <div class="settings">
+                    <div class="setting-row">
+                        <span class="setting-label">工作時間</span>
+                        <div class="setting-control">
+                            <input type="range" id="workTime" min="1" max="60" value="25">
+                            <span id="workTimeValue">25</span> 分
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <span class="setting-label">休息時間</span>
+                        <div class="setting-control">
+                            <input type="range" id="breakTime" min="1" max="30" value="5">
+                            <span id="breakTimeValue">5</span> 分
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <span class="setting-label">鈴聲</span>
+                        <select id="timerSound">
+                            <option value="bell">鈴聲</option>
+                            <option value="chime">鐘聲</option>
+                            <option value="ding">叮聲</option>
+                            <option value="none">無聲</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 節拍器區域 -->
+            <div class="metronome-section">
+                <h2 class="section-title">🎼 節拍器</h2>
+
+                <div class="metronome-display">
+                    <div class="bpm-display" id="bpmDisplay">120</div>
+                    <div style="color: #ff9800; margin-bottom: 20px;">BPM</div>
+                    
+                    <div class="beat-indicator" id="beatIndicator">♪</div>
+                    
+                    <div class="sound-wave" id="soundWave" style="display: none;">
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-primary" id="startMetronome">
+                        <span>🎵</span> 開始節拍
+                    </button>
+                    <button class="btn btn-danger" id="stopMetronome">
+                        <span>⏹️</span> 停止
+                    </button>
+                </div>
+
+                <div class="settings">
+                    <div class="setting-row">
+                        <span class="setting-label">節拍速度</span>
+                        <div class="setting-control">
+                            <input type="range" id="bpmSlider" min="60" max="200" value="120">
+                            <input type="number" id="bpmInput" min="60" max="200" value="120">
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <span class="setting-label">節拍音效</span>
+                        <select id="metronomeSound">
+                            <option value="click">點擊聲</option>
+                            <option value="tick">滴答聲</option>
+                            <option value="beep">嗶聲</option>
+                            <option value="wood">木魚聲</option>
+                        </select>
+                    </div>
+                    <div class="setting-row">
+                        <span class="setting-label">音量</span>
+                        <div class="setting-control">
+                            <input type="range" id="volumeSlider" min="0" max="100" value="50">
+                            <span id="volumeValue">50</span>%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 統計區域 -->
+        <div class="stats">
+            <h2 class="section-title">📊 今日統計</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="completedPomodoros">0</div>
+                    <div class="stat-label">完成番茄鐘</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalWorkTime">0</div>
+                    <div class="stat-label">工作時間（分鐘）</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="averageBPM">120</div>
+                    <div class="stat-label">平均節拍</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="focusScore">0</div>
+                    <div class="stat-label">專注分數</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全域變數
+        let timerInterval;
+        let metronomeInterval;
+        let currentTime;
+        let totalTime;
+        let isWorking = true;
+        let isTimerRunning = false;
+        let isMetronomeRunning = false;
+        let audioContext;
+        
+        // 統計數據
+        let stats = {
+            completedPomodoros: 0,
+            totalWorkTime: 0,
+            averageBPM: 120,
+            focusScore: 0
+        };
+
+        // DOM 元素
+        const timeDisplay = document.getElementById('timeDisplay');
+        const timerLabel = document.getElementById('timerLabel');
+        const progressCircle = document.getElementById('progressCircle');
+        const progressText = document.getElementById('progressText');
+        const startTimerBtn = document.getElementById('startTimer');
+        const pauseTimerBtn = document.getElementById('pauseTimer');
+        const resetTimerBtn = document.getElementById('resetTimer');
+        const workTimeSlider = document.getElementById('workTime');
+        const breakTimeSlider = document.getElementById('breakTime');
+        const workTimeValue = document.getElementById('workTimeValue');
+        const breakTimeValue = document.getElementById('breakTimeValue');
+        
+        const bpmDisplay = document.getElementById('bpmDisplay');
+        const beatIndicator = document.getElementById('beatIndicator');
+        const bpmSlider = document.getElementById('bpmSlider');
+        const bpmInput = document.getElementById('bpmInput');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeValue = document.getElementById('volumeValue');
+        const startMetronomeBtn = document.getElementById('startMetronome');
+        const stopMetronomeBtn = document.getElementById('stopMetronome');
+        const soundWave = document.getElementById('soundWave');
+
+        // 初始化
+        function init() {
+            setupAudioContext();
+            setupEventListeners();
+            loadStats();
+            resetTimer();
+            updateProgressRing();
+        }
+
+        // 設置 Audio Context
+        function setupAudioContext() {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        // 設置事件監聽器
+        function setupEventListeners() {
+            startTimerBtn.addEventListener('click', startTimer);
+            pauseTimerBtn.addEventListener('click', pauseTimer);
+            resetTimerBtn.addEventListener('click', resetTimer);
+            
+            workTimeSlider.addEventListener('input', updateWorkTime);
+            breakTimeSlider.addEventListener('input', updateBreakTime);
+            
+            startMetronomeBtn.addEventListener('click', startMetronome);
+            stopMetronomeBtn.addEventListener('click', stopMetronome);
+            
+            bpmSlider.addEventListener('input', updateBPM);
+            bpmInput.addEventListener('input', updateBPMInput);
+            volumeSlider.addEventListener('input', updateVolume);
+        }
+
+        // 番茄鐘功能
+        function startTimer() {
+            if (!isTimerRunning) {
+                isTimerRunning = true;
+                startTimerBtn.textContent = '⏸️ 暫停';
+                
+                timerInterval = setInterval(() => {
+                    currentTime--;
+                    updateDisplay();
+                    updateProgressRing();
+                    
+                    if (currentTime <= 0) {
+                        completeSession();
+                    }
+                }, 1000);
+            } else {
+                pauseTimer();
+            }
+        }
+
+        function pauseTimer() {
+            isTimerRunning = false;
+            clearInterval(timerInterval);
+            startTimerBtn.textContent = '▶️ 開始';
+        }
+
+        function resetTimer() {
+            isTimerRunning = false;
+            clearInterval(timerInterval);
+            startTimerBtn.textContent = '▶️ 開始';
+            
+            if (isWorking) {
+                currentTime = parseInt(workTimeSlider.value) * 60;
+                totalTime = currentTime;
+                timerLabel.textContent = '工作時間';
+            } else {
+                currentTime = parseInt(breakTimeSlider.value) * 60;
+                totalTime = currentTime;
+                timerLabel.textContent = '休息時間';
+            }
+            
+            updateDisplay();
+            updateProgressRing();
+        }
+
+        function completeSession() {
+            pauseTimer();
+            playTimerSound();
+            
+            if (isWorking) {
+                stats.completedPomodoros++;
+                stats.totalWorkTime += parseInt(workTimeSlider.value);
+                isWorking = false;
+                timerLabel.textContent = '休息時間';
+                currentTime = parseInt(breakTimeSlider.value) * 60;
+            } else {
+                isWorking = true;
+                timerLabel.textContent = '工作時間';
+                currentTime = parseInt(workTimeSlider.value) * 60;
+            }
+            
+            totalTime = currentTime;
+            updateDisplay();
+            updateProgressRing();
+            updateStats();
+            
+            // 自動開始下一個階段
+            setTimeout(() => {
+                if (confirm(isWorking ? '休息結束！開始工作？' : '工作結束！開始休息？')) {
+                    startTimer();
+                }
+            }, 1000);
+        }
+
+        function updateDisplay() {
+            const minutes = Math.floor(currentTime / 60);
+            const seconds = currentTime % 60;
+            const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            timeDisplay.textContent = timeString;
+            progressText.textContent = timeString;
+        }
+
+        function updateProgressRing() {
+            const radius = 90;
+            const circumference = 2 * Math.PI * radius;
+            const progress = (totalTime - currentTime) / totalTime;
+            const offset = circumference * (1 - progress);
+            
+            progressCircle.style.strokeDasharray = circumference;
+            progressCircle.style.strokeDashoffset = offset;
+        }
+
+        function updateWorkTime() {
+            workTimeValue.textContent = workTimeSlider.value;
+            if (isWorking && !isTimerRunning) {
+                resetTimer();
+            }
+        }
+
+        function updateBreakTime() {
+            breakTimeValue.textContent = breakTimeSlider.value;
+            if (!isWorking && !isTimerRunning) {
+                resetTimer();
+            }
+        }
+
+        // 節拍器功能
+        function startMetronome() {
+            if (!isMetronomeRunning) {
+                isMetronomeRunning = true;
+                soundWave.style.display = 'flex';
+                
+                const bpm = parseInt(bpmSlider.value);
+                const interval = 60000 / bpm;
+                
+                metronomeInterval = setInterval(() => {
+                    playMetronomeSound();
+                    animateBeat();
+                }, interval);
+                
+                startMetronomeBtn.textContent = '🔄 重新開始';
+            } else {
+                stopMetronome();
+                startMetronome();
+            }
+        }
+
+        function stopMetronome() {
+            isMetronomeRunning = false;
+            clearInterval(metronomeInterval);
+            soundWave.style.display = 'none';
+            beatIndicator.classList.remove('active');
+            startMetronomeBtn.textContent = '🎵 開始節拍';
+        }
+
+        function animateBeat() {
+            beatIndicator.classList.add('active');
+            setTimeout(() => {
+                beatIndicator.classList.remove('active');
+            }, 100);
+        }
+
+        function updateBPM() {
+            const bpm = bpmSlider.value;
+            bpmInput.value = bpm;
+            bpmDisplay.textContent = bpm;
+            
+            if (isMetronomeRunning) {
+                stopMetronome();
+                startMetronome();
+            }
+        }
+
+        function updateBPMInput() {
+            const bpm = Math.max(60, Math.min(200, parseInt(bpmInput.value) || 120));
+            bpmSlider.value = bpm;
+            bpmInput.value = bpm;
+            bpmDisplay.textContent = bpm;
+            
+            if (isMetronomeRunning) {
+                stopMetronome();
+                startMetronome();
+            }
+        }
+
+        function updateVolume() {
+            volumeValue.textContent = volumeSlider.value;
+        }
+
+        // 音效功能
+        function playTimerSound() {
+            const soundType = document.getElementById('timerSound').value;
+            if (soundType !== 'none') {
+                playBeep(800, 0.3, 'sine'); // 高音嗶聲
+            }
+        }
+
+        function playMetronomeSound() {
+            const soundType = document.getElementById('metronomeSound').value;
+            const volume = volumeSlider.value / 100;
+            
+            switch(soundType) {
+                case 'click':
+                    playBeep(1000, 0.1, 'square', volume);
+                    break;
+                case 'tick':
+                    playBeep(800, 0.1, 'sine', volume);
+                    break;
+                case 'beep':
+                    playBeep(600, 0.1, 'triangle', volume);
+                    break;
+                case 'wood':
+                    playBeep(200, 0.1, 'sawtooth', volume);
+                    break;
+            }
+        }
+
+        function playBeep(frequency, duration, type = 'sine', volume = 0.3) {
+            if (!audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = frequency;
+            oscillator.type = type;
+            gainNode.gain.value = volume;
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+
+        // 統計功能
+        function updateStats() {
+            document.getElementById('completedPomodoros').textContent = stats.completedPomodoros;
+            document.getElementById('totalWorkTime').textContent = stats.totalWorkTime;
+            document.getElementById('averageBPM').textContent = bpmSlider.value;
+            
+            // 計算專注分數
+            const focusScore = Math.min(100, stats.completedPomodoros * 10 + Math.floor(stats.totalWorkTime / 25) * 5);
+            stats.focusScore = focusScore;
+            document.getElementById('focusScore').textContent = focusScore;
+            
+            saveStats();
+        }
+
+        function loadStats() {
+            const savedStats = localStorage.getItem('productivity_metronome_stats');
+            if (savedStats) {
+                stats = JSON.parse(savedStats);
+                updateStats();
+            }
+        }
+
+        function saveStats() {
+            localStorage.setItem('productivity_metronome_stats', JSON.stringify(stats));
+        }
+
+        // 初始化應用
+        document.addEventListener('DOMContentLoaded', init);
+
+        // 處理頁面可見性變化
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && audioContext) {
+                audioContext.suspend();
+            } else if (audioContext && audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+        });
+    </script>
+</body>
+</html>
