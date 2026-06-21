@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>興富發 2542 · 觀察</title><style>
+  :root {
+    --up:#d4453c; --down:#1aa260; --bg:#0f1419; --card:#1a212b;
+    --line:#2a3340; --text:#e6edf3; --muted:#8b97a7;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;
+    background:var(--bg);color:var(--text);padding:32px 16px;line-height:1.5}
+  .wrap{max-width:960px;margin:0 auto}
+  header{margin-bottom:24px}
+  h1{font-size:24px;font-weight:700;letter-spacing:.5px}
+  .sub{color:var(--muted);font-size:13px;margin-top:4px}
+  a{color:inherit;text-decoration:none}
+  .back{display:inline-block;margin-bottom:16px;color:var(--muted);font-size:13px}
+  .back:hover{color:var(--text)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:24px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .stat .label{color:var(--muted);font-size:12px}
+  .stat .value{font-size:22px;font-weight:700;margin-top:6px}
+  table{width:100%;border-collapse:collapse;background:var(--card);border-radius:12px;
+    overflow:hidden;border:1px solid var(--line)}
+  th,td{padding:11px 14px;text-align:right;font-variant-numeric:tabular-nums;font-size:14px}
+  th{background:#131a23;color:var(--muted);font-size:12px;font-weight:600;border-bottom:1px solid var(--line)}
+  th:first-child,td:first-child{text-align:left}
+  th:nth-child(2),td:nth-child(2){text-align:left}
+  tbody tr{border-bottom:1px solid var(--line)}
+  tbody tr:last-child{border-bottom:none}
+  tbody tr.clickable{cursor:pointer}
+  tbody tr.clickable:hover{background:rgba(255,255,255,.03)}
+  .id{color:var(--muted);font-size:13px}
+  .name{font-weight:600}
+  .up{color:var(--up)} .down{color:var(--down)} .flat{color:var(--muted)}
+  .tag{display:inline-block;padding:1px 7px;border-radius:6px;font-size:11px;background:#232c38;color:var(--muted)}
+  tfoot td{font-weight:700;background:#131a23;border-top:2px solid var(--line)}
+  .arrow{color:var(--muted)}
+  .verdict-cell{text-align:left;line-height:1.6;white-space:nowrap}
+  .muted{color:var(--muted)}
+  footer{color:var(--muted);font-size:12px;margin-top:20px;text-align:center}
+  h2{font-size:17px;font-weight:700;margin:28px 0 12px;display:flex;align-items:center;gap:8px}
+  h2 .when{font-size:12px;font-weight:400;color:var(--muted)}
+  .kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .kv .cell{background:var(--card);padding:11px 14px;display:flex;justify-content:space-between;gap:10px}
+  .kv .k{color:var(--muted);font-size:13px}
+  .kv .v{font-weight:600;font-variant-numeric:tabular-nums}
+  .sigs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+  .sig{padding:5px 10px;border-radius:8px;font-size:13px;border:1px solid var(--line)}
+  .sig.bull{background:rgba(212,69,60,.12);border-color:rgba(212,69,60,.4);color:#ff8a82}
+  .sig.bear{background:rgba(26,162,96,.12);border-color:rgba(26,162,96,.4);color:#5fd6a0}
+  .sig small{color:var(--muted);margin-left:6px}
+  .pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:13px;font-weight:600}
+  .pill.bull{background:rgba(212,69,60,.18);color:#ff8a82}
+  .pill.bear{background:rgba(26,162,96,.18);color:#5fd6a0}
+  .pill.flat{background:#232c38;color:var(--muted)}
+  .note{color:var(--muted);font-size:13px;padding:14px;background:var(--card);
+    border:1px dashed var(--line);border-radius:12px}
+  .plain{background:linear-gradient(180deg,#1c2531,#171d27);border:1px solid #2f3b4a;
+    border-radius:14px;padding:20px 22px;margin-bottom:8px}
+  .plain .oneliner{font-size:18px;font-weight:700;margin-bottom:14px;line-height:1.4}
+  .plain .row{display:flex;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:14.5px;line-height:1.7}
+  .plain .row:first-of-type{border-top:none}
+  .plain .ic{flex:none;font-size:15px;width:62px;color:var(--muted);font-weight:600}
+  .plain .tx{flex:1}
+  /* 我的分析（手寫筆記） */
+  .note-card{background:linear-gradient(180deg,#1c2531,#171d27);border:1px solid #2f3b4a;
+    border-radius:14px;padding:22px 24px;margin-bottom:8px}
+  .note-card .verdict{font-size:18px;font-weight:800;line-height:1.45;margin-bottom:6px}
+  .note-card .meta{color:var(--muted);font-size:12px;margin-bottom:16px}
+  .note-card h3{font-size:15px;margin:18px 0 8px;color:#cdd7e3;display:flex;align-items:center;gap:7px}
+  .note-card p{font-size:14.5px;line-height:1.85;margin:6px 0}
+  .note-card ul{margin:6px 0;padding-left:2px;list-style:none}
+  .note-card li{font-size:14.5px;line-height:1.8;padding-left:22px;position:relative}
+  .note-card li::before{content:"•";position:absolute;left:6px;color:var(--muted)}
+  .note-card strong{color:#fff}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:8px 0}
+  .cols .box{background:rgba(255,255,255,.025);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  .cols .box h4{font-size:13px;margin:0 0 8px}
+  .cols .bull h4{color:#ff8a82} .cols .bear h4{color:#5fd6a0}
+  .cols li{font-size:13.5px;line-height:1.7}
+  .news li{padding:7px 0 7px 22px;border-top:1px solid var(--line)}
+  .news li:first-child{border-top:none}
+  .news .src{color:var(--muted);font-size:12px;margin-left:6px}
+  .verdict-tag{display:inline-block;padding:3px 12px;border-radius:999px;font-size:14px;font-weight:700;margin-right:8px}
+  .vt-hold{background:rgba(212,175,55,.18);color:#e8c45a}
+  .vt-bull{background:rgba(212,69,60,.2);color:#ff8a82}
+  .vt-bear{background:rgba(26,162,96,.2);color:#5fd6a0}
+  @media(max-width:620px){.cols{grid-template-columns:1fr}}
+</style></head>
+<body><div class="wrap">
+      <a class="back" href="under60.html">‹ 返回</a>
+      <header><h1>興富發 <span class="id">2542</span></h1>
+      <div class="sub">低價候選（未持有） · 2026-06-22 00:59</div></header>
+      <div class="cards">
+        <div class="stat"><div class="label">現價</div><div class="value">44.75</div></div>
+        <div class="stat"><div class="label">技術綜合</div><div class="value"><span class="pill flat">中性</span></div></div>
+        <div class="stat"><div class="label">三大法人(近5日)</div><div class="value up">+6,800 張</div></div>
+        <div class="stat"><div class="label">本益比</div><div class="value">21.31</div></div>
+      </div>
+      <h2>我的分析</h2>
+      <div class="plain"><div class="oneliner">💬 一句話：短線中性</div><div class="row"><span class="ic">基本面</span><span class="tx">賺錢能力中等（ROE 14%），營收還在高速成長（年增 1361%），估值合理（本益比 21 倍），配息不錯（殖利率約 4.5%）。</span></div><div class="row"><span class="ic">技術面</span><span class="tx">短線多空拉鋸，收盤 45，均線多頭排列（5日>20日>60日），中短期趨勢向上，KD 死亡交叉，動能轉弱。</span></div><div class="row"><span class="ic">籌碼面</span><span class="tx">外資賣超 1,422 張、自營商小幅買超 485 張，三大法人合計賣超 912 張，法人偏空，融資增加 247 張，散戶在加碼（追價），千張大戶占比 59.5%（籌碼中等）。</span></div></div><div class="note" style="margin-top:10px">此為依數據自動產生的白話摘要；尚無手寫深度分析。</div>
+      <h2>基本面 <span class="when">yfinance</span></h2><div class="kv"><div class="cell"><span class="k">本益比 PE</span><span class="v">21.31</span></div><div class="cell"><span class="k">預估本益比 fwPE</span><span class="v">6.23</span></div><div class="cell"><span class="k">股價淨值比 PB</span><span class="v">1.73</span></div><div class="cell"><span class="k">EPS（近4季）</span><span class="v">2.10</span></div><div class="cell"><span class="k">ROE %</span><span class="v">13.77</span></div><div class="cell"><span class="k">毛利率 %</span><span class="v">29.76</span></div><div class="cell"><span class="k">淨利率 %</span><span class="v">14.85</span></div><div class="cell"><span class="k">營收成長 %</span><span class="v">1,361.10</span></div><div class="cell"><span class="k">盈餘成長 %</span><span class="v">40,992.80</span></div><div class="cell"><span class="k">殖利率 %</span><span class="v">4.47</span></div><div class="cell"><span class="k">負債權益比</span><span class="v">250.84</span></div><div class="cell"><span class="k">市值（億）</span><span class="v">945.10</span></div><div class="cell"><span class="k">52週高</span><span class="v">47.10</span></div><div class="cell"><span class="k">52週低</span><span class="v">33.70</span></div></div><h2>技術面 <span class="when">2026-06-18 · 收盤 44.75 · 綜合 <span class="pill flat">中性</span></span></h2><div style="background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px"><div style="color:var(--muted);font-size:12px;margin-bottom:6px">近 60 日走勢</div><svg viewBox="0 0 320 64" width="100%" height="64" preserveAspectRatio="none" style="display:block"><path d="M0.0,64 L0.0,52.7 L5.4,50.0 L10.8,51.0 L16.3,51.5 L21.7,53.5 L27.1,56.5 L32.5,53.5 L38.0,55.5 L43.4,52.2 L48.8,49.2 L54.2,49.7 L59.7,46.9 L65.1,46.4 L70.5,52.2 L75.9,53.7 L81.4,54.0 L86.8,55.7 L92.2,59.2 L97.6,61.0 L103.1,60.5 L108.5,43.4 L113.9,34.6 L119.3,35.4 L124.7,34.9 L130.2,27.4 L135.6,29.6 L141.0,30.6 L146.4,31.9 L151.9,32.4 L157.3,33.4 L162.7,30.4 L168.1,22.1 L173.6,24.8 L179.0,16.8 L184.4,14.5 L189.8,11.5 L195.3,7.3 L200.7,11.8 L206.1,11.8 L211.5,12.0 L216.9,14.3 L222.4,18.3 L227.8,18.3 L233.2,14.8 L238.6,20.3 L244.1,20.6 L249.5,17.3 L254.9,18.1 L260.3,15.3 L265.8,14.8 L271.2,15.3 L276.6,20.8 L282.0,14.3 L287.5,3.0 L292.9,3.5 L298.3,5.5 L303.7,3.0 L309.2,5.0 L314.6,3.0 L320.0,6.5 L320.0,64 Z" fill="#d4453c" opacity="0.10"/><path d="M0.0,52.7 L5.4,50.0 L10.8,51.0 L16.3,51.5 L21.7,53.5 L27.1,56.5 L32.5,53.5 L38.0,55.5 L43.4,52.2 L48.8,49.2 L54.2,49.7 L59.7,46.9 L65.1,46.4 L70.5,52.2 L75.9,53.7 L81.4,54.0 L86.8,55.7 L92.2,59.2 L97.6,61.0 L103.1,60.5 L108.5,43.4 L113.9,34.6 L119.3,35.4 L124.7,34.9 L130.2,27.4 L135.6,29.6 L141.0,30.6 L146.4,31.9 L151.9,32.4 L157.3,33.4 L162.7,30.4 L168.1,22.1 L173.6,24.8 L179.0,16.8 L184.4,14.5 L189.8,11.5 L195.3,7.3 L200.7,11.8 L206.1,11.8 L211.5,12.0 L216.9,14.3 L222.4,18.3 L227.8,18.3 L233.2,14.8 L238.6,20.3 L244.1,20.6 L249.5,17.3 L254.9,18.1 L260.3,15.3 L265.8,14.8 L271.2,15.3 L276.6,20.8 L282.0,14.3 L287.5,3.0 L292.9,3.5 L298.3,5.5 L303.7,3.0 L309.2,5.0 L314.6,3.0 L320.0,6.5" fill="none" stroke="#d4453c" stroke-width="1.6"/><circle cx="320.0" cy="6.5" r="2.6" fill="#d4453c"/></svg></div><div class="sigs"><span class="sig bear">KD 死亡交叉<small>K 60 下穿 D</small></span><span class="sig bull">站上月線<small>價 44.8 > MA20 43.5</small></span></div><div class="kv"><div class="cell"><span class="k">MA5</span><span class="v">45.13</span></div><div class="cell"><span class="k">MA10</span><span class="v">44.46</span></div><div class="cell"><span class="k">MA20</span><span class="v">43.54</span></div><div class="cell"><span class="k">MA60</span><span class="v">40.03</span></div><div class="cell"><span class="k">RSI14</span><span class="v">59.93</span></div><div class="cell"><span class="k">K</span><span class="v">60.17</span></div><div class="cell"><span class="k">D</span><span class="v">65.82</span></div><div class="cell"><span class="k">BB上</span><span class="v">46.12</span></div><div class="cell"><span class="k">BB中</span><span class="v">43.54</span></div><div class="cell"><span class="k">BB下</span><span class="v">40.95</span></div></div><h2>籌碼面 <span class="when">上市 · 法人 115/06/18 · 大戶 06/18（週） · 買超紅/賣超綠</span></h2><div class="kv"><div class="cell"><span class="k">外資（當日）</span><span class="v down">-1,422 張</span></div><div class="cell"><span class="k">投信（當日）</span><span class="v up">+26 張</span></div><div class="cell"><span class="k">自營商（當日）</span><span class="v up">+485 張</span></div><div class="cell"><span class="k">三大法人（當日）</span><span class="v down">-912 張</span></div><div class="cell"><span class="k">外資連續</span><span class="v down">連 1 日賣超</span></div><div class="cell"><span class="k">投信連續</span><span class="v up">連 1 日買超</span></div><div class="cell"><span class="k">外資（近5日）</span><span class="v up">+4,418 張</span></div><div class="cell"><span class="k">投信（近5日）</span><span class="v up">+2,005 張</span></div><div class="cell"><span class="k">三大法人（近5日）</span><span class="v up">+6,800 張</span></div><div class="cell"><span class="k">融資餘額</span><span class="v">9,817 張 <small class="up">(+247)</small></span></div><div class="cell"><span class="k">融券餘額</span><span class="v">30 張 <small class="up">(+3)</small></span></div><div class="cell"><span class="k">千張大戶占比</span><span class="v">59.55%</span></div><div class="cell"><span class="k">千張大戶人數</span><span class="v">117 人</span></div></div>
+      <footer>基本面/技術面：yfinance · 籌碼面：TWSE／TPEX · 本頁僅供研究參考，非投資建議</footer></div></body></html>
