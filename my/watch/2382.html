@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>廣達 2382 · 觀察</title><style>
+  :root {
+    --up:#d4453c; --down:#1aa260; --bg:#0f1419; --card:#1a212b;
+    --line:#2a3340; --text:#e6edf3; --muted:#8b97a7;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;
+    background:var(--bg);color:var(--text);padding:32px 16px;line-height:1.5}
+  .wrap{max-width:960px;margin:0 auto}
+  header{margin-bottom:24px}
+  h1{font-size:24px;font-weight:700;letter-spacing:.5px}
+  .sub{color:var(--muted);font-size:13px;margin-top:4px}
+  a{color:inherit;text-decoration:none}
+  .back{display:inline-block;margin-bottom:16px;color:var(--muted);font-size:13px}
+  .back:hover{color:var(--text)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:24px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .stat .label{color:var(--muted);font-size:12px}
+  .stat .value{font-size:22px;font-weight:700;margin-top:6px}
+  table{width:100%;border-collapse:collapse;background:var(--card);border-radius:12px;
+    overflow:hidden;border:1px solid var(--line)}
+  th,td{padding:11px 14px;text-align:right;font-variant-numeric:tabular-nums;font-size:14px}
+  th{background:#131a23;color:var(--muted);font-size:12px;font-weight:600;border-bottom:1px solid var(--line)}
+  th:first-child,td:first-child{text-align:left}
+  th:nth-child(2),td:nth-child(2){text-align:left}
+  tbody tr{border-bottom:1px solid var(--line)}
+  tbody tr:last-child{border-bottom:none}
+  tbody tr.clickable{cursor:pointer}
+  tbody tr.clickable:hover{background:rgba(255,255,255,.03)}
+  .id{color:var(--muted);font-size:13px}
+  .name{font-weight:600}
+  .up{color:var(--up)} .down{color:var(--down)} .flat{color:var(--muted)}
+  .tag{display:inline-block;padding:1px 7px;border-radius:6px;font-size:11px;background:#232c38;color:var(--muted)}
+  tfoot td{font-weight:700;background:#131a23;border-top:2px solid var(--line)}
+  .arrow{color:var(--muted)}
+  .verdict-cell{text-align:left;line-height:1.6;white-space:nowrap}
+  .muted{color:var(--muted)}
+  footer{color:var(--muted);font-size:12px;margin-top:20px;text-align:center}
+  h2{font-size:17px;font-weight:700;margin:28px 0 12px;display:flex;align-items:center;gap:8px}
+  h2 .when{font-size:12px;font-weight:400;color:var(--muted)}
+  .kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .kv .cell{background:var(--card);padding:11px 14px;display:flex;justify-content:space-between;gap:10px}
+  .kv .k{color:var(--muted);font-size:13px}
+  .kv .v{font-weight:600;font-variant-numeric:tabular-nums}
+  .sigs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+  .sig{padding:5px 10px;border-radius:8px;font-size:13px;border:1px solid var(--line)}
+  .sig.bull{background:rgba(212,69,60,.12);border-color:rgba(212,69,60,.4);color:#ff8a82}
+  .sig.bear{background:rgba(26,162,96,.12);border-color:rgba(26,162,96,.4);color:#5fd6a0}
+  .sig small{color:var(--muted);margin-left:6px}
+  .pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:13px;font-weight:600}
+  .pill.bull{background:rgba(212,69,60,.18);color:#ff8a82}
+  .pill.bear{background:rgba(26,162,96,.18);color:#5fd6a0}
+  .pill.flat{background:#232c38;color:var(--muted)}
+  .note{color:var(--muted);font-size:13px;padding:14px;background:var(--card);
+    border:1px dashed var(--line);border-radius:12px}
+  .plain{background:linear-gradient(180deg,#1c2531,#171d27);border:1px solid #2f3b4a;
+    border-radius:14px;padding:20px 22px;margin-bottom:8px}
+  .plain .oneliner{font-size:18px;font-weight:700;margin-bottom:14px;line-height:1.4}
+  .plain .row{display:flex;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:14.5px;line-height:1.7}
+  .plain .row:first-of-type{border-top:none}
+  .plain .ic{flex:none;font-size:15px;width:62px;color:var(--muted);font-weight:600}
+  .plain .tx{flex:1}
+  /* 我的分析（手寫筆記） */
+  .note-card{background:linear-gradient(180deg,#1c2531,#171d27);border:1px solid #2f3b4a;
+    border-radius:14px;padding:22px 24px;margin-bottom:8px}
+  .note-card .verdict{font-size:18px;font-weight:800;line-height:1.45;margin-bottom:6px}
+  .note-card .meta{color:var(--muted);font-size:12px;margin-bottom:16px}
+  .note-card h3{font-size:15px;margin:18px 0 8px;color:#cdd7e3;display:flex;align-items:center;gap:7px}
+  .note-card p{font-size:14.5px;line-height:1.85;margin:6px 0}
+  .note-card ul{margin:6px 0;padding-left:2px;list-style:none}
+  .note-card li{font-size:14.5px;line-height:1.8;padding-left:22px;position:relative}
+  .note-card li::before{content:"•";position:absolute;left:6px;color:var(--muted)}
+  .note-card strong{color:#fff}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:8px 0}
+  .cols .box{background:rgba(255,255,255,.025);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  .cols .box h4{font-size:13px;margin:0 0 8px}
+  .cols .bull h4{color:#ff8a82} .cols .bear h4{color:#5fd6a0}
+  .cols li{font-size:13.5px;line-height:1.7}
+  .news li{padding:7px 0 7px 22px;border-top:1px solid var(--line)}
+  .news li:first-child{border-top:none}
+  .news .src{color:var(--muted);font-size:12px;margin-left:6px}
+  .verdict-tag{display:inline-block;padding:3px 12px;border-radius:999px;font-size:14px;font-weight:700;margin-right:8px}
+  .vt-hold{background:rgba(212,175,55,.18);color:#e8c45a}
+  .vt-bull{background:rgba(212,69,60,.2);color:#ff8a82}
+  .vt-bear{background:rgba(26,162,96,.2);color:#5fd6a0}
+  @media(max-width:620px){.cols{grid-template-columns:1fr}}
+</style></head>
+<body><div class="wrap">
+      <a class="back" href="index.html">‹ 返回</a>
+      <header><h1>廣達 <span class="id">2382</span></h1>
+      <div class="sub">觀察分析（未持有） · 2026-06-21 15:07</div></header>
+      <div class="cards">
+        <div class="stat"><div class="label">現價</div><div class="value">376.00</div></div>
+        <div class="stat"><div class="label">技術綜合</div><div class="value"><span class="pill flat">中性</span></div></div>
+        <div class="stat"><div class="label">三大法人(近5日)</div><div class="value up">+7,698 張</div></div>
+        <div class="stat"><div class="label">本益比</div><div class="value">19.88</div></div>
+      </div>
+      <h2>我的分析</h2>
+      <div class="note-card">
+  <div class="verdict">
+    <span class="verdict-tag vt-bull">可分批佈局・法人在進場</span>
+    AI 伺服器代工龍頭，GB300 已超越 GB200 放量。PE 僅約 20、ROE 36.8%、營收年增 66.6%，估值不貴；投信近 5 日大買、技術面 RSI 58 未過熱，是「法人在佈局、還沒噴出」的進場候選。
+  </div>
+  <div class="meta">我的綜合判讀 · 數據日 2026-06-18 · 收盤 376 元（52 週區間 252.5～438）</div>
+
+  <h3>🧭 我怎麼看</h3>
+  <p>廣達是這波 AI 伺服器的核心代工龍頭，<strong>故事很硬，但價格還沒反映完</strong>。基本面看：近 4 季 EPS 18.91 元、ROE 高達 36.84%、營收年增 66.6%，Q1 單季 EPS 5.5 元創同期新高，AI 伺服器占整體伺服器營收已突破 75%，且管理層重申 2026 全年 AI 伺服器營收維持「三位數百分比」成長、大客戶訂單能見度看到 2027 年後。最關鍵的是<strong>本益比僅約 19.9 倍、預估本益比更只有 13.3 倍</strong>——對一檔成長這麼猛的龍頭來說，這個估值並不貴，這是台積電（PE 33）身上看不到的安全邊際。</p>
+  <p>技術面是「<strong>多頭但未過熱</strong>」的位階：收盤 376 站上月線（MA20 362.5），MA60 在 330、均線多頭排列，RSI 14 才 58.14、距離 52 週高 438 還有約 14% 空間，沒有貼上布林上軌（426.7）。唯一的雜訊是 KD 在低檔死亡交叉（K 23 / D 38），代表短線剛回檔整理過、動能暫歇——這反而是分批進場的好時機，不必追在高點。</p>
+  <p>籌碼面說明法人正在佈局：近 5 日<strong>投信大買約 11,465 張、三大法人合計買超 7,698 張</strong>，外資近 5 日小賣約 4,446 張（屬調節，不是棄守）。投信通常領先卡位中期波段，這種「投信主買、外資微調」的結構，配上便宜估值與未過熱技術面，是我偏好的進場組合。融資略減、融券極低，籌碼乾淨。</p>
+
+  <div class="cols">
+    <div class="box bull">
+      <h4>📈 看多理由</h4>
+      <ul>
+        <li>PE 僅約 19.9、預估 PE 13.3，龍頭股估值偏便宜</li>
+        <li>ROE 36.8%、營收年增 66.6%，成長動能強</li>
+        <li>GB300 出貨已超越 GB200，AI 訂單看到 2027 年後</li>
+        <li>近 5 日投信大買 1.1 萬張、三大法人買超 7,698 張</li>
+        <li>RSI 58 未過熱、距 52 週高還有約 14% 空間</li>
+        <li>站上月線、均線多頭排列，中期趨勢向上</li>
+      </ul>
+    </div>
+    <div class="box bear">
+      <h4>📉 看空／風險</h4>
+      <ul>
+        <li>毛利率僅 6.07%、淨利率 3.13%，代工薄利本質</li>
+        <li>AI 伺服器產品組合與新品試產持續稀釋毛利率</li>
+        <li>KD 低檔死亡交叉，短線動能暫歇、可能再震盪</li>
+        <li>外資近 5 日仍小賣 4,446 張，尚未轉買超</li>
+        <li>負債權益比 224%、PB 6.99 偏高，景氣循環敏感</li>
+        <li>股價一年內已自低基期大漲，獲利兌現賣壓需留意</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>📰 近期新聞重點</h3>
+  <ul class="news">
+    <li>Q1 法說：EPS 5.5 元創同期新高，營收 8,092 億元、年增 66.62%，AI 伺服器占伺服器營收逾 75%<span class="src">鉅亨網／經濟日報</span></li>
+    <li>全年 AI 伺服器營收維持「三位數百分比」成長，大型雲端客戶 AI 訂單能見度已達 2027 年後<span class="src">Yahoo 股市／經濟日報</span></li>
+    <li>單價逾 300 萬美元 AI 機櫃出貨量季增翻倍，GB300 出貨量已正式超越 GB200<span class="src">經濟日報／理財周刊</span></li>
+    <li>前四月累計營收首度突破兆元、改寫歷史新高，盤中一度飆上 437 元<span class="src">理財周刊</span></li>
+    <li>Q1 毛利率 4.78%（季減、年減），但因營運槓桿＋下半年 ASIC／non-NVIDIA GPU 專案，營益率有機會自 Q2 回升；法說後股價拉回，分析師多認為「不悲觀、拉回是買點」<span class="src">鉅亨網／今周刊</span></li>
+  </ul>
+
+  <h3>🎯 我的觀察／進場想法</h3>
+  <p>這檔符合我要的「<strong>便宜估值＋法人佈局＋技術未過熱</strong>」三條件，我傾向<strong>積極但有紀律地分批進場</strong>，而不是觀望：</p>
+  <ul>
+    <li><strong>第一批可在現價 376 附近進場</strong>（剛站上月線、RSI 58 還有空間）。我不會等它噴出才追，因為便宜的位階就是現在。</li>
+    <li><strong>第二批等回測支撐再加碼</strong>：MA20（362）至 MA60（330）是理想的承接區，若拉回到月線附近且未跌破，是加碼的好位置；KD 在低檔，回踩本就在預期內。</li>
+    <li><strong>停損參考</strong>：跌破 MA60（330）且投信轉為連續賣超，代表中期結構轉弱，這時該認錯出場。</li>
+    <li><strong>加碼確認訊號</strong>：KD 自低檔重新黃金交叉、外資由賣轉買、突破前高 438，三者出現任一即可加大部位，往 52 週高挑戰。</li>
+    <li>心態上，這是賺<strong>成長與價差</strong>的標的（殖利率 3.46% 還算可以），但毛利薄、波動大，部位控制與分批是關鍵，別一次重壓。</li>
+  </ul>
+
+  <p style="color:var(--muted);font-size:12px;margin-top:16px">※ 以上為數據與公開新聞的整理判讀，僅供研究參考，非投資建議；買賣請自行決定並控管風險。</p>
+</div>
+
+      <h2>基本面 <span class="when">yfinance</span></h2><div class="kv"><div class="cell"><span class="k">本益比 PE</span><span class="v">19.88</span></div><div class="cell"><span class="k">預估本益比 fwPE</span><span class="v">13.30</span></div><div class="cell"><span class="k">股價淨值比 PB</span><span class="v">6.99</span></div><div class="cell"><span class="k">EPS（近4季）</span><span class="v">18.91</span></div><div class="cell"><span class="k">ROE %</span><span class="v">36.84</span></div><div class="cell"><span class="k">毛利率 %</span><span class="v">6.07</span></div><div class="cell"><span class="k">淨利率 %</span><span class="v">3.13</span></div><div class="cell"><span class="k">營收成長 %</span><span class="v">66.60</span></div><div class="cell"><span class="k">盈餘成長 %</span><span class="v">5.90</span></div><div class="cell"><span class="k">殖利率 %</span><span class="v">3.46</span></div><div class="cell"><span class="k">負債權益比</span><span class="v">224.22</span></div><div class="cell"><span class="k">市值（億）</span><span class="v">14,493.00</span></div><div class="cell"><span class="k">52週高</span><span class="v">438.00</span></div><div class="cell"><span class="k">52週低</span><span class="v">252.50</span></div></div><h2>技術面 <span class="when">2026-06-18 · 收盤 376.00 · 綜合 <span class="pill flat">中性</span></span></h2><div style="background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px"><div style="color:var(--muted);font-size:12px;margin-bottom:6px">近 60 日走勢</div><svg viewBox="0 0 320 64" width="100%" height="64" preserveAspectRatio="none" style="display:block"><path d="M0.0,64 L0.0,59.7 L5.4,58.3 L10.8,57.4 L16.3,56.6 L21.7,60.0 L27.1,61.0 L32.5,56.0 L38.0,58.5 L43.4,56.6 L48.8,48.9 L54.2,46.6 L59.7,43.0 L65.1,44.0 L70.5,42.4 L75.9,48.4 L81.4,44.2 L86.8,42.4 L92.2,39.9 L97.6,35.2 L103.1,37.3 L108.5,42.8 L113.9,42.4 L119.3,41.3 L124.7,43.2 L130.2,42.8 L135.6,46.8 L141.0,44.5 L146.4,43.2 L151.9,32.5 L157.3,33.6 L162.7,35.0 L168.1,33.8 L173.6,35.2 L179.0,35.0 L184.4,37.5 L189.8,49.5 L195.3,52.0 L200.7,56.2 L206.1,56.2 L211.5,48.6 L216.9,45.3 L222.4,45.1 L227.8,45.1 L233.2,47.0 L238.6,48.4 L244.1,35.7 L249.5,21.6 L254.9,9.9 L260.3,3.0 L265.8,8.4 L271.2,14.1 L276.6,20.0 L282.0,20.6 L287.5,18.3 L292.9,22.7 L298.3,21.8 L303.7,22.7 L309.2,25.8 L314.6,21.0 L320.0,20.2 L320.0,64 Z" fill="#d4453c" opacity="0.10"/><path d="M0.0,59.7 L5.4,58.3 L10.8,57.4 L16.3,56.6 L21.7,60.0 L27.1,61.0 L32.5,56.0 L38.0,58.5 L43.4,56.6 L48.8,48.9 L54.2,46.6 L59.7,43.0 L65.1,44.0 L70.5,42.4 L75.9,48.4 L81.4,44.2 L86.8,42.4 L92.2,39.9 L97.6,35.2 L103.1,37.3 L108.5,42.8 L113.9,42.4 L119.3,41.3 L124.7,43.2 L130.2,42.8 L135.6,46.8 L141.0,44.5 L146.4,43.2 L151.9,32.5 L157.3,33.6 L162.7,35.0 L168.1,33.8 L173.6,35.2 L179.0,35.0 L184.4,37.5 L189.8,49.5 L195.3,52.0 L200.7,56.2 L206.1,56.2 L211.5,48.6 L216.9,45.3 L222.4,45.1 L227.8,45.1 L233.2,47.0 L238.6,48.4 L244.1,35.7 L249.5,21.6 L254.9,9.9 L260.3,3.0 L265.8,8.4 L271.2,14.1 L276.6,20.0 L282.0,20.6 L287.5,18.3 L292.9,22.7 L298.3,21.8 L303.7,22.7 L309.2,25.8 L314.6,21.0 L320.0,20.2" fill="none" stroke="#d4453c" stroke-width="1.6"/><circle cx="320.0" cy="20.2" r="2.6" fill="#d4453c"/></svg></div><div class="sigs"><span class="sig bear">KD 死亡交叉<small>K 23 下穿 D</small></span><span class="sig bull">站上月線<small>價 376.0 > MA20 362.5</small></span></div><div class="kv"><div class="cell"><span class="k">MA5</span><span class="v">370.90</span></div><div class="cell"><span class="k">MA10</span><span class="v">374.70</span></div><div class="cell"><span class="k">MA20</span><span class="v">362.48</span></div><div class="cell"><span class="k">MA60</span><span class="v">330.03</span></div><div class="cell"><span class="k">RSI14</span><span class="v">58.14</span></div><div class="cell"><span class="k">K</span><span class="v">23.46</span></div><div class="cell"><span class="k">D</span><span class="v">37.64</span></div><div class="cell"><span class="k">BB上</span><span class="v">426.70</span></div><div class="cell"><span class="k">BB中</span><span class="v">362.48</span></div><div class="cell"><span class="k">BB下</span><span class="v">298.25</span></div></div><h2>籌碼面 <span class="when">上市 · 115/06/18 · 買超紅/賣超綠</span></h2><div class="kv"><div class="cell"><span class="k">外資（當日）</span><span class="v up">+2,276 張</span></div><div class="cell"><span class="k">投信（當日）</span><span class="v up">+575 張</span></div><div class="cell"><span class="k">自營商（當日）</span><span class="v down">-51 張</span></div><div class="cell"><span class="k">三大法人（當日）</span><span class="v up">+2,800 張</span></div><div class="cell"><span class="k">外資（近5日）</span><span class="v down">-4,446 張</span></div><div class="cell"><span class="k">投信（近5日）</span><span class="v up">+11,465 張</span></div><div class="cell"><span class="k">三大法人（近5日）</span><span class="v up">+7,698 張</span></div><div class="cell"><span class="k">融資餘額</span><span class="v">11,677 張 <small class="down">(-272)</small></span></div><div class="cell"><span class="k">融券餘額</span><span class="v">1,044 張 <small class="down">(-7)</small></span></div></div>
+      <footer>基本面/技術面：yfinance · 籌碼面：TWSE／TPEX · 本頁僅供研究參考，非投資建議</footer></div></body></html>

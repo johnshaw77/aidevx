@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我的持股 · Richman</title><style>
+  :root {
+    --up:#d4453c; --down:#1aa260; --bg:#0f1419; --card:#1a212b;
+    --line:#2a3340; --text:#e6edf3; --muted:#8b97a7;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;
+    background:var(--bg);color:var(--text);padding:32px 16px;line-height:1.5}
+  .wrap{max-width:960px;margin:0 auto}
+  header{margin-bottom:24px}
+  h1{font-size:24px;font-weight:700;letter-spacing:.5px}
+  .sub{color:var(--muted);font-size:13px;margin-top:4px}
+  a{color:inherit;text-decoration:none}
+  .back{display:inline-block;margin-bottom:16px;color:var(--muted);font-size:13px}
+  .back:hover{color:var(--text)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:24px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .stat .label{color:var(--muted);font-size:12px}
+  .stat .value{font-size:22px;font-weight:700;margin-top:6px}
+  table{width:100%;border-collapse:collapse;background:var(--card);border-radius:12px;
+    overflow:hidden;border:1px solid var(--line)}
+  th,td{padding:11px 14px;text-align:right;font-variant-numeric:tabular-nums;font-size:14px}
+  th{background:#131a23;color:var(--muted);font-size:12px;font-weight:600;border-bottom:1px solid var(--line)}
+  th:first-child,td:first-child{text-align:left}
+  th:nth-child(2),td:nth-child(2){text-align:left}
+  tbody tr{border-bottom:1px solid var(--line)}
+  tbody tr:last-child{border-bottom:none}
+  tbody tr.clickable{cursor:pointer}
+  tbody tr.clickable:hover{background:rgba(255,255,255,.03)}
+  .id{color:var(--muted);font-size:13px}
+  .name{font-weight:600}
+  .up{color:var(--up)} .down{color:var(--down)} .flat{color:var(--muted)}
+  .tag{display:inline-block;padding:1px 7px;border-radius:6px;font-size:11px;background:#232c38;color:var(--muted)}
+  tfoot td{font-weight:700;background:#131a23;border-top:2px solid var(--line)}
+  .arrow{color:var(--muted)}
+  .verdict-cell{text-align:left;line-height:1.6;white-space:nowrap}
+  .muted{color:var(--muted)}
+  footer{color:var(--muted);font-size:12px;margin-top:20px;text-align:center}
+  h2{font-size:17px;font-weight:700;margin:28px 0 12px;display:flex;align-items:center;gap:8px}
+  h2 .when{font-size:12px;font-weight:400;color:var(--muted)}
+  .kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .kv .cell{background:var(--card);padding:11px 14px;display:flex;justify-content:space-between;gap:10px}
+  .kv .k{color:var(--muted);font-size:13px}
+  .kv .v{font-weight:600;font-variant-numeric:tabular-nums}
+  .sigs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+  .sig{padding:5px 10px;border-radius:8px;font-size:13px;border:1px solid var(--line)}
+  .sig.bull{background:rgba(212,69,60,.12);border-color:rgba(212,69,60,.4);color:#ff8a82}
+  .sig.bear{background:rgba(26,162,96,.12);border-color:rgba(26,162,96,.4);color:#5fd6a0}
+  .sig small{color:var(--muted);margin-left:6px}
+  .pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:13px;font-weight:600}
+  .pill.bull{background:rgba(212,69,60,.18);color:#ff8a82}
+  .pill.bear{background:rgba(26,162,96,.18);color:#5fd6a0}
+  .pill.flat{background:#232c38;color:var(--muted)}
+  .note{color:var(--muted);font-size:13px;padding:14px;background:var(--card);
+    border:1px dashed var(--line);border-radius:12px}
+  .plain{background:linear-gradient(180deg,#1c2531,#171d27);border:1px solid #2f3b4a;
+    border-radius:14px;padding:20px 22px;margin-bottom:8px}
+  .plain .oneliner{font-size:18px;font-weight:700;margin-bottom:14px;line-height:1.4}
+  .plain .row{display:flex;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:14.5px;line-height:1.7}
+  .plain .row:first-of-type{border-top:none}
+  .plain .ic{flex:none;font-size:15px;width:62px;color:var(--muted);font-weight:600}
+  .plain .tx{flex:1}
+  /* 我的分析（手寫筆記） */
+  .note-card{background:linear-gradient(180deg,#1c2531,#171d27);border:1px solid #2f3b4a;
+    border-radius:14px;padding:22px 24px;margin-bottom:8px}
+  .note-card .verdict{font-size:18px;font-weight:800;line-height:1.45;margin-bottom:6px}
+  .note-card .meta{color:var(--muted);font-size:12px;margin-bottom:16px}
+  .note-card h3{font-size:15px;margin:18px 0 8px;color:#cdd7e3;display:flex;align-items:center;gap:7px}
+  .note-card p{font-size:14.5px;line-height:1.85;margin:6px 0}
+  .note-card ul{margin:6px 0;padding-left:2px;list-style:none}
+  .note-card li{font-size:14.5px;line-height:1.8;padding-left:22px;position:relative}
+  .note-card li::before{content:"•";position:absolute;left:6px;color:var(--muted)}
+  .note-card strong{color:#fff}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:8px 0}
+  .cols .box{background:rgba(255,255,255,.025);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  .cols .box h4{font-size:13px;margin:0 0 8px}
+  .cols .bull h4{color:#ff8a82} .cols .bear h4{color:#5fd6a0}
+  .cols li{font-size:13.5px;line-height:1.7}
+  .news li{padding:7px 0 7px 22px;border-top:1px solid var(--line)}
+  .news li:first-child{border-top:none}
+  .news .src{color:var(--muted);font-size:12px;margin-left:6px}
+  .verdict-tag{display:inline-block;padding:3px 12px;border-radius:999px;font-size:14px;font-weight:700;margin-right:8px}
+  .vt-hold{background:rgba(212,175,55,.18);color:#e8c45a}
+  .vt-bull{background:rgba(212,69,60,.2);color:#ff8a82}
+  .vt-bear{background:rgba(26,162,96,.2);color:#5fd6a0}
+  @media(max-width:620px){.cols{grid-template-columns:1fr}}
+</style></head>
+<body><div class="wrap">
+      <header><h1>我的持股</h1>
+      <div class="sub">永豐金 Shioaji · 更新 2026-06-21 15:12</div></header>
+      <div class="cards">
+        <div class="stat"><div class="label">持有檔數（股數&gt;0）</div><div class="value">2</div></div>
+        <div class="stat"><div class="label">列示標的</div><div class="value">10</div></div>
+        <div class="stat"><div class="label">總損益</div><div class="value down">-22,229</div></div>
+      </div>
+      <table><thead><tr>
+        <th>代號</th><th>名稱</th><th>我的判讀</th><th>技術面</th><th>現價</th><th>損益</th>
+      </tr></thead><tbody><tr class="clickable" onclick="location.href='2330.html'">
+          <td class="id">2330</td>
+          <td class="name">台積電 <span class="arrow">›</span></td>
+          <td class="verdict-cell"><span class="verdict-tag vt-hold" style="font-size:12.5px">核心續抱・不追高</span></td>
+          <td><span class="pill bull">偏多</span></td>
+          <td>2,410.00</td>
+          <td class="down">-103</td></tr><tr class="clickable" onclick="location.href='3017.html'">
+          <td class="id">3017</td>
+          <td class="name">奇鋐 <span class="arrow">›</span></td>
+          <td class="verdict-cell"><span class="verdict-tag vt-hold" style="font-size:12.5px">趨勢續抱・等回檔加碼</span></td>
+          <td><span class="pill flat">中性</span></td>
+          <td>2,400.00</td>
+          <td class="down">-881</td></tr><tr class="clickable" onclick="location.href='3037.html'">
+          <td class="id">3037</td>
+          <td class="name">欣興 <span class="arrow">›</span></td>
+          <td class="verdict-cell"><span class="verdict-tag vt-hold" style="font-size:12.5px">短線偏空・長線題材續抱</span></td>
+          <td><span class="pill bear">偏空</span></td>
+          <td>968.00</td>
+          <td class="down">-1,870</td></tr><tr class="clickable" onclick="location.href='3163.html'">
+          <td class="id">3163</td>
+          <td class="name">波若威 <span class="arrow">›</span></td>
+          <td class="verdict-cell"><span class="verdict-tag vt-bear" style="font-size:12.5px">短線偏空・嚴設停損</span></td>
+          <td><span class="pill bear">偏空</span></td>
+          <td>893.00</td>
+          <td class="down">-336</td></tr><tr class="clickable" onclick="location.href='3711.html'">
+          <td class="id">3711</td>
+          <td class="name">日月光投控 <span class="arrow">›</span></td>
+          <td class="verdict-cell"><span class="verdict-tag vt-bull" style="font-size:12.5px">趨勢偏多・續抱為主</span> <span class="up" style="font-size:12px">✅賺</span></td>
+          <td><span class="pill bull">偏多</span></td>
+          <td>613.00</td>
+          <td class="up">+2,047</td></tr><tr class="clickable" onclick="location.href='4958.html'">
+          <td class="id">4958</td>
+          <td class="name">臻鼎-KY <span class="arrow">›</span></td>
+          <td class="verdict-cell"><span class="verdict-tag vt-hold" style="font-size:12.5px">獲利續抱・不追高</span> <span class="up" style="font-size:12px">✅賺</span></td>
+          <td><span class="pill bear">偏空</span></td>
+          <td>642.00</td>
+          <td class="up">+7,263</td></tr><tr class="clickable" onclick="location.href='4979.html'">
+          <td class="id">4979</td>
+          <td class="name">華星光 <span class="arrow">›</span></td>
+          <td class="verdict-cell"><span class="verdict-tag vt-hold" style="font-size:12.5px">小賺續抱・別追高</span> <span class="up" style="font-size:12px">✅賺</span></td>
+          <td><span class="pill flat">中性</span></td>
+          <td>567.00</td>
+          <td class="up">+707</td></tr><tr class="clickable" onclick="location.href='6269.html'">
+          <td class="id">6269</td>
+          <td class="name">台郡 <span class="arrow">›</span></td>
+          <td class="verdict-cell"><span class="verdict-tag vt-hold" style="font-size:12.5px">轉型題材抱・虧損別重壓</span></td>
+          <td><span class="pill bull">偏多</span></td>
+          <td>79.60</td>
+          <td class="down">-4,398</td></tr><tr class="clickable" onclick="location.href='6920.html'">
+          <td class="id">6920</td>
+          <td class="name">恆勁科技 <span class="arrow">›</span></td>
+          <td class="verdict-cell"><span class="verdict-tag vt-bear" style="font-size:12.5px">基本面偏弱・保守看待</span> <span class="down" style="font-size:12px">⚠️</span></td>
+          <td><span class="pill bull">偏多</span></td>
+          <td>110.00</td>
+          <td class="down">-23,917</td></tr><tr class="clickable" onclick="location.href='8027.html'">
+          <td class="id">8027</td>
+          <td class="name">鈦昇 <span class="arrow">›</span></td>
+          <td class="verdict-cell"><span class="verdict-tag vt-bear" style="font-size:12.5px">短線偏空・觀望為宜</span></td>
+          <td><span class="pill bear">偏空</span></td>
+          <td>241.00</td>
+          <td class="down">-741</td></tr></tbody>
+      <tfoot><tr><td colspan="5">總損益</td><td class="down">-22,229</td></tr></tfoot></table>
+      <footer>資料來源：永豐金 Shioaji · 我的判讀取自各股分析筆記 · 技術面紅綠燈＝指標綜合偏多/偏空 · 損益單位：新台幣元 · 點列看完整分析</footer></div></body></html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Richman · 股市分析</title>
+<style>
+  :root{--bg:#0f1419;--card:#1a212b;--line:#2a3340;--text:#e6edf3;--muted:#8b97a7;--up:#d4453c;--down:#1aa260}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;
+    background:radial-gradient(1200px 600px at 50% -10%,#16202c,#0f1419);color:var(--text);
+    min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 16px}
+  .wrap{max-width:760px;width:100%}
+  .brand{text-align:center;margin-bottom:36px}
+  .brand h1{font-size:34px;font-weight:800;letter-spacing:1px}
+  .brand .logo{font-size:40px}
+  .brand p{color:var(--muted);font-size:14px;margin-top:8px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px}
+  a.card{display:block;text-decoration:none;color:inherit;background:linear-gradient(180deg,#1c2531,#171d27);
+    border:1px solid var(--line);border-radius:18px;padding:26px 24px;transition:.18s;position:relative;overflow:hidden}
+  a.card:hover{transform:translateY(-3px);border-color:#3a4658;box-shadow:0 12px 30px rgba(0,0,0,.35)}
+  a.card .ic{font-size:34px;margin-bottom:14px}
+  a.card h2{font-size:21px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+  a.card .arrow{color:var(--muted);font-weight:400;transition:.18s}
+  a.card:hover .arrow{transform:translateX(4px);color:var(--text)}
+  a.card p{color:var(--muted);font-size:13.5px;line-height:1.7}
+  a.card .tag{display:inline-block;margin-top:14px;font-size:12px;color:var(--muted);
+    background:#232c38;border-radius:8px;padding:4px 10px}
+  .accent-hold{position:absolute;inset:0 auto 0 0;width:4px;background:var(--up)}
+  .accent-watch{position:absolute;inset:0 auto 0 0;width:4px;background:#e8c45a}
+  .accent-screen{position:absolute;inset:0 auto 0 0;width:4px;background:#3aa0ff}
+  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:32px;line-height:1.8}
+  @media(max-width:560px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">
+    <div class="logo">📈</div>
+    <h1>Richman</h1>
+    <p>台股投資分析 · 持股追蹤與觀察清單</p>
+  </div>
+  <div class="grid">
+    <a class="card" href="my/holdings.html">
+      <span class="accent-hold"></span>
+      <div class="ic">💼</div>
+      <h2>我的持股 <span class="arrow">›</span></h2>
+      <p>目前持有部位的損益、逐筆買入明細，以及每檔的基本面／技術面／籌碼面與「我的分析」判讀。</p>
+      <span class="tag">永豐金 Shioaji · 即時部位</span>
+    </a>
+    <a class="card" href="my/watch/index.html">
+      <span class="accent-watch"></span>
+      <div class="ic">🔍</div>
+      <h2>觀察名單 <span class="arrow">›</span></h2>
+      <p>尚未持有、研究追蹤的標的。AI 半導體供應鏈精選，含三面分析與進場想法。</p>
+      <span class="tag">研究清單 · 可自行增減</span>
+    </a>
+    <a class="card" href="my/watch/screen.html">
+      <span class="accent-screen"></span>
+      <div class="ic">🎯</div>
+      <h2>選股篩選 <span class="arrow">›</span></h2>
+      <p>每日掃描半導體／AI／電子，找「法人正在佈局、技術未過熱、基本面佳」的可進場候選。</p>
+      <span class="tag">自動更新 · 法人佈局未過熱</span>
+    </a>
+  </div>
+  <footer>
+    資料來源：永豐金 Shioaji · yfinance · TWSE／TPEX<br>
+    本站內容僅供研究參考，非投資建議
+  </footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>恆勁科技 6920 · 明細</title><style>
+  :root {
+    --up:#d4453c; --down:#1aa260; --bg:#0f1419; --card:#1a212b;
+    --line:#2a3340; --text:#e6edf3; --muted:#8b97a7;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;
+    background:var(--bg);color:var(--text);padding:32px 16px;line-height:1.5}
+  .wrap{max-width:960px;margin:0 auto}
+  header{margin-bottom:24px}
+  h1{font-size:24px;font-weight:700;letter-spacing:.5px}
+  .sub{color:var(--muted);font-size:13px;margin-top:4px}
+  a{color:inherit;text-decoration:none}
+  .back{display:inline-block;margin-bottom:16px;color:var(--muted);font-size:13px}
+  .back:hover{color:var(--text)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:24px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .stat .label{color:var(--muted);font-size:12px}
+  .stat .value{font-size:22px;font-weight:700;margin-top:6px}
+  table{width:100%;border-collapse:collapse;background:var(--card);border-radius:12px;
+    overflow:hidden;border:1px solid var(--line)}
+  th,td{padding:11px 14px;text-align:right;font-variant-numeric:tabular-nums;font-size:14px}
+  th{background:#131a23;color:var(--muted);font-size:12px;font-weight:600;border-bottom:1px solid var(--line)}
+  th:first-child,td:first-child{text-align:left}
+  th:nth-child(2),td:nth-child(2){text-align:left}
+  tbody tr{border-bottom:1px solid var(--line)}
+  tbody tr:last-child{border-bottom:none}
+  tbody tr.clickable{cursor:pointer}
+  tbody tr.clickable:hover{background:rgba(255,255,255,.03)}
+  .id{color:var(--muted);font-size:13px}
+  .name{font-weight:600}
+  .up{color:var(--up)} .down{color:var(--down)} .flat{color:var(--muted)}
+  .tag{display:inline-block;padding:1px 7px;border-radius:6px;font-size:11px;background:#232c38;color:var(--muted)}
+  tfoot td{font-weight:700;background:#131a23;border-top:2px solid var(--line)}
+  .arrow{color:var(--muted)}
+  .verdict-cell{text-align:left;line-height:1.6;white-space:nowrap}
+  .muted{color:var(--muted)}
+  footer{color:var(--muted);font-size:12px;margin-top:20px;text-align:center}
+  h2{font-size:17px;font-weight:700;margin:28px 0 12px;display:flex;align-items:center;gap:8px}
+  h2 .when{font-size:12px;font-weight:400;color:var(--muted)}
+  .kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .kv .cell{background:var(--card);padding:11px 14px;display:flex;justify-content:space-between;gap:10px}
+  .kv .k{color:var(--muted);font-size:13px}
+  .kv .v{font-weight:600;font-variant-numeric:tabular-nums}
+  .sigs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+  .sig{padding:5px 10px;border-radius:8px;font-size:13px;border:1px solid var(--line)}
+  .sig.bull{background:rgba(212,69,60,.12);border-color:rgba(212,69,60,.4);color:#ff8a82}
+  .sig.bear{background:rgba(26,162,96,.12);border-color:rgba(26,162,96,.4);color:#5fd6a0}
+  .sig small{color:var(--muted);margin-left:6px}
+  .pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:13px;font-weight:600}
+  .pill.bull{background:rgba(212,69,60,.18);color:#ff8a82}
+  .pill.bear{background:rgba(26,162,96,.18);color:#5fd6a0}
+  .pill.flat{background:#232c38;color:var(--muted)}
+  .note{color:var(--muted);font-size:13px;padding:14px;background:var(--card);
+    border:1px dashed var(--line);border-radius:12px}
+  .plain{background:linear-gradient(180deg,#1c2531,#171d27);border:1px solid #2f3b4a;
+    border-radius:14px;padding:20px 22px;margin-bottom:8px}
+  .plain .oneliner{font-size:18px;font-weight:700;margin-bottom:14px;line-height:1.4}
+  .plain .row{display:flex;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:14.5px;line-height:1.7}
+  .plain .row:first-of-type{border-top:none}
+  .plain .ic{flex:none;font-size:15px;width:62px;color:var(--muted);font-weight:600}
+  .plain .tx{flex:1}
+  /* 我的分析（手寫筆記） */
+  .note-card{background:linear-gradient(180deg,#1c2531,#171d27);border:1px solid #2f3b4a;
+    border-radius:14px;padding:22px 24px;margin-bottom:8px}
+  .note-card .verdict{font-size:18px;font-weight:800;line-height:1.45;margin-bottom:6px}
+  .note-card .meta{color:var(--muted);font-size:12px;margin-bottom:16px}
+  .note-card h3{font-size:15px;margin:18px 0 8px;color:#cdd7e3;display:flex;align-items:center;gap:7px}
+  .note-card p{font-size:14.5px;line-height:1.85;margin:6px 0}
+  .note-card ul{margin:6px 0;padding-left:2px;list-style:none}
+  .note-card li{font-size:14.5px;line-height:1.8;padding-left:22px;position:relative}
+  .note-card li::before{content:"•";position:absolute;left:6px;color:var(--muted)}
+  .note-card strong{color:#fff}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:8px 0}
+  .cols .box{background:rgba(255,255,255,.025);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  .cols .box h4{font-size:13px;margin:0 0 8px}
+  .cols .bull h4{color:#ff8a82} .cols .bear h4{color:#5fd6a0}
+  .cols li{font-size:13.5px;line-height:1.7}
+  .news li{padding:7px 0 7px 22px;border-top:1px solid var(--line)}
+  .news li:first-child{border-top:none}
+  .news .src{color:var(--muted);font-size:12px;margin-left:6px}
+  .verdict-tag{display:inline-block;padding:3px 12px;border-radius:999px;font-size:14px;font-weight:700;margin-right:8px}
+  .vt-hold{background:rgba(212,175,55,.18);color:#e8c45a}
+  .vt-bull{background:rgba(212,69,60,.2);color:#ff8a82}
+  .vt-bear{background:rgba(26,162,96,.2);color:#5fd6a0}
+  @media(max-width:620px){.cols{grid-template-columns:1fr}}
+</style></head>
+<body><div class="wrap">
+          <a class="back" href="holdings.html">‹ 返回持股總覽</a>
+          <header><h1>恆勁科技 <span class="id">6920</span></h1>
+          <div class="sub">逐筆買入明細 · 2026-06-21 15:12</div></header>
+          <div class="cards">
+            <div class="stat"><div class="label">持有股數</div><div class="value">4</div></div>
+            <div class="stat"><div class="label">均價 / 現價</div><div class="value">115 / 110</div></div>
+            <div class="stat"><div class="label">損益合計</div><div class="value down">-23,917</div></div>
+            <div class="stat"><div class="label">手續費合計</div><div class="value">732</div></div>
+          </div>
+          <h2>我的分析</h2>
+          <div class="note-card">
+  <div class="verdict">
+    <span class="verdict-tag vt-bear">基本面偏弱・保守看待</span>
+    本業仍在虧損（近4季 EPS -2.34、ROE -31%、毛利率為負），靠「先進封裝／類載板」題材撐住股價與高估值（PB 14 倍）。營收有成長但還沒轉成獲利，這是你帳上虧最多的一檔，務必控管風險。
+  </div>
+  <div class="meta">我的綜合判讀 · 數據日 2026-06-18 · 收盤 112（區間 52週高 145／低 14.3，波動極大）</div>
+
+  <h3>🧭 我怎麼看</h3>
+  <p>恆勁科技做的是 <strong>IC 精密承載板（載板／類載板）</strong>，踩在 AI 與先進封裝這條最熱的供應鏈上，題材沒話講。問題出在「<strong>題材還沒變成獲利</strong>」：近4季 EPS 為 <strong>-2.34 元</strong>、ROE <strong>-31.2%</strong>、毛利率 <strong>-15.5%</strong>、淨利率 <strong>-31.9%</strong>——也就是說公司目前是<strong>賣一片虧一片</strong>，因為沒有獲利，本益比（PE）根本算不出來。董事會 3 月已決議 2025 年度虧損撥補、<strong>不發股利</strong>，2025 全年 EPS 為負、Q4 單季 EPS 約 -0.84 元，這些都印證了體質還在虧損期。</p>
+  <p>比較有看頭的是<strong>營收動能</strong>：2026 年 1～4 月累計營收 5.67 億、年增約 23.6%，跟數據裡的營收成長 22.6% 一致，代表載板需求確實在回溫、稼動率在拉。市場買的就是「<strong>放量→規模經濟→毛利由負轉正</strong>」這個轉機故事。但這只是「期待」，目前帳上還沒兌現，而股價淨值比已被推到 <strong>14.4 倍</strong>（每股淨值才約 7.6 元，股價卻百元起跳），等於把好幾年後的樂觀都先反映了，估值並不便宜，這也是為什麼股價一年內可以從 14 跌到、又從低點暴衝到 145、現在回到 110 附近——<strong>波動極大、本質是高風險的轉機股</strong>。</p>
+  <p>技術面短線中性偏多：收盤 112 剛站上月線 MA20（111.7），MA60（93.8）在下方撐著，RSI 約 55、KD（K53／D42）在中位，沒有過熱也沒有超賣，唯一明確訊號就是「站上月線」。<strong>需要誠實說明的是：恆勁是興櫃／櫃買的個股，公開資料中沒有三大法人買賣超與融資券的每日籌碼日報，所以這檔的「籌碼面」我無法判讀，從略</strong>——這也提醒一件事，這類個股流動性與資訊透明度都不如台積電那種權值股，進出要更小心。</p>
+
+  <div class="cols">
+    <div class="box bull">
+      <h4>📈 看多理由</h4>
+      <ul>
+        <li>站在 AI 先進封裝／類載板熱門供應鏈上，題材性強</li>
+        <li>2026 年 1～4 月營收年增約 23.6%，需求明顯回溫</li>
+        <li>稼動率拉升若帶動規模經濟，毛利有機會由負轉正（轉機點）</li>
+        <li>技術面剛站上月線 MA20，MA60 在下方撐住</li>
+      </ul>
+    </div>
+    <div class="box bear">
+      <h4>📉 看空／風險</h4>
+      <ul>
+        <li>本業仍虧損：近4季 EPS -2.34、ROE -31%、毛利率 -15.5%</li>
+        <li>沒有獲利所以無本益比，2025 虧損、不發股利</li>
+        <li>PB 14.4 倍，估值已把樂觀題材提前反映，並不便宜</li>
+        <li>52週高低 145／14.3，波動極端，下檔風險大</li>
+        <li>興櫃／櫃買個股，無三大法人與融資券籌碼可參考、流動性較差</li>
+        <li>「轉機」尚未兌現，若毛利遲遲轉不正，題材容易退潮</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>📰 近期新聞重點</h3>
+  <ul class="news">
+    <li>董事會 3/26 通過 2025 年度財報，決議虧損撥補案、<strong>不發放股利</strong>（全年仍為虧損）<span class="src">公開資訊／Goodinfo</span></li>
+    <li>2025 年全年營收約 14.55 億元；2026 年 1～4 月累計營收 5.67 億、年增約 23.6%，需求回溫<span class="src">玩股網／nStock</span></li>
+    <li>2025 Q4 單季 EPS 約 -0.84 元，仍處虧損；每股淨值約 7.6 元<span class="src">財報狗</span></li>
+    <li>主力產品為 IC 精密承載板（載板／類載板），定位先進封裝供應鏈<span class="src">鉅亨網／nStock</span></li>
+    <li>公司於 2026/4/30 召開線上法人說明會說明營運（公開新聞著墨有限，多為財報數據面）<span class="src">台股法說會資料庫</span></li>
+  </ul>
+
+  <h3>🎯 對你的部位</h3>
+  <p>你持有 <strong>4 張（4,000 股）</strong>，平均成本 <strong>114.8</strong>、現價 <strong>110</strong>，目前帳面虧損約 <strong>-23,917 元</strong>（成本約 51.7 萬），是你<strong>所有持股裡虧最多的一檔</strong>。從買入日期看，你在 4～6 月分批買、最後一筆 6/10 才進，成本壓在 110～115 一帶，現在剛好被套在這個區間。</p>
+  <ul>
+    <li><strong>先認清這是「轉機股」不是「存股」</strong>：它沒獲利、不發息，賺的純粹是「未來轉盈」的價差。能不能抱，取決於你是否相信營收成長最終會變成獲利，以及你能不能承受它 -20%～-30% 的劇烈波動。</li>
+    <li><strong>續抱等反彈</strong>：技術面剛站上月線、MA60 在下方撐著，短線不算最差。若選擇抱，建議設一個自己的停損紀律（例如跌破 MA60 約 94、或虧損達某個你能接受的上限就出場），不要無限期凹單。</li>
+    <li><strong>認賠停損</strong>：若你資金有更好的去處、或這 2.4 萬的帳損已影響睡眠，在基本面尚未轉正前先停損、把資金挪到體質好的標的，也是務實選項——虧損股不會因為你「不賣」就變便宜。</li>
+    <li><strong>攤平要非常謹慎</strong>：往下加碼確實能拉低均價，但這檔本業還在虧、估值不低、波動又大，攤平等於把更多資金壓在「題材能否兌現」這個未知數上，<strong>風險加倍</strong>。除非你對它的轉機有很強的把握、且部位佔比仍在可控範圍，否則不建議靠攤平解套。</li>
+  </ul>
+
+  <p style="color:var(--muted);font-size:12px;margin-top:16px">※ 以上為數據與公開新聞的整理判讀，非投資建議；興櫃／櫃買個股無三大法人與融資券籌碼資料、流動性較低，買賣請自行決定並嚴格控管風險。</p>
+</div>
+
+          <h2>逐筆買入明細</h2>
+          <table><thead><tr>
+            <th>買入日期</th><th>類別</th><th>股數</th><th>每股成本</th><th>成本金額</th>
+            <th>參考市值</th><th>損益</th><th>手續費</th><th>交易序號</th>
+          </tr></thead><tbody><tr>
+              <td>2026-04-23</td>
+              <td><span class="tag">整股</span></td>
+              <td>1,000</td>
+              <td>120.17</td>
+              <td>120,171</td>
+              <td>109,514</td>
+              <td class="down">-10,657</td>
+              <td>171</td>
+              <td class="id">Y01AG</td></tr><tr>
+              <td>2026-04-23</td>
+              <td><span class="tag">整股</span></td>
+              <td>1,000</td>
+              <td>124.68</td>
+              <td>124,677</td>
+              <td>109,514</td>
+              <td class="down">-15,163</td>
+              <td>177</td>
+              <td class="id">Y01RV</td></tr><tr>
+              <td>2026-04-23</td>
+              <td><span class="tag">整股</span></td>
+              <td>1,000</td>
+              <td>118.17</td>
+              <td>118,168</td>
+              <td>109,514</td>
+              <td class="down">-8,654</td>
+              <td>168</td>
+              <td class="id">Y02DJ</td></tr><tr>
+              <td>2026-05-07</td>
+              <td><span class="tag">零股</span></td>
+              <td>約 100</td>
+              <td>115.16</td>
+              <td>11,516</td>
+              <td>10,952</td>
+              <td class="down">-564</td>
+              <td>16</td>
+              <td class="id">Y0BFB</td></tr><tr>
+              <td>2026-05-08</td>
+              <td><span class="tag">零股</span></td>
+              <td>約 100</td>
+              <td>106.15</td>
+              <td>10,615</td>
+              <td>10,952</td>
+              <td class="up">+337</td>
+              <td>15</td>
+              <td class="id">Y0AVT</td></tr><tr>
+              <td>2026-05-12</td>
+              <td><span class="tag">整股</span></td>
+              <td>1,000</td>
+              <td>101.14</td>
+              <td>101,143</td>
+              <td>109,514</td>
+              <td class="up">+8,371</td>
+              <td>143</td>
+              <td class="id">Y0279</td></tr><tr>
+              <td>2026-05-12</td>
+              <td><span class="tag">零股</span></td>
+              <td>約 199</td>
+              <td>100.64</td>
+              <td>20,028</td>
+              <td>21,903</td>
+              <td class="up">+1,875</td>
+              <td>28</td>
+              <td class="id">Y03FE</td></tr><tr>
+              <td>2026-06-10</td>
+              <td><span class="tag">零股</span></td>
+              <td>約 100</td>
+              <td>104.14</td>
+              <td>10,414</td>
+              <td>10,952</td>
+              <td class="up">+538</td>
+              <td>14</td>
+              <td class="id">Y0BWN</td></tr></tbody>
+          <tfoot><tr><td colspan="6">合計</td>
+            <td class="down">-23,917</td><td>732</td><td></td></tr></tfoot></table>
+          <h2>基本面 <span class="when">yfinance</span></h2><div class="kv"><div class="cell"><span class="k">本益比 PE</span><span class="v">—</span></div><div class="cell"><span class="k">預估本益比 fwPE</span><span class="v">—</span></div><div class="cell"><span class="k">股價淨值比 PB</span><span class="v">14.41</span></div><div class="cell"><span class="k">EPS（近4季）</span><span class="v">-2.34</span></div><div class="cell"><span class="k">ROE %</span><span class="v">-31.20</span></div><div class="cell"><span class="k">毛利率 %</span><span class="v">-15.47</span></div><div class="cell"><span class="k">淨利率 %</span><span class="v">-31.90</span></div><div class="cell"><span class="k">營收成長 %</span><span class="v">22.60</span></div><div class="cell"><span class="k">盈餘成長 %</span><span class="v">—</span></div><div class="cell"><span class="k">殖利率 %</span><span class="v">—</span></div><div class="cell"><span class="k">負債權益比</span><span class="v">74.65</span></div><div class="cell"><span class="k">市值（億）</span><span class="v">227.90</span></div><div class="cell"><span class="k">52週高</span><span class="v">145.00</span></div><div class="cell"><span class="k">52週低</span><span class="v">14.30</span></div></div><h2>技術面 <span class="when">2026-06-18 · 收盤 112.00 · 綜合 <span class="pill bull">偏多</span></span></h2><div style="background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px"><div style="color:var(--muted);font-size:12px;margin-bottom:6px">近 60 日走勢</div><svg viewBox="0 0 320 64" width="100%" height="64" preserveAspectRatio="none" style="display:block"><path d="M0.0,64 L0.0,58.8 L5.4,58.7 L10.8,58.5 L16.3,59.2 L21.7,59.8 L27.1,61.0 L32.5,59.7 L38.0,60.3 L43.4,57.6 L48.8,54.1 L54.2,46.2 L59.7,44.9 L65.1,39.1 L70.5,31.7 L75.9,32.3 L81.4,33.7 L86.8,34.8 L92.2,32.2 L97.6,29.6 L103.1,10.8 L108.5,23.0 L113.9,24.3 L119.3,25.1 L124.7,20.2 L130.2,9.6 L135.6,4.9 L141.0,3.0 L146.4,4.2 L151.9,11.1 L157.3,12.7 L162.7,18.3 L168.1,22.5 L173.6,14.9 L179.0,16.4 L184.4,21.1 L189.8,22.7 L195.3,24.6 L200.7,23.2 L206.1,24.7 L211.5,24.0 L216.9,21.4 L222.4,8.9 L227.8,3.0 L233.2,8.6 L238.6,9.9 L244.1,10.8 L249.5,6.4 L254.9,11.4 L260.3,11.4 L265.8,14.9 L271.2,17.7 L276.6,17.7 L282.0,16.1 L287.5,22.1 L292.9,22.6 L298.3,22.4 L303.7,22.1 L309.2,23.2 L314.6,15.8 L320.0,14.9 L320.0,64 Z" fill="#d4453c" opacity="0.10"/><path d="M0.0,58.8 L5.4,58.7 L10.8,58.5 L16.3,59.2 L21.7,59.8 L27.1,61.0 L32.5,59.7 L38.0,60.3 L43.4,57.6 L48.8,54.1 L54.2,46.2 L59.7,44.9 L65.1,39.1 L70.5,31.7 L75.9,32.3 L81.4,33.7 L86.8,34.8 L92.2,32.2 L97.6,29.6 L103.1,10.8 L108.5,23.0 L113.9,24.3 L119.3,25.1 L124.7,20.2 L130.2,9.6 L135.6,4.9 L141.0,3.0 L146.4,4.2 L151.9,11.1 L157.3,12.7 L162.7,18.3 L168.1,22.5 L173.6,14.9 L179.0,16.4 L184.4,21.1 L189.8,22.7 L195.3,24.6 L200.7,23.2 L206.1,24.7 L211.5,24.0 L216.9,21.4 L222.4,8.9 L227.8,3.0 L233.2,8.6 L238.6,9.9 L244.1,10.8 L249.5,6.4 L254.9,11.4 L260.3,11.4 L265.8,14.9 L271.2,17.7 L276.6,17.7 L282.0,16.1 L287.5,22.1 L292.9,22.6 L298.3,22.4 L303.7,22.1 L309.2,23.2 L314.6,15.8 L320.0,14.9" fill="none" stroke="#d4453c" stroke-width="1.6"/><circle cx="320.0" cy="14.9" r="2.6" fill="#d4453c"/></svg></div><div class="sigs"><span class="sig bull">站上月線<small>價 112.0 > MA20 111.7</small></span></div><div class="kv"><div class="cell"><span class="k">MA5</span><span class="v">104.34</span></div><div class="cell"><span class="k">MA10</span><span class="v">104.69</span></div><div class="cell"><span class="k">MA20</span><span class="v">111.69</span></div><div class="cell"><span class="k">MA60</span><span class="v">93.81</span></div><div class="cell"><span class="k">RSI14</span><span class="v">54.91</span></div><div class="cell"><span class="k">K</span><span class="v">53.66</span></div><div class="cell"><span class="k">D</span><span class="v">41.63</span></div><div class="cell"><span class="k">BB上</span><span class="v">130.63</span></div><div class="cell"><span class="k">BB中</span><span class="v">111.69</span></div><div class="cell"><span class="k">BB下</span><span class="v">92.76</span></div></div><h2>籌碼面</h2><div class="note">查無籌碼資料（興櫃個股無三大法人/融資券日報）。</div>
+          <footer>整股股數＝張數×1000；零股股數由「參考市值÷現價」反推估算（標示「約」）· 每股成本＝成本金額÷股數 · 金額單位：新台幣元<br>
+          基本面/技術面：yfinance · 籌碼面：TWSE／TPEX · 本頁僅供參考，非投資建議</footer></div></body></html>
