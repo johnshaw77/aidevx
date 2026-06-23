@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>持股風險總覽 · Richman</title><style>
+  :root {
+    --up:#d4453c; --down:#1aa260; --bg:#0f1419; --card:#1a212b;
+    --line:#2a3340; --text:#e6edf3; --muted:#8b97a7;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;
+    background:var(--bg);color:var(--text);padding:32px 16px;line-height:1.5}
+  .wrap{max-width:960px;margin:0 auto}
+  header{margin-bottom:24px}
+  h1{font-size:24px;font-weight:700;letter-spacing:.5px}
+  .sub{color:var(--muted);font-size:13px;margin-top:4px}
+  a{color:inherit;text-decoration:none}
+  .back{display:inline-block;margin-bottom:16px;color:var(--muted);font-size:13px}
+  .back:hover{color:var(--text)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:24px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .stat .label{color:var(--muted);font-size:12px}
+  .stat .value{font-size:22px;font-weight:700;margin-top:6px}
+  table{width:100%;border-collapse:collapse;background:var(--card);border-radius:12px;
+    overflow:hidden;border:1px solid var(--line)}
+  th,td{padding:11px 14px;text-align:right;font-variant-numeric:tabular-nums;font-size:14px}
+  th{background:#131a23;color:var(--muted);font-size:12px;font-weight:600;border-bottom:1px solid var(--line)}
+  th:first-child,td:first-child{text-align:left}
+  th:nth-child(2),td:nth-child(2){text-align:left}
+  tbody tr{border-bottom:1px solid var(--line)}
+  tbody tr:last-child{border-bottom:none}
+  tbody tr.clickable{cursor:pointer}
+  tbody tr.clickable:hover{background:rgba(255,255,255,.03)}
+  .id{color:var(--muted);font-size:13px}
+  .name{font-weight:600}
+  .up{color:var(--up)} .down{color:var(--down)} .flat{color:var(--muted)}
+  .tag{display:inline-block;padding:1px 7px;border-radius:6px;font-size:11px;background:#232c38;color:var(--muted)}
+  tfoot td{font-weight:700;background:#131a23;border-top:2px solid var(--line)}
+  .arrow{color:var(--muted)}
+  .verdict-cell{text-align:left;line-height:1.6;white-space:nowrap}
+  .muted{color:var(--muted)}
+  footer{color:var(--muted);font-size:12px;margin-top:20px;text-align:center}
+  h2{font-size:17px;font-weight:700;margin:28px 0 12px;display:flex;align-items:center;gap:8px}
+  h2 .when{font-size:12px;font-weight:400;color:var(--muted)}
+  .kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .kv .cell{background:var(--card);padding:11px 14px;display:flex;justify-content:space-between;gap:10px}
+  .kv .k{color:var(--muted);font-size:13px}
+  .kv .v{font-weight:600;font-variant-numeric:tabular-nums}
+  .sigs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+  .sig{padding:5px 10px;border-radius:8px;font-size:13px;border:1px solid var(--line)}
+  .sig.bull{background:rgba(212,69,60,.12);border-color:rgba(212,69,60,.4);color:#ff8a82}
+  .sig.bear{background:rgba(26,162,96,.12);border-color:rgba(26,162,96,.4);color:#5fd6a0}
+  .sig small{color:var(--muted);margin-left:6px}
+  .pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:13px;font-weight:600}
+  .pill.bull{background:rgba(212,69,60,.18);color:#ff8a82}
+  .pill.bear{background:rgba(26,162,96,.18);color:#5fd6a0}
+  .pill.flat{background:#232c38;color:var(--muted)}
+  .note{color:var(--muted);font-size:13px;padding:14px;background:var(--card);
+    border:1px dashed var(--line);border-radius:12px}
+  .plain{background:linear-gradient(180deg,#1c2531,#171d27);border:1px solid #2f3b4a;
+    border-radius:14px;padding:20px 22px;margin-bottom:8px}
+  .plain .oneliner{font-size:18px;font-weight:700;margin-bottom:14px;line-height:1.4}
+  .plain .row{display:flex;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:14.5px;line-height:1.7}
+  .plain .row:first-of-type{border-top:none}
+  .plain .ic{flex:none;font-size:15px;width:62px;color:var(--muted);font-weight:600}
+  .plain .tx{flex:1}
+  /* 我的分析（手寫筆記） */
+  .note-card{background:linear-gradient(180deg,#1c2531,#171d27);border:1px solid #2f3b4a;
+    border-radius:14px;padding:22px 24px;margin-bottom:8px}
+  .note-card .verdict{font-size:18px;font-weight:800;line-height:1.45;margin-bottom:6px}
+  .note-card .meta{color:var(--muted);font-size:12px;margin-bottom:16px}
+  .note-card h3{font-size:15px;margin:18px 0 8px;color:#cdd7e3;display:flex;align-items:center;gap:7px}
+  .note-card p{font-size:14.5px;line-height:1.85;margin:6px 0}
+  .note-card ul{margin:6px 0;padding-left:2px;list-style:none}
+  .note-card li{font-size:14.5px;line-height:1.8;padding-left:22px;position:relative}
+  .note-card li::before{content:"•";position:absolute;left:6px;color:var(--muted)}
+  .note-card strong{color:#fff}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:8px 0}
+  .cols .box{background:rgba(255,255,255,.025);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  .cols .box h4{font-size:13px;margin:0 0 8px}
+  .cols .bull h4{color:#ff8a82} .cols .bear h4{color:#5fd6a0}
+  .cols li{font-size:13.5px;line-height:1.7}
+  .news li{padding:7px 0 7px 22px;border-top:1px solid var(--line)}
+  .news li:first-child{border-top:none}
+  .news .src{color:var(--muted);font-size:12px;margin-left:6px}
+  .verdict-tag{display:inline-block;padding:3px 12px;border-radius:999px;font-size:14px;font-weight:700;margin-right:8px}
+  .vt-hold{background:rgba(212,175,55,.18);color:#e8c45a}
+  .vt-bull{background:rgba(212,69,60,.2);color:#ff8a82}
+  .vt-bear{background:rgba(26,162,96,.2);color:#5fd6a0}
+  @media(max-width:620px){.cols{grid-template-columns:1fr}}
+</style></head>
+<body><div class="wrap">
+      <a class="back" href="holdings.html">‹ 返回持股</a>　<a class="back" href="../index.html">首頁 ›</a>
+      <header><h1>持股風險總覽</h1>
+      <div class="sub">15 檔依風險高→低排序 · 更新 2026-06-24 01:49</div></header>
+      <div class="cards">
+        <div class="stat"><div class="label">持股檔數</div><div class="value">15</div></div>
+        <div class="stat"><div class="label">高風險檔數</div><div class="value down">1</div></div>
+        <div class="stat"><div class="label">總損益</div><div class="value down">-47,835</div></div>
+      </div>
+      <div class="note" style="margin-bottom:16px"><b>風險分數＝體質(虧損/ROE負/營收衰退)＋估值(PE/PB高)＋技術(超買/貼頂)＋籌碼(外資連賣)＋流動性(興櫃/量少)＋帳損幅度。</b>分數越高越該留意；判讀取自各股深度分析。紅標＝風險因子。</div>
+      <table><thead><tr><th>代號</th><th>名稱</th><th>風險</th><th>損益</th><th>報酬</th><th>我的判讀</th><th>風險因子</th></tr></thead>
+        <tbody><tr class="clickable" onclick="location.href='6920.html'">
+          <td class="id">6920</td>
+          <td class="name">恆勁科技 <span class="arrow">›</span></td>
+          <td><span class="pill down">高風險 6</span></td>
+          <td class="down">-23,917</td>
+          <td class="down">-4.2%</td>
+          <td><span class="verdict-tag vt-bear" style="font-size:12px">虧損興櫃・認真檢討停損</span></td>
+          <td style="text-align:left;line-height:1.9"><span class="tag" style="background:rgba(212,69,60,.15);color:#ff8a82">本業虧損</span> <span class="tag" style="background:rgba(212,69,60,.15);color:#ff8a82">PB高14倍</span> <span class="tag" style="background:rgba(212,69,60,.15);color:#ff8a82">興櫃低流動</span></td></tr><tr class="clickable" onclick="location.href='8027.html'">
+          <td class="id">8027</td>
+          <td class="name">鈦昇 <span class="arrow">›</span></td>
+          <td><span class="pill flat">中風險 4</span></td>
+          <td class="down">-1,139</td>
+          <td class="down">-4.2%</td>
+          <td><span class="verdict-tag vt-bear" style="font-size:12px">短線偏空・觀望為宜</span></td>
+          <td style="text-align:left;line-height:1.9"><span class="tag" style="background:rgba(212,69,60,.15);color:#ff8a82">本業虧損</span> <span class="tag" style="background:rgba(212,69,60,.15);color:#ff8a82">PB高9倍</span></td></tr><tr class="clickable" onclick="location.href='3481.html'">
+          <td class="id">3481</td>
+          <td class="name">群創 <span class="arrow">›</span></td>
+          <td><span class="pill up">低風險 2</span></td>
+          <td class="down">-18,650</td>
+          <td class="down">-1.9%</td>
+          <td><span class="verdict-tag vt-hold" style="font-size:12px">題材大但投機・嚴設停損</span></td>
+          <td style="text-align:left;line-height:1.9"><span class="tag" style="background:rgba(212,69,60,.15);color:#ff8a82">PE高2200倍</span> <span class="tag" style="background:rgba(212,69,60,.15);color:#ff8a82">外資連5日賣</span></td></tr><tr class="clickable" onclick="location.href='4958.html'">
+          <td class="id">4958</td>
+          <td class="name">臻鼎-KY <span class="arrow">›</span></td>
+          <td><span class="pill up">低風險 2</span></td>
+          <td class="down">-5,633</td>
+          <td class="down">-2.7%</td>
+          <td><span class="verdict-tag vt-hold" style="font-size:12px">獲利續抱・不追高</span></td>
+          <td style="text-align:left;line-height:1.9"><span class="tag" style="background:rgba(212,69,60,.15);color:#ff8a82">PE高87倍</span> <span class="tag" style="background:rgba(212,69,60,.15);color:#ff8a82">外資連4日賣</span></td></tr><tr class="clickable" onclick="location.href='3163.html'">
+          <td class="id">3163</td>
+          <td class="name">波若威 <span class="arrow">›</span></td>
+          <td><span class="pill up">低風險 2</span></td>
+          <td class="down">-1,083</td>
+          <td class="down">-3.6%</td>
+          <td><span class="verdict-tag vt-bear" style="font-size:12px">短線偏空・嚴設停損</span></td>
+          <td style="text-align:left;line-height:1.9"><span class="tag" style="background:rgba(212,69,60,.15);color:#ff8a82">PB高22倍</span> <span class="tag" style="background:rgba(212,69,60,.15);color:#ff8a82">外資連5日賣</span></td></tr><tr class="clickable" onclick="location.href='4979.html'">
+          <td class="id">4979</td>
+          <td class="name">華星光 <span class="arrow">›</span></td>
+          <td><span class="pill up">低風險 1</span></td>
+          <td class="down">-3,937</td>
+          <td class="down">-6.6%</td>
+          <td><span class="verdict-tag vt-hold" style="font-size:12px">小賺續抱・別追高</span></td>
+          <td style="text-align:left;line-height:1.9"><span class="tag" style="background:rgba(212,69,60,.15);color:#ff8a82">PB高18倍</span></td></tr><tr class="clickable" onclick="location.href='1303.html'">
+          <td class="id">1303</td>
+          <td class="name">南亞 <span class="arrow">›</span></td>
+          <td><span class="pill up">低風險 1</span></td>
+          <td class="down">-1,471</td>
+          <td class="down">-2.7%</td>
+          <td><span class="verdict-tag vt-hold" style="font-size:12px">轉機抱・別追高</span></td>
+          <td style="text-align:left;line-height:1.9"><span class="tag" style="background:rgba(212,69,60,.15);color:#ff8a82">PE高276倍</span></td></tr><tr class="clickable" onclick="location.href='6239.html'">
+          <td class="id">6239</td>
+          <td class="name">力成 <span class="arrow">›</span></td>
+          <td><span class="pill up">低風險 1</span></td>
+          <td class="down">-597</td>
+          <td class="down">-3.0%</td>
+          <td><span class="verdict-tag vt-hold" style="font-size:12px">續抱觀察・留意外資調節</span></td>
+          <td style="text-align:left;line-height:1.9"><span class="tag" style="background:rgba(212,69,60,.15);color:#ff8a82">外資連4日賣</span></td></tr><tr class="clickable" onclick="location.href='3017.html'">
+          <td class="id">3017</td>
+          <td class="name">奇鋐 <span class="arrow">›</span></td>
+          <td><span class="pill up">低風險 1</span></td>
+          <td class="down">-383</td>
+          <td class="down">-0.3%</td>
+          <td><span class="verdict-tag vt-hold" style="font-size:12px">趨勢續抱・等回檔加碼</span></td>
+          <td style="text-align:left;line-height:1.9"><span class="tag" style="background:rgba(212,69,60,.15);color:#ff8a82">PB高21倍</span></td></tr><tr class="clickable" onclick="location.href='3374.html'">
+          <td class="id">3374</td>
+          <td class="name">精材 <span class="arrow">›</span></td>
+          <td><span class="pill up">低風險 1</span></td>
+          <td class="up">+235</td>
+          <td class="up">+2.0%</td>
+          <td><span class="verdict-tag vt-hold" style="font-size:12px">逢回分批・不追高</span></td>
+          <td style="text-align:left;line-height:1.9"><span class="tag" style="background:rgba(212,69,60,.15);color:#ff8a82">PB高8倍</span></td></tr><tr class="clickable" onclick="location.href='3257.html'">
+          <td class="id">3257</td>
+          <td class="name">虹冠電 <span class="arrow">›</span></td>
+          <td><span class="pill up">低風險 1</span></td>
+          <td class="up">+4,947</td>
+          <td class="up">+3.9%</td>
+          <td><span class="verdict-tag vt-hold" style="font-size:12px">獲利續抱・別追高</span></td>
+          <td style="text-align:left;line-height:1.9"><span class="tag" style="background:rgba(212,69,60,.15);color:#ff8a82">營收衰退</span></td></tr><tr class="clickable" onclick="location.href='2330.html'">
+          <td class="id">2330</td>
+          <td class="name">台積電 <span class="arrow">›</span></td>
+          <td><span class="pill up">低風險 1</span></td>
+          <td class="up">+7,861</td>
+          <td class="up">+3.7%</td>
+          <td><span class="verdict-tag vt-hold" style="font-size:12px">核心續抱・不追高</span></td>
+          <td style="text-align:left;line-height:1.9"><span class="tag" style="background:rgba(212,69,60,.15);color:#ff8a82">PB高11倍</span></td></tr><tr class="clickable" onclick="location.href='2382.html'">
+          <td class="id">2382</td>
+          <td class="name">廣達 <span class="arrow">›</span></td>
+          <td><span class="pill up">低風險 0</span></td>
+          <td class="down">-2,236</td>
+          <td class="down">-2.5%</td>
+          <td><span class="verdict-tag vt-bull" style="font-size:12px">可分批佈局・法人在進場</span></td>
+          <td style="text-align:left;line-height:1.9">—</td></tr><tr class="clickable" onclick="location.href='00935.html'">
+          <td class="id">00935</td>
+          <td class="name">野村臺灣新科技50 <span class="arrow">›</span></td>
+          <td><span class="pill up">低風險 0</span></td>
+          <td class="down">-1,587</td>
+          <td class="down">-1.0%</td>
+          <td><span class="verdict-tag vt-bull" style="font-size:12px">衛星配置・分批續抱</span></td>
+          <td style="text-align:left;line-height:1.9"><span class="tag" style="background:rgba(212,69,60,.15);color:#ff8a82">ETF分散</span></td></tr><tr class="clickable" onclick="location.href='0050.html'">
+          <td class="id">0050</td>
+          <td class="name">元大台灣50 <span class="arrow">›</span></td>
+          <td><span class="pill up">低風險 0</span></td>
+          <td class="down">-245</td>
+          <td class="down">+0.1%</td>
+          <td><span class="verdict-tag vt-bull" style="font-size:12px">核心持股・適合長抱</span></td>
+          <td style="text-align:left;line-height:1.9"><span class="tag" style="background:rgba(212,69,60,.15);color:#ff8a82">ETF分散</span></td></tr></tbody></table>
+      <footer>僅供研究參考，非投資建議 · 高風險不代表必跌、低風險不代表必漲，重點是控管部位與停損</footer></div></body></html>
